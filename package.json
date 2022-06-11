@@ -1,0 +1,21 @@
+{
+    "name": "threejsgameengine",
+    "version": "1.0.0",
+    "description": "",
+    "main": "",
+    "type": "module",
+    "scripts": {
+        "build": "tsc --project ./tsconfig.json && cp -r js example/simple_demo/ && cd example/simple_demo/ && ./fixpaths.sh",
+        "clean": "rm -r js/*"
+    },
+    "author": "Kimiru_Laeli",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/node": "^17.0.15",
+        "@types/three": "^0.140.0"
+    },
+    "dependencies": {
+        "three": "^0.140.2",
+        "typescript": "^4.6.4"
+    }
+}
