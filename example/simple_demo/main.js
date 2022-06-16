@@ -1,75 +1,60 @@
 import * as GE from './js/2DGameEngine.js'
 
-let engine = new GE.GameEngine({ height: innerHeight * 0.9, width: innerWidth * 0.9 })
+let engine = new GE.GameEngine({
+    height: innerHeight * 0.9,
+    width: innerWidth * 0.9,
+    scaling: devicePixelRatio,
+    verticalPixels: 200,
+    images: [
+        {
+            name: 'mlp',
+            src: 'images/mlp.png'
+        }]
+})
 
-document.body.appendChild(engine.getDOMElement())
+console.log(engine.imageBank)
+
+
+document.body.appendChild(engine.canvas)
 
 engine.start()
 
-console.log(engine)
+let box = new GE.Rectangle(0, 0, 100, 70)
+let seg = new GE.Segment(new GE.Vector(-2, -5), new GE.Vector(10, 7))
+let rcs = new GE.RayCastShadow(true)
+rcs.zIndex = 10
 
-let o1 = new GE.GameObject()
-let o2 = new GE.GameObject()
-let o3 = new GE.GameObject()
-let o11 = new GE.GameObject()
 
-o1.add(o2)
+let image = new GE.Drawable(engine.imageBank.get('mlp'))
+image.zIndex = -1
+image.scale.set(100, 100)
 
-o1.position.x = 10
-o1.z = 10
+let segs = box.getPolygon().getSegments()
+segs.shift()
+rcs.position.set(-10, -10)
+rcs.update = function (dt) {
+    this.position.copy(this.engine.input.mouse.position)
 
-o11.scale.set(2, 2)
-
-o1.add(o11)
-
-o2.z = -10
-o2.scale.set(2, 2)
-o3.position.x = 10
-
-o2.add(o3)
-
-o1.draw = function (ctx) {
-
-    ctx.fillStyle = 'red'
-    ctx.fillRect(-5, -5, 10, 10)
-    return true
-
+    this.compute([...segs, seg])
 }
 
-o11.draw = function (ctx) {
 
-    ctx.fillStyle = 'orange'
-    ctx.fillRect(-5, -5, 10, 10)
-
-}
-
-o2.draw = function (ctx) {
-    ctx.fillStyle = 'blue'
-    ctx.fillRect(-5, -5, 10, 10)
-    return true
-}
-
-o3.draw = function (ctx) {
-    ctx.fillStyle = 'lightblue'
-    ctx.fillRect(-5, -5, 10, 10)
-}
-
-o1.bakeTransform()
-o2.bakeTransform()
-o3.bakeTransform()
 
 let sc = new GE.GameScene()
-sc.add(o1)
-sc.add(o2)
+sc.add(seg, ...segs)
+sc.add(new GE.FPSCounter(5))
+sc.add(rcs)
+sc.add(image)
+
+
 
 engine.setScene(sc)
 
-console.log(o3.getWorldPosition())
-console.log(o3.getWorldRotation())
 
 onresize = () => {
     engine.resize(innerWidth * 0.9, innerHeight * 0.9)
 }
+
 
 
 window.engine = engine
