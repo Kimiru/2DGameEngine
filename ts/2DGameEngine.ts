@@ -18,7 +18,7 @@ class GameEngine {
     #height: number = 0
     #trueWidth: number = 0
     #trueHeight: number = 0
-    #verticalPixels: number = 0
+    #verticalPixels: number = 1
     #ratio: number = 1
     #scaling: number = 1
     #usableWidth: number = 0
@@ -51,8 +51,7 @@ class GameEngine {
         this.canvas.style.position = 'relative'
         this.canvas.style.backgroundColor = 'black'
 
-        this.resize(args.width, args.height, args.scaling)
-        this.setVerticalPixels(args.verticalPixels)
+        this.resize(args.width, args.height, args.scaling, args.verticalPixels)
         this.#imageToLoadCount = args.images.length
         this.imageBank = loadImages(args.images, (n: number) => {
             this.#loadedImagesCount = n
@@ -78,7 +77,7 @@ class GameEngine {
      * @param {number} width 
      * @param {number} height 
      */
-    resize(width: number, height: number, scaling: number = this.#scaling): void {
+    resize(width: number, height: number, scaling: number = this.#scaling, pixels: number = this.#verticalPixels): void {
 
         this.#width = width
         this.#height = height
@@ -93,15 +92,18 @@ class GameEngine {
         this.canvas.style.width = width + 'px'
         this.canvas.style.height = height + 'px'
 
+        this.setVerticalPixels(pixels)
+
         if (this.#currentScene) {
 
             this.#currentScene.onResize(width, height)
 
         }
 
+
     }
 
-    setVerticalPixels(pixels: number) {
+    setVerticalPixels(pixels: number = 1) {
 
         this.#verticalPixels = pixels
 
@@ -171,6 +173,8 @@ class GameEngine {
 
             this.ctx.fillStyle = 'red'
             this.ctx.fillRect(0.1 * this.trueWidth, 0.45 * this.trueHeight, 0.8 * this.trueWidth * (this.#loadedImagesCount / this.#imageToLoadCount), 0.1 * this.trueHeight)
+
+            this.ctx.restore()
 
             return requestAnimationFrame(this.#loop.bind(this));
 
@@ -272,6 +276,9 @@ class GameScene {
                 this.tags.get(tag).push(obj)
 
             }
+
+            obj.onAdd()
+
         }
         return this
     }
@@ -291,15 +298,22 @@ class GameScene {
 
             }
 
+            obj.onRemove()
+
         }
 
         return this
 
     }
 
+    /**
+     * 
+     * @param {string} tag 
+     * @returns {GameObject[]}
+     */
     getTags(tag: string): GameObject[] {
 
-        return this.tags.get(tag) ?? []
+        return [...(this.tags.get(tag) ?? [])]
 
     }
 
@@ -341,6 +355,7 @@ class GameScene {
 
 class GameObject {
 
+    id: number = id()
     children: GameObject[] = []
     tags: string[] = []
     parent: GameObject = null
@@ -348,7 +363,7 @@ class GameObject {
 
     position: Vector = new Vector()
     zIndex: number = 0
-    verticalOffset: number = 0
+    positionRenderOffset: Vector = new Vector()
     #rotation: number = 0
     scale: Vector = new Vector(1, 1)
     bake: number[] = null
@@ -356,12 +371,22 @@ class GameObject {
     constructor() {
 
     }
+
+    /**
+     * @returns {GameScene}
+     */
     get scene(): GameScene { return this.#scene ?? this.parent?.scene ?? null }
 
     set scene(scene: GameScene) { this.#scene = scene }
 
+    /**
+     * @returns {GameEngine}
+     */
     get engine() { return this.scene?.engine ?? null }
 
+    /**
+     * @returns {number}
+     */
     get rotation() { return this.#rotation }
 
     set rotation(angle: number) {
@@ -371,6 +396,8 @@ class GameObject {
     }
 
     get used() { return this.scene !== null || this.parent !== null }
+
+    get box(): Rectangle { return new Rectangle(this.position.x, this.position.y, this.scale.x, this.scale.y) }
 
     /**
      * 
@@ -386,6 +413,8 @@ class GameObject {
 
             obj.parent = this
             this.children.push(obj)
+
+            obj.onAdd()
 
         }
 
@@ -404,11 +433,18 @@ class GameObject {
             obj.parent = null
             this.children.splice(this.children.indexOf(obj), 1)
 
+            obj.onRemove()
+
         }
 
         return this
 
     }
+
+    onAdd(): void { }
+
+    onRemove(): void { }
+
 
     /**
      * 
@@ -436,13 +472,13 @@ class GameObject {
 
         else {
 
-            ctx.translate(this.position.x, this.position.y + this.verticalOffset)
+            ctx.translate(this.position.x + this.positionRenderOffset.x, this.position.y + this.positionRenderOffset.y)
 
             if (this.rotation !== 0)
                 ctx.rotate(this.#rotation)
 
             if (!this.scale.equalS(1, 1))
-                ctx.scale(this.scale.x, this.scale.y + this.verticalOffset)
+                ctx.scale(this.scale.x + this.positionRenderOffset.x, this.scale.y + this.positionRenderOffset.y)
 
         }
 
@@ -549,8 +585,8 @@ class GameObject {
         let sin = Math.sin(this.#rotation)
         let sx = this.scale.x
         let sy = this.scale.y
-        let x = this.position.x
-        let y = this.position.y + this.verticalOffset
+        let x = this.position.x + this.positionRenderOffset.x
+        let y = this.position.y + this.positionRenderOffset.y
 
         this.bake = [
             cos * sx,
@@ -624,6 +660,7 @@ class Input {
     #mouseButtons: [boolean, boolean, boolean] = [false, false, false]
     #mousePosition: Vector = new Vector()
     #mouseIn: boolean = false
+    #mouseClickTimers: [Timer, Timer, Timer] = [new Timer(201), new Timer(201), new Timer(201)]
     positionAdapter = function (vector: Vector) { return vector }
 
     constructor() {
@@ -645,12 +682,17 @@ class Input {
     }
 
     get mouse() {
-        return {
+        let result = {
             left: this.#mouseButtons[0],
             middle: this.#mouseButtons[1],
             right: this.#mouseButtons[2],
+            leftClick: this.#mouseClickTimers[0].lessThan(16),
+            middleClick: this.#mouseClickTimers[1].lessThan(16),
+            rightClick: this.#mouseClickTimers[2].lessThan(16),
             position: this.#mousePosition.clone()
         }
+
+        return result
     }
 
     isDown(code: string): boolean { return this.#keysDown.has(code) }
@@ -685,10 +727,17 @@ class Input {
 
     #handleMouseEvent(evt: MouseEvent) {
 
+        let prev: [boolean, boolean, boolean] = [this.#mouseButtons[0], this.#mouseButtons[1], this.#mouseButtons[2]]
+
         this.#handleButtons(evt.buttons)
         this.#mousePosition.copy(this.#to01(evt))
         this.#mouseIn = this.#mousePosition.x > 0 && this.#mousePosition.x < 1 &&
             this.#mousePosition.y > 0 && this.#mousePosition.y < 1
+
+        for (let index = 0; index < 3; index++)
+            if (this.#mouseButtons[index] == false && prev[index])
+                this.#mouseClickTimers[index].reset()
+
     }
 
     #handleButtons(buttons: number) {
@@ -1200,6 +1249,8 @@ class Rectangle extends GameObject {
 
     }
 
+    contains(vector: Vector): boolean { return vector.x <= this.right && vector.x >= this.left && vector.y <= this.top && vector.y >= this.bottom }
+
     collide(rect: Rectangle) {
 
         return this.left < rect.right &&
@@ -1285,23 +1336,58 @@ class Segment extends GameObject {
 
     a: Vector = new Vector()
     b: Vector = new Vector()
+    display: boolean = false
 
-    constructor(a: Vector, b: Vector) {
+    constructor(a: Vector, b: Vector, display: boolean = false) {
 
         super()
 
         this.a = a
         this.b = b
+        this.display = display
+
+    }
+
+    intersect(segment: Segment): Vector {
+
+        let seg1a = segment.getWorldPosition(segment.a.clone())
+        let seg1b = segment.getWorldPosition(segment.b.clone())
+        let seg2a = this.getWorldPosition(this.a.clone())
+        let seg2b = this.getWorldPosition(this.b.clone())
+
+        let x1 = seg1a.x
+        let y1 = seg1a.y
+        let x2 = seg1b.x
+        let y2 = seg1b.y
+
+        let x3 = seg2a.x
+        let y3 = seg2a.y
+        let x4 = seg2b.x
+        let y4 = seg2b.y
+
+        let denum = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+
+        if (denum === 0) return null
+
+        let t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denum
+        let u = ((x1 - x3) * (y1 - y2) - (y1 - y3) * (x1 - x2)) / denum
+
+        if (t < 0 || t > 1 || u < 0 || u > 1) return null
+
+        return new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1))
 
     }
 
     draw(ctx: CanvasRenderingContext2D): boolean {
 
-        ctx.strokeStyle = 'red'
-        ctx.beginPath()
-        ctx.moveTo(this.position.x + this.a.x, this.position.y + this.a.y)
-        ctx.lineTo(this.position.x + this.b.x, this.position.y + this.b.y)
-        ctx.stroke()
+        if (this.display) {
+
+            ctx.strokeStyle = 'red'
+            ctx.beginPath()
+            ctx.moveTo(this.position.x + this.a.x, this.position.y + this.a.y)
+            ctx.lineTo(this.position.x + this.b.x, this.position.y + this.b.y)
+            ctx.stroke()
+        }
 
         return true
 
@@ -1453,6 +1539,10 @@ class RayCastShadow extends GameObject {
 
     }
 
+    enable() { this.display = true }
+
+    disable() { this.display = false }
+
     draw(ctx: CanvasRenderingContext2D): boolean {
 
         if (this.display) {
@@ -1491,7 +1581,7 @@ class Drawable extends GameObject {
     draw(ctx: CanvasRenderingContext2D): boolean {
 
         ctx.save()
-        ctx.scale(1 / this.halfSize.x, -1 / this.halfSize.y)
+        ctx.scale(1 / this.size.x, -1 / this.size.y)
         ctx.drawImage(this.image, -this.halfSize.x, -this.halfSize.y)
 
         ctx.restore()
@@ -1511,12 +1601,20 @@ function* reverseIterator(list: any[]) {
 
 }
 
-class Graph {
+class Graph<T> extends GameObject {
 
     nodes: Set<number> = new Set()
-    links: Map<number, Map<number, any>> = new Map()
+    nodesObjects: Map<number, T> = new Map()
+    links: Map<number, Set<number>> = new Map()
+    display: boolean = false
+    positionGetter: (object: T) => Vector = null
 
-    constructor() {
+    constructor(display: boolean = false, positionGetter: (object: T) => Vector = null) {
+
+        super()
+
+        this.display = display
+        this.positionGetter = positionGetter
 
     }
 
@@ -1524,14 +1622,15 @@ class Graph {
      * 
      * @param {...number} nodes 
      */
-    addNode(...nodes: number[]) {
+    addNode(...nodes: [number, T][]) {
 
-        for (let node of nodes) {
+        for (let [node, object] of nodes) {
 
             if (!this.nodes.has(node)) {
 
                 this.nodes.add(node)
-                this.links.set(node, new Map())
+                this.nodesObjects.set(node, object)
+                this.links.set(node, new Set())
 
             }
 
@@ -1549,7 +1648,7 @@ class Graph {
             if (this.hasNode(node)) {
 
                 this.nodes.delete(node)
-
+                this.nodesObjects.delete(node)
                 this.links.delete(node)
 
                 for (let [_, map] of this.links)
@@ -1570,13 +1669,13 @@ class Graph {
      * 
      * @param {...{source:number, target:number, data:any}} links 
      */
-    addLink(...links: { source: number, target: number, data: any }[]) {
+    addLink(...links: { source: number, target: number }[]) {
 
         for (let link of links) {
 
-            this.addNode(link.source, link.target)
+            if (!this.hasNode(link.source) || !this.hasNode(link.target)) continue
 
-            this.links.get(link.source).set(link.target, link.data)
+            this.links.get(link.source).add(link.target)
 
         }
 
@@ -1652,13 +1751,174 @@ class Graph {
 
     }
 
+    getShortestPathBetween(source: number, target: number, estimateDistance: (nodeA: T, nodeB: T) => number) {
+
+        if (!this.hasNode(source) || !this.hasNode(target)) return null
+
+        let nodes: Map<number, Node> = new Map()
+        this.nodes.forEach(id => nodes.set(id, new Node(id)))
+
+        let start = nodes.get(source)
+        let end = nodes.get(target)
+
+        let closed = []
+        let opened = [start]
+
+        while (opened.length) {
+
+            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.heuristic < b.heuristic ? a : b)), 1)[0]
+            let currentObject = this.nodesObjects.get(current.id)
+
+            if (current == end) {
+
+                let list = [end.id]
+                let node = end
+
+                while (node.previous) {
+
+                    node = node.previous
+                    list.push(node.id)
+
+                }
+
+                return list.reverse()
+
+            }
+
+            for (let neighbour of this.links.get(current.id)) {
+
+                let node = nodes.get(neighbour)
+                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id))
+
+                if (!(closed.includes(node) || (opened.includes(node) && node.cost <= cost))) {
+
+                    node.cost = cost
+                    node.heuristic = node.cost + estimateDistance(this.nodesObjects.get(node.id), this.nodesObjects.get(end.id))
+                    node.previous = current
+                    opened.push(node)
+
+                }
+
+            }
+
+            closed.push(current)
+
+        }
+
+        return null
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): boolean {
+
+        if (this.display && this.positionGetter) {
+
+            ctx.restore()
+            ctx.save()
+
+            let positions: Map<number, Vector> = new Map()
+
+            for (let [node, object] of this.nodesObjects) {
+                positions.set(node, this.positionGetter(object))
+            }
+
+            ctx.strokeStyle = 'blue'
+            for (let nodeA of this.links) {
+
+                for (let nodeB of nodeA[1]) {
+
+                    let p1 = positions.get(nodeA[0])
+                    let p2 = positions.get(nodeB)
+
+                    ctx.beginPath()
+                    ctx.moveTo(p1.x, p1.y)
+                    ctx.lineTo(p2.x, p2.y)
+                    ctx.stroke()
+
+                }
+
+            }
+
+        }
+
+        return true
+
+    }
+
 }
 
+class Node {
 
+    cost: number = 0
+    heuristic: number = 0
+    previous: Node = null
+    id: number
 
+    constructor(id: number) { this.id = id }
+
+}
+
+class Path {
+
+    points: Vector[] = []
+    currentPosition: Vector = new Vector()
+    currentSegment = 1
+
+    constructor(vectors: Vector[]) {
+
+        this.points = vectors
+        this.currentPosition.copy(this.points[0])
+
+    }
+
+    length(): number {
+
+        let length = 0
+
+        for (let index = 0; index < this.points.length - 1; index++)
+            length += this.points[index].distanceTo(this.points[index + 1])
+
+        return length
+
+    }
+
+    reset() {
+        this.currentPosition.copy(this.points[0])
+        this.currentSegment = 0
+    }
+
+    end(): boolean { return this.points.length == this.currentSegment }
+
+    follow(length: number): Vector {
+
+        let next = this.points[this.currentSegment]
+        let distance = this.currentPosition.distanceTo(next)
+
+        while (distance <= length) {
+
+            length -= distance
+            this.currentPosition.copy(next)
+            next = this.points[++this.currentSegment]
+            distance = this.currentPosition.distanceTo(next)
+            if (this.currentSegment == this.points.length)
+                return this.currentPosition.clone()
+
+        }
+
+        this.currentPosition.add(next.clone().sub(this.currentPosition).normalize().multS(length))
+
+        return this.currentPosition.clone()
+
+    }
+
+}
+
+let idCount = 0
+function id() { return ++idCount }
 
 export {
     GameEngine, GameScene, GameObject,
     Timer, FPSCounter, Input, Graph, Vector,
-    Camera, Rectangle, Polygon, Segment, Ray, RayCastShadow, Drawable
+    Camera, Rectangle, Polygon, Segment, Ray, RayCastShadow,
+    Path, Drawable, id
 }
