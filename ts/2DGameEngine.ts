@@ -326,7 +326,7 @@ class GameScene {
     /**
      * Add one or more object to the scene sorting them out by their tages, removing them from previous parent/scene if needed
      * 
-     * @param {GameObject...} object 
+     * @param {...GameObject} object 
      * @returns {this}
      */
     add(...object: GameObject[]): this {
@@ -339,13 +339,7 @@ class GameScene {
             obj.scene = this
             this.children.push(obj)
 
-            for (let tag of obj.tags) {
-
-                if (!this.tags.has(tag)) this.tags.set(tag, [])
-
-                this.tags.get(tag).push(obj)
-
-            }
+            this.addTags(obj)
 
             obj.onAdd()
 
@@ -354,32 +348,82 @@ class GameScene {
     }
 
     /**
+     * Sort the given objects and their children by their tags
+     * 
+     * @param {...GameObject} object 
+     * @returns {this}
+     */
+    addTags(...object: GameObject[]): this {
+
+        for (let obj of object) if (obj instanceof GameObject) {
+
+            for (let tag of obj.tags) {
+
+                if (!this.tags.has(tag)) this.tags.set(tag, [])
+
+                this.tags.get(tag).push(obj)
+
+            }
+
+            this.addTags(...obj.children)
+
+        }
+
+        return this
+
+    }
+
+    /**
      * Remove one or more from the scene, object should be in the scene
      * 
-     * @param {GameObject...} object 
+     * @param {...GameObject} object 
      * @returns {this}
      */
     remove(...object: GameObject[]): this {
 
-        for (let obj of object) {
+        for (let obj of object) if (obj instanceof GameObject) {
 
             let index = this.children.indexOf(obj)
 
             if (index !== -1) {
+
+                this.removeTags(obj)
+
                 obj.scene = null
                 this.children.splice(index, 1)
-
-                for (let tag of obj.tags) {
-
-                    let list = this.tags.get(tag)
-
-                    list.splice(list.indexOf(obj), 1)
-
-                }
 
                 obj.onRemove()
 
             }
+
+        }
+
+        return this
+
+    }
+
+    /**
+     * Remove the given objects and their children from the tag sorting lists
+     * 
+     * @param {...GameObject} object 
+     * @returns {this}
+     */
+    removeTags(...object: GameObject[]): this {
+
+        for (let obj of object) if (obj instanceof GameObject) {
+
+            for (let tag of obj.tags) {
+
+                let list = this.tags.get(tag)
+
+                let index = list.indexOf(obj)
+
+                if (index !== -1)
+                    list.splice(index, 1)
+
+            }
+
+            this.removeTags(...obj.children)
 
         }
 
@@ -468,7 +512,8 @@ class GameObject {
 
     id: number = id()
     children: GameObject[] = []
-    tags: string[] = []
+    tags: string[] = ['$']
+    nbvc = new Map()
     parent: GameObject = null
     #scene: GameScene = null
 
@@ -517,13 +562,14 @@ class GameObject {
      */
     add(...object: GameObject[]): this {
 
-        for (let obj of object) {
+        for (let obj of object) if (obj instanceof GameObject) {
 
             if (obj.used)
                 obj.kill()
 
             obj.parent = this
             this.children.push(obj)
+            this.scene?.addTags(obj)
 
             obj.onAdd()
 
@@ -539,12 +585,13 @@ class GameObject {
      */
     remove(...object: GameObject[]): this {
 
-        for (let obj of object) {
+        for (let obj of object) if (obj instanceof GameObject) {
 
             let index = this.children.indexOf(obj)
 
             if (index !== -1) {
 
+                this.scene?.removeTags(obj)
                 obj.parent = null
                 this.children.splice(index, 1)
 
@@ -1282,7 +1329,6 @@ class Vector {
     static fromAngle(angle: number): Vector { return new Vector(Math.cos(angle), Math.sin(angle)) }
 
 }
-
 
 function loadImages(images: { name: string, src: string }[], incrementCallback: (n: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
 
@@ -2250,6 +2296,7 @@ class TextureMapper {
 }
 
 function lerp(a: number, b: number, t: number): number { return (1 - t) * a + t * b }
+
 function coserp(a: number, b: number, t: number): number {
 
     let t2 = (1 - Math.cos(t * Math.PI)) / 2
