@@ -1,6 +1,12 @@
 const PI2 = Math.PI * 2
 
-const gameEngineConstructorArguments = {
+const gameEngineConstructorArguments: {
+    width: number,
+    height: number,
+    verticalPixels: number,
+    scaling: number,
+    images: HTMLImageElement[]
+} = {
     width: innerWidth,
     height: innerHeight,
     verticalPixels: 100,
@@ -8,6 +14,9 @@ const gameEngineConstructorArguments = {
     images: []
 }
 
+/**
+ * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
+ */
 class GameEngine {
 
     canvas: HTMLCanvasElement = document.createElement('canvas')
@@ -34,6 +43,11 @@ class GameEngine {
     #loadedImagesCount: number = 0
     #imageToLoadCount: number = 0
 
+    /**
+     * Create a new game engine using the given argument list, filling the gap with default value
+     * 
+     * @param {width: number, height: number, verticalPixels: number, scaling: number, images: Image[]} args 
+     */
     constructor(args = gameEngineConstructorArguments) {
 
         args = { ...gameEngineConstructorArguments, ...args }
@@ -103,7 +117,13 @@ class GameEngine {
 
     }
 
-    setVerticalPixels(pixels: number = 1) {
+    /**
+     * Set the number vertical virtual pixel.
+     * i.e. if a 1x1 square is drawn, it will take 1/pixels the space
+     * 
+     * @param {number} pixels 
+     */
+    setVerticalPixels(pixels: number = 1): void {
 
         this.#verticalPixels = pixels
 
@@ -114,12 +134,21 @@ class GameEngine {
 
     }
 
+    /**
+     * Set the new scene to be displayed, can be null
+     * 
+     * @param {GameScene | null} scene 
+     */
     setScene(scene: GameScene): void {
 
         this.#nextScene = scene
 
     }
 
+    /**
+     * Effectively switch the scene to be displayed
+     * Is called at then end of the gameloop
+     */
     #switchScene(): void {
 
         if (this.#nextScene !== undefined) {
@@ -147,25 +176,38 @@ class GameEngine {
 
     }
 
-    start() {
+    /**
+     * Start the engine, running the gameloop
+     */
+    start(): void {
 
         this.#run = true
         this.#loop()
 
     }
 
-    stop() {
+    /**
+     * Stop the engine, stopping the gameloop
+     */
+    stop(): void {
 
         this.#run = false
 
     }
 
-    #loop() {
+    /**
+     * Execute the gameloop
+     * 
+     * update -> draw -> repeat
+     * 
+     * inputs are obtained using javascript event catcher
+     * 
+     */
+    #loop(): void {
 
         if (!this.#run) return;
 
         if (this.#lock) {
-
 
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
 
@@ -176,7 +218,9 @@ class GameEngine {
 
             this.ctx.restore()
 
-            return requestAnimationFrame(this.#loop.bind(this));
+            requestAnimationFrame(this.#loop.bind(this))
+
+            return
 
         }
 
