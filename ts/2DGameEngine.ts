@@ -516,7 +516,7 @@ class GameScene {
 }
 
 /**
- * GameObject is the base brick class of the system, inhert from it to create any comonent of your system
+ * The GameObject class is the base brick class of the system, inhert from it to create any comonent of your system
  * Use the tags to retrieve groups of it from the scene perspective, children or not.
  */
 class GameObject {
@@ -834,10 +834,18 @@ class GameObject {
 
 }
 
+/**
+ * The Timer class is used to mesure time easily
+ */
 class Timer {
 
     begin: number
 
+    /**
+     * Create a new timer starting from now or a given setpoint
+     * 
+     * @param time 
+     */
     constructor(time = Date.now()) {
 
         this.begin = time;
@@ -849,23 +857,23 @@ class Timer {
      */
     reset(): void {
 
-        this.begin = new Date().getTime();
+        this.begin = Date.now()
 
     }
 
     /**
-     * Return the amount of time since the timer was last reset
+     * Return the amount of time in ms since the timer was last reset
      */
     getTime(): number {
 
-        return new Date().getTime() - this.begin;
+        return Date.now() - this.begin;
 
     }
 
     /**
-     * Return if the time since the last reset is greather that the given amount
+     * Return true if the time since the last reset is greather that the given amount in ms
      * 
-     * @param {number} amount 
+     * @param {number} amount in ms
      */
     greaterThan(amount: number): boolean {
 
@@ -874,13 +882,13 @@ class Timer {
     }
 
     /**
-     * Return if the time since the last reset is less that the given amount
+     * Return true if the time since the last reset is less that the given amount in ms
      * 
      * @param {number} amount 
      */
     lessThan(amount: number): boolean {
 
-        return this.getTime() < amount;
+        return Date.now() < amount;
 
     }
 
