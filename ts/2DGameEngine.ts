@@ -1082,6 +1082,9 @@ class Input {
 
 }
 
+/**
+ * The FPSCounter class is, as its name says, used to display the number of FPS of the game on the top left corner of the screen in a given font size
+ */
 class FPSCounter extends GameObject {
 
     timer = new Timer()
@@ -1089,6 +1092,11 @@ class FPSCounter extends GameObject {
     fps = 0
     fontSize: number = 12
 
+    /**
+     * Create a new FPSCounter with a given font size
+     * 
+     * @param fontsize 
+     */
     constructor(fontsize: number = 10) {
 
         super()
@@ -1097,7 +1105,14 @@ class FPSCounter extends GameObject {
 
     }
 
-    update(dt) {
+    /**
+     * Update the timer
+     * Should not be called by the user
+     * 
+     * @param {number} dt 
+     * @returns {boolean}
+     */
+    update(dt: number) {
 
         this.frameCount++
 
@@ -1114,10 +1129,13 @@ class FPSCounter extends GameObject {
     }
 
     /**
+     * Draw the timer on the top left corner
+     * Should not be called by the user
      * 
      * @param {CanvasRenderingContext2D} ctx 
+     * @return {boolean}
      */
-    draw(ctx: CanvasRenderingContext2D) {
+    draw(ctx: CanvasRenderingContext2D): boolean {
 
 
         ctx.save()
