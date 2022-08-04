@@ -250,6 +250,9 @@ class GameEngine {
 
 }
 
+/**
+ * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering
+ */
 class GameScene {
 
     tags: Map<string, GameObject[]> = new Map()
@@ -258,10 +261,20 @@ class GameScene {
     camera: Camera = null
     engine: GameEngine = null
 
+    /**
+     * Create a new empty GameScene
+     */
     constructor() {
 
     }
 
+    /**
+     * Update the scene and its child
+     * Is called by the GameEngine to update the scene
+     * Should not be called by the user
+     * 
+     * @param {number} dt 
+     */
     onUpdate(dt: number) {
 
         if (this.update(dt))
@@ -271,6 +284,13 @@ class GameScene {
 
     }
 
+    /**
+     * Draw the scene and its child
+     * Is called by the GameEngine to draw the scene
+     * Should not be called by the user
+     * 
+     * @param ctx 
+     */
     onDraw(ctx: CanvasRenderingContext2D) {
 
         if (this.camera) {
@@ -303,6 +323,12 @@ class GameScene {
 
     }
 
+    /**
+     * Add one or more object to the scene sorting them out by their tages, removing them from previous parent/scene if needed
+     * 
+     * @param {GameObject...} object 
+     * @returns {this}
+     */
     add(...object: GameObject[]): this {
 
         for (let obj of object) if (obj instanceof GameObject) {
@@ -327,22 +353,33 @@ class GameScene {
         return this
     }
 
+    /**
+     * Remove one or more from the scene, object should be in the scene
+     * 
+     * @param {GameObject...} object 
+     * @returns {this}
+     */
     remove(...object: GameObject[]): this {
 
         for (let obj of object) {
 
-            obj.scene = null
-            this.children.splice(this.children.indexOf(obj), 1)
+            let index = this.children.indexOf(obj)
 
-            for (let tag of obj.tags) {
+            if (index !== -1) {
+                obj.scene = null
+                this.children.splice(index, 1)
 
-                let list = this.tags.get(tag)
+                for (let tag of obj.tags) {
 
-                list.splice(list.indexOf(obj), 1)
+                    let list = this.tags.get(tag)
+
+                    list.splice(list.indexOf(obj), 1)
+
+                }
+
+                obj.onRemove()
 
             }
-
-            obj.onRemove()
 
         }
 
@@ -351,6 +388,7 @@ class GameScene {
     }
 
     /**
+     * Get an immutable array of all the object using the given tag
      * 
      * @param {string} tag 
      * @returns {GameObject[]}
@@ -361,23 +399,45 @@ class GameScene {
 
     }
 
+    /**
+     * Is called when the scene is set to a GameEngine
+     * Is to be modified by the user
+     */
     onSet(): void {
 
     }
 
+    /**
+     * Is called when the scene is unset from a GameEngine
+     * Is to be modified by the user
+     */
     onUnSet(): void {
 
     }
 
+    /**
+     * Is called when the canvas viewport changes when used by a GameEngine
+     * Is to be modified by the user
+     * 
+     * @param {number} width 
+     * @param {number} height 
+     */
     onResize(width: number, height: number): void {
 
     }
 
     /**
-    * 
-    * @param {number} dt 
-    * @returns 
-    */
+     * Update the scene specific operation
+     * 
+     * Is called when the scene is updated
+     * Is to be modified by the user
+     * 
+     * return true to update scene objects
+     * return false to stop update propagation
+     * 
+     * @param {number} dt 
+     * @returns {boolean}
+     */
     update(dt: number): boolean {
 
         return true
@@ -385,9 +445,16 @@ class GameScene {
     }
 
     /**
+     * Draw the scene specific element
+     * 
+     * Is called when the scene is drawn
+     * Is to be modified by the user
+     * 
+     * return true to draw scene objects
+     * return false to stop drawing propagation
      * 
      * @param {CanvasRenderingContext2D} ctx 
-     * @returns 
+     * @returns {boolean}
      */
     draw(ctx: CanvasRenderingContext2D): boolean {
 
@@ -474,10 +541,16 @@ class GameObject {
 
         for (let obj of object) {
 
-            obj.parent = null
-            this.children.splice(this.children.indexOf(obj), 1)
+            let index = this.children.indexOf(obj)
 
-            obj.onRemove()
+            if (index !== -1) {
+
+                obj.parent = null
+                this.children.splice(index, 1)
+
+                obj.onRemove()
+
+            }
 
         }
 
