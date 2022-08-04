@@ -894,6 +894,9 @@ class Timer {
 
 }
 
+/**
+ * The Input class is used to register keyboard input, and mouse input if linked to an element
+ */
 class Input {
 
     #keysDown: Set<string> = new Set()
@@ -922,7 +925,20 @@ class Input {
 
     }
 
-    get mouse() {
+
+    /**
+     * Returns an instant of the mouse, click field if true will be available for one frame only
+     */
+    get mouse(): {
+        left: boolean
+        middle: boolean
+        right: boolean
+        leftClick: boolean
+        middleClick: boolean
+        rightClick: boolean
+        position: Vector
+        in: boolean
+    } {
         let result = {
             left: this.#mouseButtons[0],
             middle: this.#mouseButtons[1],
@@ -930,14 +946,27 @@ class Input {
             leftClick: this.#mouseClickTimers[0].lessThan(16),
             middleClick: this.#mouseClickTimers[1].lessThan(16),
             rightClick: this.#mouseClickTimers[2].lessThan(16),
-            position: this.#mousePosition.clone()
+            position: this.#mousePosition.clone(),
+            in: this.#mouseIn
         }
 
         return result
     }
 
+    /**
+     * Return true if the given key is down
+     * 
+     * @param {string} code 
+     * @returns {boolean}
+     */
     isDown(code: string): boolean { return this.#keysDown.has(code) }
 
+    /**
+     * return true once if the given key is down, must be repressed to return true again
+     * 
+     * @param {string} code 
+     * @returns {boolean}
+     */
     isPressed(code: string): boolean {
 
         if (this.#keysOnce.has(code)) {
@@ -952,6 +981,12 @@ class Input {
 
     }
 
+    /**
+     * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
+     * 
+     * @param {HTMLElement} element 
+     * @param {(vector:Vector)=>Vector} positionAdapter 
+     */
     bindMouse(element: HTMLElement, positionAdapter = function (vector: Vector) { return vector }) {
 
         this.positionAdapter = positionAdapter
@@ -966,7 +1001,12 @@ class Input {
 
     }
 
-    #handleMouseEvent(evt: MouseEvent) {
+    /**
+     * Handle the mouse related operations
+     * 
+     * @param {MouseEvent} evt 
+     */
+    #handleMouseEvent(evt: MouseEvent): void {
 
         let prev: [boolean, boolean, boolean] = [this.#mouseButtons[0], this.#mouseButtons[1], this.#mouseButtons[2]]
 
@@ -981,7 +1021,12 @@ class Input {
 
     }
 
-    #handleButtons(buttons: number) {
+    /**
+     * Convert the buttons input number to the adapted button boolean
+     * 
+     * @param buttons 
+     */
+    #handleButtons(buttons: number): void {
 
         switch (buttons) {
             case 1:
@@ -1019,6 +1064,12 @@ class Input {
 
     }
 
+    /**
+     * convert the position from the html element size to the 0-1 scale
+     * 
+     * @param evt 
+     * @returns 
+     */
     #to01(evt: MouseEvent): Vector {
 
         let result = new Vector(evt.offsetX, evt.offsetY)
