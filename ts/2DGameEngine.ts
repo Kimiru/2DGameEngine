@@ -349,6 +349,7 @@ class GameScene {
 
     /**
      * Sort the given objects and their children by their tags
+     * Should not be called by the user
      * 
      * @param {...GameObject} object 
      * @returns {this}
@@ -404,6 +405,7 @@ class GameScene {
 
     /**
      * Remove the given objects and their children from the tag sorting lists
+     * Should not be called by the user
      * 
      * @param {...GameObject} object 
      * @returns {this}
@@ -446,6 +448,7 @@ class GameScene {
     /**
      * Is called when the scene is set to a GameEngine
      * Is to be modified by the user
+     * Should not be called by the user
      */
     onSet(): void {
 
@@ -454,6 +457,7 @@ class GameScene {
     /**
      * Is called when the scene is unset from a GameEngine
      * Is to be modified by the user
+     * Should not be called by the user
      */
     onUnSet(): void {
 
@@ -462,6 +466,7 @@ class GameScene {
     /**
      * Is called when the canvas viewport changes when used by a GameEngine
      * Is to be modified by the user
+     * Should not be called by the user
      * 
      * @param {number} width 
      * @param {number} height 
@@ -475,6 +480,7 @@ class GameScene {
      * 
      * Is called when the scene is updated
      * Is to be modified by the user
+     * Should not be called by the user
      * 
      * return true to update scene objects
      * return false to stop update propagation
@@ -493,6 +499,7 @@ class GameScene {
      * 
      * Is called when the scene is drawn
      * Is to be modified by the user
+     * Should not be called by the user
      * 
      * return true to draw scene objects
      * return false to stop drawing propagation
@@ -508,6 +515,10 @@ class GameScene {
 
 }
 
+/**
+ * GameObject is the base brick class of the system, inhert from it to create any comonent of your system
+ * Use the tags to retrieve groups of it from the scene perspective, children or not.
+ */
 class GameObject {
 
     id: number = id()
@@ -524,15 +535,26 @@ class GameObject {
     scale: Vector = new Vector(1, 1)
     bake: number[] = null
 
+    /**
+     * Create a new raw GameObject
+     */
     constructor() {
 
     }
 
     /**
+     * If the object or any parent object is in the scene, returns it
+     * 
      * @returns {GameScene}
      */
     get scene(): GameScene { return this.#scene ?? this.parent?.scene ?? null }
 
+    /**
+     * Set the scene of the object
+     * Used by GameScene
+     * 
+     * @param {GameScene} scene
+     */
     set scene(scene: GameScene) { this.#scene = scene }
 
     /**
@@ -541,24 +563,36 @@ class GameObject {
     get engine() { return this.scene?.engine ?? null }
 
     /**
+     * Return the rotation of the object
+     * 
      * @returns {number}
      */
     get rotation() { return this.#rotation }
 
+    /**
+     * Set the rotation of the object
+     * The angle is automatically converted into modulo 2.PI > 0
+     * 
+     * @param {number} angle
+     */
     set rotation(angle: number) {
 
         this.#rotation = ((angle % PI2) + PI2) % PI2
 
     }
 
+    /**
+     * Return true if object is either in a scene or has a parent object
+     */
     get used() { return this.scene !== null || this.parent !== null }
 
     get box(): Rectangle { return new Rectangle(this.position.x, this.position.y, this.scale.x, this.scale.y) }
 
     /**
+     * Add the given object to this object children
      * 
      * @param {...GameObject} object 
-     * @returns 
+     * @returns {this}
      */
     add(...object: GameObject[]): this {
 
@@ -579,9 +613,10 @@ class GameObject {
     }
 
     /**
+     * Remove the given objects from this object children
      * 
      * @param {...GameObject} object 
-     * @returns 
+     * @returns {this}
      */
     remove(...object: GameObject[]): this {
 
@@ -605,15 +640,27 @@ class GameObject {
 
     }
 
+    /**
+     * Is called when the object is added to a scene or another object
+     * Is to be modified by the user
+     * Should not be called by the user
+     */
     onAdd(): void { }
 
+    /**
+     * Is called when the object is removed from a scene or a parent object
+     * Is to be modified by the user
+     * Should not be called by the user
+     */
     onRemove(): void { }
 
-
     /**
-     * 
-     * @param {number} dt 
-     */
+    * Update the object and its child
+    * Is called by the Scene or parent objects to update this object
+    * Should not be called by the user
+    * 
+    * @param {number} dt 
+    */
     onUpdate(dt: number) {
 
         if (this.used && this.update(dt))
@@ -624,9 +671,12 @@ class GameObject {
     }
 
     /**
-     * 
-     * @param {CanvasRenderingContext2D} ctx 
-     */
+    * Draw the object and its child
+    * Is called by the Scene or parent objects to draw this object
+    * Should not be called by the user
+    * 
+    * @param {number} dt 
+    */
     onDraw(ctx: CanvasRenderingContext2D) {
 
         ctx.save()
@@ -657,9 +707,17 @@ class GameObject {
     }
 
     /**
+     * Update the object specific operation
+     * 
+     * Is called when the object is updated
+     * Is to be modified by the user
+     * Should not be called by the user
+     * 
+     * return true to update object children
+     * return false to stop update propagation
      * 
      * @param {number} dt 
-     * @returns 
+     * @returns {boolean}
      */
     update(dt: number): boolean {
 
@@ -668,17 +726,28 @@ class GameObject {
     }
 
     /**
-     * 
-     * @param {CanvasRenderingContext2D} ctx 
-     * @returns 
-     */
+      * Draw the object specific element
+      * 
+      * Is called when the object is drawn
+      * Is to be modified by the user
+      * Should not be called by the user
+      * 
+      * return true to draw object children
+      * return false to stop drawing propagation
+      * 
+      * @param {CanvasRenderingContext2D} ctx 
+      * @returns {boolean}
+      */
     draw(ctx: CanvasRenderingContext2D): boolean {
 
         return true
 
     }
 
-    kill() {
+    /**
+     * Remove the object from its scene/parent
+     */
+    kill(): void {
 
         if (this.parent !== null)
             this.parent.remove(this)
@@ -1815,7 +1884,7 @@ class Graph<T> extends GameObject {
                 this.nodesObjects.delete(node)
                 this.links.delete(node)
 
-                for (let [_, map] of this.links)
+                for (let [, map] of this.links)
                     map.delete(node)
 
             }
