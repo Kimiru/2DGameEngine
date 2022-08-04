@@ -1,5 +1,5 @@
 import * as GE from './js/2DGameEngine.js'
-import { Tile, Wall, Walkable, Character, unit } from './objects.js'
+import { Tile, Wall, Walkable, Character, unit, World } from './objects.js'
 
 let engine = new GE.GameEngine({
     height: innerHeight * 0.9,
@@ -26,7 +26,7 @@ console.log(engine.imageBank)
 
 document.body.appendChild(engine.canvas)
 
-engine.start()
+// engine.start()
 let sc = new GE.GameScene()
 
 
@@ -46,7 +46,6 @@ for (let i = -3; i < 3; i += 2) {
 }
 
 
-
 let character = new Character(0, 0, engine.imageBank.get('mlp'))
 character.shadow.enable()
 character.select()
@@ -61,6 +60,33 @@ onresize = () => {
     engine.resize(innerWidth * 0.9, innerHeight * 0.9)
 }
 
+//352_548_638
+
+let world = new World('866_35_923', 3, 2, 1)
+
+let data = [0]
+
+let res = 256
+let pxsize = 4
+let pxper = res / pxsize
+
+function loop() {
+    let image = new Image();
+    image.src = world.draw({
+        pxPerCell: pxper,
+        scale: pxsize,
+        daylight: false,
+        temperature: false,
+        weather: false,
+        // offsetY: data[0]
+    })
+    document.body.innerHTML = image.outerHTML
+    world.tick()
+    data[0] += .25
+    setTimeout(loop, 1000)
+}
+
+loop()
 
 
 window.engine = engine
