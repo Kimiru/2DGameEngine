@@ -1230,29 +1230,44 @@ class Camera extends GameObject {
 
 }
 
+/**
+ * class Vector represent a 3 dimentional vector
+ * it also contains function that are used in 2d context for practical purposes
+ */
 class Vector {
 
     x: number = 0
     y: number = 0
+    z: number = 0
 
-    constructor(x: number = 0, y: number = 0) {
+    /**
+     * Create a new 3D Vector
+     * 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {number} z 
+     */
+    constructor(x: number = 0, y: number = 0, z: number = 0) {
 
         this.x = x
         this.y = y
+        this.z = z
 
     }
 
     /**
-     * Set this vector values to the given values
-     * 
-     * @param {number} x 
-     * @param {number} y 
-     * @returns {this}
-     */
-    set(x: number, y: number): this {
+    * Set this vector values to the given values
+    * 
+    * @param {number} x 
+    * @param {number} y 
+    * @param {number} z
+    * @returns {this}
+    */
+    set(x: number = 0, y: number = 0, z: number = 0): this {
 
         this.x = x
         this.y = y
+        this.z = z
 
         return this
 
@@ -1268,6 +1283,7 @@ class Vector {
 
         this.x += vector.x
         this.y += vector.y
+        this.z += vector.z
 
         return this
 
@@ -1278,12 +1294,14 @@ class Vector {
      * 
      * @param {number} x 
      * @param {number} y 
+     * @param {number} z
      * @returns {this}
      */
-    addS(x: number = 0, y: number = 0): this {
+    addS(x: number = 0, y: number = 0, z: number = 0): this {
 
         this.x += x
         this.y += y
+        this.z += z
 
         return this
 
@@ -1299,6 +1317,7 @@ class Vector {
 
         this.x -= vector.x
         this.y -= vector.y
+        this.z -= vector.z
 
         return this
 
@@ -1309,12 +1328,14 @@ class Vector {
     * 
     * @param {number} x 
     * @param {number} y 
+    * @param {number} z
     * @returns {this}
     */
-    subS(x: number = 0, y: number = 0) {
+    subS(x: number = 0, y: number = 0, z: number = 0) {
 
         this.x -= x
         this.y -= y
+        this.z -= z
 
         return this
 
@@ -1330,6 +1351,7 @@ class Vector {
 
         this.x *= vector.x
         this.y *= vector.y
+        this.z *= vector.z
 
         return this
 
@@ -1345,6 +1367,7 @@ class Vector {
 
         this.x *= n
         this.y *= n
+        this.z *= n
 
         return this
 
@@ -1360,6 +1383,7 @@ class Vector {
 
         this.x /= vector.x
         this.y /= vector.y
+        this.z /= vector.z
 
         return this
 
@@ -1375,35 +1399,36 @@ class Vector {
 
         this.x /= n
         this.y /= n
+        this.z /= n
 
         return this
 
     }
 
     /**
-     * Return the result of the dot product between this vector and the given vector
+     * Returns the result of the dot product between this vector and the given vector
      * 
      * @param {Vector} vector 
      * @returns {number}
      */
-    dot(vector: Vector): number { return this.x * vector.x + this.y * vector.y }
+    dot(vector: Vector): number { return this.x * vector.x + this.y * vector.y + this.z * vector.z }
 
     /**
-     * Return the length of this vector
+     * Returns the length of this vector
      * 
      * @returns {number}
      */
-    length(): number { return Math.sqrt(this.x * this.x + this.y * this.y) }
+    length(): number { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z) }
 
     /**
-     * Return true if the length of this vector is 0
+     * Returns true if the length of this vector is 0
      * 
      * @returns {boolean}
      */
-    nil(): boolean { return this.x == 0 && this.y == 0 }
+    nil(): boolean { return this.x == 0 && this.y == 0 && this.z == 0 }
 
     /**
-     * Normalize this vector if it is not nil
+     * Normalizes this vector if it is not nil
      * 
      * @returns {this}
      */
@@ -1417,7 +1442,7 @@ class Vector {
     }
 
     /**
-     * Rotate the current vector of a given angle
+     * Rotates the current vector of a given angle on the x and y values
      * 
      * @param {number} angle 
      * @returns {this}
@@ -1438,13 +1463,18 @@ class Vector {
     }
 
     /**
-     * Return the angle between this vector and the given vector
+     * Returns the angle between this vector and the given vector
      * 
      * @param vector 
-     * @returns 
+     * @returns {number}
      */
     angleTo(vector: Vector): number { return Math.acos(this.dot(vector) / (this.length() * vector.length())) }
 
+    /**
+     * Returns the angle on this vector on plane x, y
+     * 
+     * @returns {number}
+     */
     angle(): number {
 
         let vec = this.clone().normalize()
@@ -1452,6 +1482,12 @@ class Vector {
 
     }
 
+    /**
+     * Returns the distance from this Vector position to the given Vector position
+     * 
+     * @param {Vector} vector 
+     * @returns {number}
+     */
     distanceTo(vector: Vector): number { return this.clone().sub(vector).length() }
 
     /**
@@ -1463,6 +1499,7 @@ class Vector {
 
         this.x = vector.x
         this.y = vector.y
+        this.z = vector.z
 
         return this
 
@@ -1473,39 +1510,41 @@ class Vector {
      * 
      * @returns {Vector}
      */
-    clone() { return new Vector(this.x, this.y) }
+    clone() { return new Vector(this.x, this.y, this.z) }
 
     /**
-     * Return true if this vector values are equal to the given vector values
+     * Returns true if this vector values are equal to the given vector values
      * 
      * @param {Vector} vector 
      * @returns {boolean}
      */
-    equal(vector: Vector): boolean { return this.x == vector.x && this.y == vector.y }
+    equal(vector: Vector): boolean { return this.x == vector.x && this.y == vector.y && this.z == vector.z }
 
     /**
-     * Return true if this vector values are equal to the given values
+     * Returns true if this vector values are equal to the given values
      * 
      * @param {number} x 
      * @param {number} y 
+     * @param {number} z
      * @returns {boolean}
      */
-    equalS(x: number, y: number): boolean { return this.x == x && this.y == y }
+    equalS(x: number = 0, y: number = 0, z: number = 0): boolean { return this.x == x && this.y == y && this.z == z }
 
     /**
-     * Convert this vector to a string
+     * Converts this vector to a string
      * 
      * @returns {string}
      */
-    toString() { return `Vector(${this.x}, ${this.y})` }
+    toString() { return `Vector(${this.x}, ${this.y}, ${this.z})` }
 
     /**
-     * Return a new unit vector from the given angle
+     * Returns a new unit vector from the given angle
      * 
      * @param {number} angle 
      * @returns {Vector}
      */
     static fromAngle(angle: number): Vector { return new Vector(Math.cos(angle), Math.sin(angle)) }
+
 
 }
 
