@@ -1548,7 +1548,15 @@ class Vector {
 
 }
 
-function loadImages(images: { name: string, src: string }[], incrementCallback: (n: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
+/**
+ * loads multiple images and use callbacks for progression checks and at the end
+ * 
+ * @param {{ name: string, src: string }[]} images 
+ * @param {(completed:number) => void} incrementCallback 
+ * @param {() => void}finishedCallback 
+ * @returns 
+ */
+function loadImages(images: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
 
     let bank: Map<string, HTMLImageElement> = new Map()
     let completed: { n: number } = { n: 0 }
