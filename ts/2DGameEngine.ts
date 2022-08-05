@@ -2356,43 +2356,11 @@ class PseudoRandom {
 
 }
 
-class PerlinVector {
-    x: number
-    y: number
-    z: number
-    constructor(x: number, y: number, z: number) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
-
-    dot(vec: PerlinVector): number {
-
-        return this.x * vec.x + this.y * vec.y + this.z * vec.z
-
-    }
-
-    length(): number {
-        return Math.sqrt(this.dot(this))
-    }
-
-    normalize(): void {
-        let len = this.length()
-        if (len != 0) {
-            this.x / len
-            this.y / len
-            this.z / len
-        }
-
-    }
-
-}
-
 class PerlinNoise {
 
     rng: PseudoRandom
     seed: number
-    grid: PerlinVector[][][]
+    grid: Vector[][][]
     horizontalLoop: number
     verticalLoop: number
     depthLoop: number
@@ -2421,7 +2389,7 @@ class PerlinNoise {
                     let yv = Math.sin(s)
                     let zv = PseudoRandom.get(s) * 2 - 1
 
-                    let vec = new PerlinVector(xv, yv, zv)
+                    let vec = new Vector(xv, yv, zv)
 
                     this.grid[x][y].push(vec)
                 }
@@ -2438,7 +2406,7 @@ class PerlinNoise {
 
     }
 
-    getVector(ix: number, iy: number, iz: number): PerlinVector {
+    getVector(ix: number, iy: number, iz: number): Vector {
 
         ix = ((ix % this.horizontalLoop) + this.horizontalLoop) % this.horizontalLoop
         iy = ((iy % this.verticalLoop) + this.verticalLoop) % this.verticalLoop
@@ -2452,7 +2420,7 @@ class PerlinNoise {
 
     gradDotProduct(ix: number, iy: number, iz: number, x: number, y: number, z: number): number {
 
-        let distanceVector = new PerlinVector(x - ix, y - iy, z - iz)
+        let distanceVector = new Vector(x - ix, y - iy, z - iz)
         let grad = this.getVector(ix, iy, iz)
 
         let product = distanceVector.dot(grad)
