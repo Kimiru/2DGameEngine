@@ -1159,14 +1159,47 @@ class FPSCounter extends GameObject {
 
 }
 
+/**
+ * The Camera class is used to set the center of the view inside a scene
+ */
 class Camera extends GameObject {
 
+    /**
+     * Create a new Camera object
+     */
+    constructor() {
+
+        super()
+
+    }
+
+    /**
+     * This function has been disabled for this object in particular
+     * You cannot add children to this object
+     * 
+     * @param {number} dt 
+     */
     add(...object: GameObject[]): this { return this }
 
+    /**
+     * This function has been disabled for this object in particular
+     * 
+     * @param {number} dt 
+     */
     remove(...object: GameObject[]): this { return this }
 
+    /**
+     * This function has been disabled for this object in particular
+     * 
+     * @param {number} dt 
+     */
     onUpdate(dt: number): void { }
 
+    /**
+     * This function has been disabled for this object in particular
+     * 
+     * @param {number} dt 
+     */
     onDraw(ctx: CanvasRenderingContext2D): void { }
 
     /**
