@@ -1463,6 +1463,23 @@ class Vector {
     }
 
     /**
+     * Rotate the current vector of a given angle arround a given position on the x and y values
+     * 
+     * @param {Vector} position 
+     * @param {number} angle 
+     * @returns {this}
+     */
+    rotateAround(position: Vector, angle: number): this {
+
+        this.sub(position)
+        this.rotate(angle)
+        this.add(position)
+
+        return this
+
+    }
+
+    /**
      * Returns the angle between this vector and the given vector
      * 
      * @param vector 
@@ -1583,10 +1600,87 @@ function loadImages(images: { name: string, src: string }[], incrementCallback: 
     return bank
 }
 
-class Rectangle extends GameObject {
+
+/**
+ * The Polygon represent a N point polygon
+ * To work properly, it needs at least 3 point to close
+ */
+class Polygon extends GameObject {
+
+    #points: Vector[] = []
+    fill: boolean = false
+
+    /**
+     * Create a new polygon using the given points
+     * 
+     * @param points 
+     */
+    constructor(...points: Vector[]) {
+
+        super()
+
+        this.points = points
+
+    }
+
+    get points(): Vector[] { return this.#points }
+    set points(pts: Vector[]) { this.#points = pts }
+
+    /**
+     * Get the list of segments between the points in order
+     * Returns an empty list if there is only one point
+     * 
+     * @returns {Segment[]}
+     */
+    getSegments(): Segment[] {
+
+        let segments = []
+
+        if (this.points.length < 2) return segments
+
+        for (let index = 0; index < this.points.length; index++) {
+            segments.push(new Segment(this.points[index].clone(), this.points[(index + 1) % this.points.length].clone()))
+        }
+
+        return segments
+
+    }
+
+    /**
+     * Draw the polygon
+     * Should not be called by the user
+     * 
+     * @param {CanvasRenderingContext2D} ctx 
+     * @returns {boolean}
+     */
+    draw(ctx: CanvasRenderingContext2D): boolean {
+
+        if (this.points.length === 0) return true
+
+        ctx.fillStyle = ctx.strokeStyle = 'yellow'
+        ctx.beginPath()
+        ctx.moveTo(this.points[0].x, this.points[0].y)
+        for (let index = 1; index < this.points.length; index++) {
+            ctx.lineTo(this.points[index].x, this.points[index].y)
+        }
+        ctx.lineTo(this.points[0].x, this.points[0].y)
+        if (this.fill)
+            ctx.fill()
+        else ctx.stroke()
+
+        return true
+
+    }
+
+
+}
+
+class Rectangle extends Polygon {
 
     display: boolean = false
     displayColor: string = 'red'
+
+    #ptmem: Vector[] = [new Vector(), new Vector()]
 
     constructor(x: number = 0, y: number = 0, w: number = 1, h: number = 1, display: boolean = false, displayColor: string = 'red') {
 
@@ -1595,10 +1689,31 @@ class Rectangle extends GameObject {
         this.position.set(x, y)
         this.scale.set(w, h)
 
+        this.#ptmem[0].copy(this.position)
+        this.#ptmem[1].copy(this.scale)
+
+        super.points = []
+
         this.display = display
         this.displayColor = displayColor
 
     }
+
+    get points(): Vector[] {
+
+        if (super.points.length === 0 || !this.#ptmem[0].equal(this.position) || !this.#ptmem[1].equal(this.scale)) {
+
+            super.points = [this.topleft, this.bottomleft, this.bottomright, this.topright]
+            this.#ptmem[0].copy(this.position)
+            this.#ptmem[1].copy(this.position)
+
+        }
+
+        return super.points
+
+    }
+
+    set points(vecs: Vector[]) { }
 
     get x(): number { return this.position.x }
     set x(n: number) { this.position.x = n }
@@ -1632,12 +1747,6 @@ class Rectangle extends GameObject {
     get bottomright(): Vector { return new Vector(this.right, this.bottom) }
     set bottomright(v: Vector) { this.right = v.x; this.bottom = v.y }
 
-    getPolygon(): Polygon {
-
-        return new Polygon(this.topleft, this.bottomleft, this.bottomright, this.topright)
-
-    }
-
     contains(vector: Vector): boolean { return vector.x <= this.right && vector.x >= this.left && vector.y <= this.top && vector.y >= this.bottom }
 
     collide(rect: Rectangle) {
@@ -1669,55 +1778,6 @@ class Rectangle extends GameObject {
         return true
 
     }
-
-}
-
-class Polygon extends GameObject {
-
-    points: Vector[] = []
-    fill: boolean = false
-
-    constructor(...points: Vector[]) {
-
-        super()
-
-        this.points = points
-
-    }
-
-    getSegments(): Segment[] {
-
-        let segments = []
-
-        if (this.points.length < 2) return segments
-
-        for (let index = 0; index < this.points.length; index++) {
-            segments.push(new Segment(this.points[index].clone(), this.points[(index + 1) % this.points.length].clone()))
-        }
-
-        return segments
-
-    }
-
-    draw(ctx: CanvasRenderingContext2D): boolean {
-
-        if (this.points.length === 0) return true
-
-        ctx.fillStyle = ctx.strokeStyle = 'yellow'
-        ctx.beginPath()
-        ctx.moveTo(this.points[0].x, this.points[0].y)
-        for (let index = 1; index < this.points.length; index++) {
-            ctx.lineTo(this.points[index].x, this.points[index].y)
-        }
-        ctx.lineTo(this.points[0].x, this.points[0].y)
-        if (this.fill)
-            ctx.fill()
-        else ctx.stroke()
-
-        return true
-
-    }
-
 
 }
 
