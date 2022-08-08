@@ -1,6 +1,10 @@
 import * as GE from './js/2DGameEngine.js'
 import { Tile, Wall, Walkable, Character, unit, World } from './objects.js'
 
+GE.Network.start()
+
+window.Network = GE.Network
+
 let engine = new GE.GameEngine({
     height: innerHeight * 0.9,
     width: innerWidth * 0.9,
@@ -86,7 +90,7 @@ function loop() {
     setTimeout(loop, 1000)
 }
 
-loop()
+// loop()
 
 
 window.engine = engine
