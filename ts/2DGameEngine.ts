@@ -23,7 +23,7 @@ const gameEngineConstructorArguments: {
 /**
  * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
  */
-class GameEngine {
+export class GameEngine {
 
     canvas: HTMLCanvasElement = document.createElement('canvas')
     ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')
@@ -241,8 +241,8 @@ class GameEngine {
 
         if (this.#currentScene) {
 
-            this.#currentScene.onUpdate(this.#dt)
-            this.#currentScene.onDraw(this.ctx)
+            this.#currentScene.executeUpdate(this.#dt)
+            this.#currentScene.executeDraw(this.ctx)
 
         }
 
@@ -259,7 +259,7 @@ class GameEngine {
 /**
  * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering
  */
-class GameScene {
+export class GameScene {
 
     tags: Map<string, GameObject[]> = new Map()
 
@@ -281,12 +281,23 @@ class GameScene {
      * 
      * @param {number} dt 
      */
-    onUpdate(dt: number) {
+    executeUpdate(dt: number) {
 
-        if (this.update(dt))
-            for (let child of reverseIterator(this.children))
-                if (child instanceof GameObject)
-                    child.update(dt)
+        this.update(dt)
+
+        for (let child of [...this.children])
+            if (child instanceof GameObject)
+                child.update(dt)
+
+    }
+
+    executePhysics(dt: number) {
+
+        this.physics(dt)
+
+        for (let child of [...this.children])
+            if (child instanceof GameObject)
+                child.update(dt)
 
     }
 
@@ -297,7 +308,7 @@ class GameScene {
      * 
      * @param ctx 
      */
-    onDraw(ctx: CanvasRenderingContext2D) {
+    executeDraw(ctx: CanvasRenderingContext2D) {
 
         if (this.camera) {
 
@@ -319,13 +330,11 @@ class GameScene {
 
         this.children.sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y)
 
-        if (this.draw(ctx)) {
+        this.draw(ctx)
 
-            for (let child of this.children)
-                if (child instanceof GameObject)
-                    child.onDraw(ctx)
-
-        }
+        for (let child of this.children)
+            if (child instanceof GameObject)
+                child.executeDraw(ctx)
 
     }
 
@@ -488,17 +497,20 @@ class GameScene {
      * Is to be modified by the user
      * Should not be called by the user
      * 
-     * return true to update scene objects
-     * return false to stop update propagation
+     * @param {number} dt 
+     */
+    update(dt: number): void { }
+
+    /**
+     * Update the scene physics specific operation
+     * 
+     * Is called when the scene physics is updated
+     * Is to be modified by the user
+     * Should not be called by the user
      * 
      * @param {number} dt 
-     * @returns {boolean}
      */
-    update(dt: number): boolean {
-
-        return true
-
-    }
+    physics(dt: number): void { }
 
     /**
      * Draw the scene specific element
@@ -507,17 +519,9 @@ class GameScene {
      * Is to be modified by the user
      * Should not be called by the user
      * 
-     * return true to draw scene objects
-     * return false to stop drawing propagation
-     * 
      * @param {CanvasRenderingContext2D} ctx 
-     * @returns {boolean}
      */
-    draw(ctx: CanvasRenderingContext2D): boolean {
-
-        return true
-
-    }
+    draw(ctx: CanvasRenderingContext2D): void { }
 
 }
 
@@ -525,11 +529,17 @@ class GameScene {
  * The GameObject class is the base brick class of the system, inhert from it to create any comonent of your system
  * Use the tags to retrieve groups of it from the scene perspective, children or not.
  */
-class GameObject {
+export class GameObject {
 
     id: number = id()
     children: GameObject[] = []
     tags: string[] = ['$']
+    updateEnabled: boolean = true
+    childrenUpdateEnabled: boolean = true
+    physicsEnabled: boolean = true
+    childrenPhysicsEnabled: boolean = true
+    drawEnabled: boolean = true
+    childrenDrawEnabled: boolean = true
     nbvc = new Map()
     parent: GameObject = null
     #scene: GameScene = null
@@ -593,6 +603,36 @@ class GameObject {
     get used() { return this.scene !== null || this.parent !== null }
 
     get box(): Rectangle { return new Rectangle(this.position.x, this.position.y, this.scale.x, this.scale.y) }
+
+    /**
+     * Adds one or more tag to the object
+     * 
+     * @param {...string} tag 
+     */
+    addTag(...tag: string[]) {
+
+        this.tags.push(...tag)
+
+    }
+
+    /**
+     * Removes one or more tag from the object
+     * 
+     * @param {...string} tag 
+     */
+    removeTag(...tag: string[]) {
+
+
+        for (let t of tag) {
+
+            let index = this.tags.indexOf(t)
+
+            if (index !== 1)
+                this.tags.splice(index, 1)
+
+        }
+
+    }
 
     /**
      * Add the given object to this object children
@@ -661,29 +701,42 @@ class GameObject {
     onRemove(): void { }
 
     /**
-    * Update the object and its child
-    * Is called by the Scene or parent objects to update this object
-    * Should not be called by the user
+    * Update the object and its child.
+    * Is called by the Scene or parent objects to update this object.
+    * Should not be called by the user.
     * 
     * @param {number} dt 
     */
-    onUpdate(dt: number) {
+    executeUpdate(dt: number) {
 
-        if (this.used && this.update(dt))
-            for (let child of reverseIterator(this.children))
+        if (this.updateEnabled) this.update(dt)
+
+        if (this.childrenUpdateEnabled)
+            for (let child of [...this.children])
                 if (child instanceof GameObject)
-                    child.onUpdate(dt)
+                    child.executeUpdate(dt)
+
+    }
+
+    executePhysics(dt: number) {
+
+        if (this.executePhysics) this.physics(dt)
+
+        if (this.childrenPhysicsEnabled)
+            for (let child of [...this.children])
+                if (child instanceof GameObject)
+                    child.executePhysics(dt)
 
     }
 
     /**
-    * Draw the object and its child
-    * Is called by the Scene or parent objects to draw this object
-    * Should not be called by the user
+    * Draw the object and its child.
+    * Is called by the Scene or parent objects to draw this object.
+    * Should not be called by the user.
     * 
     * @param {number} dt 
     */
-    onDraw(ctx: CanvasRenderingContext2D) {
+    executeDraw(ctx: CanvasRenderingContext2D) {
 
         ctx.save()
 
@@ -702,11 +755,12 @@ class GameObject {
 
         }
 
+        if (this.drawEnabled) this.draw(ctx)
 
-        if (this.draw(ctx))
+        if (this.childrenDrawEnabled)
             for (let child of this.children)
                 if (child instanceof GameObject)
-                    child.onDraw(ctx)
+                    child.executeDraw(ctx)
 
         ctx.restore()
 
@@ -719,17 +773,21 @@ class GameObject {
      * Is to be modified by the user
      * Should not be called by the user
      * 
-     * return true to update object children
-     * return false to stop update propagation
+     * @param {number} dt 
+     */
+    update(dt: number): void { }
+
+    /**
+     * Update the physics of the object
+     * 
+     * Is called when the object physics is updated
+     * Is to be modified by the user
+     * Should not be called by the user
      * 
      * @param {number} dt 
-     * @returns {boolean}
      */
-    update(dt: number): boolean {
 
-        return true
-
-    }
+    physics(dt: number): void { }
 
     /**
       * Draw the object specific element
@@ -738,17 +796,9 @@ class GameObject {
       * Is to be modified by the user
       * Should not be called by the user
       * 
-      * return true to draw object children
-      * return false to stop drawing propagation
-      * 
       * @param {CanvasRenderingContext2D} ctx 
-      * @returns {boolean}
       */
-    draw(ctx: CanvasRenderingContext2D): boolean {
-
-        return true
-
-    }
+    draw(ctx: CanvasRenderingContext2D): void { }
 
     /**
      * Remove the object from its scene/parent
@@ -843,7 +893,7 @@ class GameObject {
 /**
  * The Timer class is used to mesure time easily
  */
-class Timer {
+export class Timer {
 
     begin: number
 
@@ -903,7 +953,7 @@ class Timer {
 /**
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */
-class Input {
+export class Input {
 
     #keysDown: Set<string> = new Set()
     #keysOnce: Set<string> = new Set()
@@ -1091,7 +1141,7 @@ class Input {
 /**
  * The FPSCounter class is, as its name says, used to display the number of FPS of the game on the top left corner of the screen in a given font size
  */
-class FPSCounter extends GameObject {
+export class FPSCounter extends GameObject {
 
     timer = new Timer()
     frameCount = 0
@@ -1168,7 +1218,7 @@ class FPSCounter extends GameObject {
 /**
  * The Camera class is used to set the center of the view inside a scene
  */
-class Camera extends GameObject {
+export class Camera extends GameObject {
 
     /**
      * Create a new Camera object
@@ -1176,6 +1226,13 @@ class Camera extends GameObject {
     constructor() {
 
         super()
+
+        this.updateEnabled = false
+        this.physicsEnabled = false
+        this.drawEnabled = false
+        this.childrenUpdateEnabled = false
+        this.childrenPhysicsEnabled = false
+        this.childrenDrawEnabled = false
 
     }
 
@@ -1193,20 +1250,6 @@ class Camera extends GameObject {
      * @param {number} dt 
      */
     remove(...object: GameObject[]): this { return this }
-
-    /**
-     * This function has been disabled for this object in particular
-     * 
-     * @param {number} dt 
-     */
-    onUpdate(dt: number): void { }
-
-    /**
-     * This function has been disabled for this object in particular
-     * 
-     * @param {number} dt 
-     */
-    onDraw(ctx: CanvasRenderingContext2D): void { }
 
     /**
      * Bake the object transformation for quicker use
@@ -1240,7 +1283,7 @@ class Camera extends GameObject {
  * class Vector represent a 3 dimentional vector
  * it also contains function that are used in 2d context for practical purposes
  */
-class Vector {
+export class Vector {
 
     x: number = 0
     y: number = 0
@@ -1579,7 +1622,7 @@ class Vector {
  * @param {() => void}finishedCallback 
  * @returns 
  */
-function loadImages(images: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
+export function loadImages(images: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
 
     let bank: Map<string, HTMLImageElement> = new Map()
     let completed: { n: number } = { n: 0 }
@@ -1611,7 +1654,7 @@ function loadImages(images: { name: string, src: string }[], incrementCallback: 
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
  */
-class Polygon extends GameObject {
+export class Polygon extends GameObject {
 
     #points: Vector[] = []
     fill: boolean = false
@@ -1684,7 +1727,7 @@ class Polygon extends GameObject {
 /**
  * 
  */
-class Rectangle extends Polygon {
+export class Rectangle extends Polygon {
 
     display: boolean = false
     displayColor: string = 'red'
@@ -1790,7 +1833,7 @@ class Rectangle extends Polygon {
 
 }
 
-class Segment extends GameObject {
+export class Segment extends GameObject {
 
     a: Vector = new Vector()
     b: Vector = new Vector()
@@ -1854,7 +1897,7 @@ class Segment extends GameObject {
 
 }
 
-class Ray extends GameObject {
+export class Ray extends GameObject {
 
     direction: Vector = new Vector()
 
@@ -1935,7 +1978,7 @@ class Ray extends GameObject {
 
 }
 
-class RayCastShadow extends GameObject {
+export class RayCastShadow extends GameObject {
 
     display: boolean = false
 
@@ -2019,7 +2062,7 @@ class RayCastShadow extends GameObject {
 
 }
 
-class Drawable extends GameObject {
+export class Drawable extends GameObject {
 
     image: HTMLImageElement = null
     size: Vector = new Vector()
@@ -2048,15 +2091,6 @@ class Drawable extends GameObject {
         return true
 
     }
-
-}
-
-function* reverseIterator(list: any[]) {
-
-    list = [...list]
-
-    for (let index = list.length - 1; index >= 0; index--)
-        yield list[index]
 
 }
 
@@ -2372,7 +2406,7 @@ class Path {
 
 }
 
-class ImagePrinter {
+export class ImagePrinter {
 
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
@@ -2401,7 +2435,7 @@ class ImagePrinter {
     toString(): string { return this.print() }
 }
 
-class PseudoRandom {
+export class PseudoRandom {
 
     static a: number = 1664525
     static c: number = 1013904223
@@ -2433,7 +2467,7 @@ class PseudoRandom {
 
 }
 
-class PerlinNoise {
+export class PerlinNoise {
 
     rng: PseudoRandom
     seed: number
@@ -2558,9 +2592,9 @@ class TextureMapper {
 
 }
 
-function lerp(a: number, b: number, t: number): number { return (1 - t) * a + t * b }
+export function lerp(a: number, b: number, t: number): number { return (1 - t) * a + t * b }
 
-function coserp(a: number, b: number, t: number): number {
+export function coserp(a: number, b: number, t: number): number {
 
     let t2 = (1 - Math.cos(t * Math.PI)) / 2
 
@@ -2568,7 +2602,7 @@ function coserp(a: number, b: number, t: number): number {
 
 }
 
-function map(nbr: number, sourceMin: number, sourceMax: number, targetMin: number, targetMax: number) {
+export function map(nbr: number, sourceMin: number, sourceMax: number, targetMin: number, targetMax: number) {
 
     let t = (nbr - sourceMin) / (sourceMax - sourceMin)
     let res = t * (targetMax - targetMin) + targetMin
@@ -2577,7 +2611,7 @@ function map(nbr: number, sourceMin: number, sourceMax: number, targetMin: numbe
 }
 
 let idCount = 0
-function id() { return ++idCount }
+export function id() { return ++idCount }
 
 function* range(min: number, max: number = null, step: number = 1) {
 
@@ -2613,17 +2647,18 @@ enum NetworkEvents {
 }
 
 /**
- * The Network class uses PeerJS to manage P2P connection
+ * The Network class uses PeerJS to manage P2P connection.
  * On top of peerjs it manages timeouts conditional hosting (whitelist blacklist)
- *    and auto rejection against unwanted connections
+ *    and auto rejection against unwanted connections.
  */
-class Network {
+export class Network {
 
     static events = NetworkEvents
     static peer: any = null
     static id: string = null
     static isHosting: boolean = false
     static maxClient: number = 15
+    static linkedEngine: GameEngine = null
 
     static acceptConnections: boolean = true
     static useWhitelist: boolean = true
@@ -2928,6 +2963,33 @@ class Network {
 
     }
 
+    static setEngine(engine: GameEngine) {
+
+        Network.linkedEngine = engine
+
+    }
+
+}
+
+export class NetworkGameObject extends GameObject {
+
+    isDummy: boolean
+    sync: boolean = false
+
+    constructor(isDummy: boolean = false) {
+
+        super()
+
+        this.isDummy = true
+
+    }
+
+    executeUpdate(dt: number): void {
+
+        if (!this.isDummy) super.executeUpdate(dt)
+
+    }
+
 }
 
 class NetworkConnection {
@@ -3071,9 +3133,7 @@ class NetworkConnection {
 }
 
 export {
-    GameEngine, GameScene, GameObject,
-    Timer, FPSCounter, Input, Graph, Vector,
-    Camera, Rectangle, Polygon, Segment, Ray, RayCastShadow,
-    Path, Drawable, id,
-    PseudoRandom, PerlinNoise, lerp, coserp, ImagePrinter, range, map, TextureMapper, Network, NetworkEvents
+    Graph,
+    Path,
+    TextureMapper,
 }

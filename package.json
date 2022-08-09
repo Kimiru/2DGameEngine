@@ -5,7 +5,9 @@
     "main": "",
     "type": "module",
     "scripts": {
-        "build": "tsc --project ./tsconfig.json && cp -r js example/simple_demo/ && cd example/simple_demo/ && ./fixpaths.sh",
+        "build": "tsc --project ./tsconfig.json",
+        "simple": "cp -r js example/simple_demo/ && cd example/simple_demo/ && ./fixpaths.sh",
+        "coin": "cp -r js example/Coinflip/",
         "clean": "rm -r js/*"
     },
     "author": "Kimiru_Laeli",
