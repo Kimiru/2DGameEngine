@@ -561,7 +561,6 @@ export class GameObject {
 
     position: Vector = new Vector()
     zIndex: number = 0
-    positionRenderOffset: Vector = new Vector()
     #rotation: number = 0
     scale: Vector = new Vector(1, 1)
     bake: number[] = null
@@ -760,17 +759,21 @@ export class GameObject {
 
         else {
 
-            ctx.translate(this.position.x + this.positionRenderOffset.x, this.position.y + this.positionRenderOffset.y)
+            ctx.translate(this.position.x, this.position.y)
 
             if (this.rotation !== 0)
                 ctx.rotate(this.#rotation)
 
             if (!this.scale.equalS(1, 1))
-                ctx.scale(this.scale.x + this.positionRenderOffset.x, this.scale.y + this.positionRenderOffset.y)
+                ctx.scale(this.scale.x, this.scale.y)
 
         }
 
-        if (this.drawEnabled) this.draw(ctx)
+        if (this.drawEnabled) {
+
+            this.draw(ctx)
+
+        }
 
         if (this.childrenDrawEnabled)
             for (let child of this.children)
@@ -889,8 +892,8 @@ export class GameObject {
         let sin = Math.sin(this.#rotation)
         let sx = this.scale.x
         let sy = this.scale.y
-        let x = this.position.x + this.positionRenderOffset.x
-        let y = this.position.y + this.positionRenderOffset.y
+        let x = this.position.x
+        let y = this.position.y
 
         this.bake = [
             cos * sx,

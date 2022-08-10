@@ -5,6 +5,7 @@ window.Network = Network
 window.NGO = NetworkGameObject
 
 let engine = new GameEngine({ width: 600, height: 400 })
+window.e = engine
 
 document.body.appendChild(engine.canvas)
 
