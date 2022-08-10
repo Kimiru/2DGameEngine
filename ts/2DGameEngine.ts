@@ -242,7 +242,12 @@ export class GameEngine {
         if (this.#currentScene) {
 
             this.#currentScene.executeUpdate(this.#dt)
+            this.#currentScene.executePhysics(this.#dt)
             this.#currentScene.executeDraw(this.ctx)
+
+            if (window.Peer)
+                if (NetworkGameObject.hasPendingUpdates())
+                    NetworkGameObject.flushPendingUpdates()
 
         }
 
@@ -257,9 +262,17 @@ export class GameEngine {
 }
 
 /**
- * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering
+ * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering.
+ * GameScene id is not used for scene unicity but for scene sorting regarding Network.
+ * If you need multiple instance of the same scene, make sure ids are different but deterministic.
+ * The deteministic side is needed when working with the Network
+ * It is recommended to instanciate all your scene at the beginning if possible
  */
 export class GameScene {
+
+    static list: Map<string, GameScene> = new Map()
+
+    id: string = 'GameScene'
 
     tags: Map<string, GameObject[]> = new Map()
 
@@ -274,6 +287,8 @@ export class GameScene {
 
     }
 
+    store(): void { GameScene.list.set(this.id, this) }
+
     /**
      * Update the scene and its child
      * Is called by the GameEngine to update the scene
@@ -287,7 +302,7 @@ export class GameScene {
 
         for (let child of [...this.children])
             if (child instanceof GameObject)
-                child.update(dt)
+                child.executeUpdate(dt)
 
     }
 
@@ -297,7 +312,7 @@ export class GameScene {
 
         for (let child of [...this.children])
             if (child instanceof GameObject)
-                child.update(dt)
+                child.executePhysics(dt)
 
     }
 
@@ -720,7 +735,7 @@ export class GameObject {
 
     executePhysics(dt: number) {
 
-        if (this.executePhysics) this.physics(dt)
+        if (this.physicsEnabled) this.physics(dt)
 
         if (this.childrenPhysicsEnabled)
             for (let child of [...this.children])
@@ -1646,6 +1661,10 @@ export function loadImages(images: { name: string, src: string }[], incrementCal
         bank.set(image.name, img)
 
     }
+
+    if (images.length === 0)
+        finishedCallback()
+
     return bank
 }
 
@@ -1813,7 +1832,6 @@ export class Rectangle extends Polygon {
     draw(ctx: CanvasRenderingContext2D): boolean {
 
         if (this.display) {
-
 
             ctx.save()
             ctx.scale(1 / this.w, 1 / this.h)
@@ -2625,24 +2643,24 @@ function* range(min: number, max: number = null, step: number = 1) {
 
 }
 
-enum NetworkEvents {
+class NetworkEvents {
 
-    PEER_OPENED, // Id has been obtained
-    PEER_CONNECTION, // A user is connecting to you
-    PEER_CLOSED, // When peer is destroyed
-    PEER_DISCONNECT, // Disconnected from signaling server
-    PEER_ERROR, // Fatal errors, moslty
+    static PEER_OPENED = 0 // id has been obtained
+    static PEER_CONNECTION = 1 // A user is connecting to you
+    static PEER_CLOSED = 2 // When peer is destroyed
+    static PEER_DISCONNECT = 3 // Disconnected from signaling server
+    static PEER_ERROR = 4 // Fatal errors, moslty
 
-    HOST_P2P_OPENED,
-    HOST_P2P_CLOSED,
-    HOST_P2P_RECEIVED_DATA,
+    static HOST_P2P_OPENED = 5
+    static HOST_P2P_CLOSED = 6
+    static HOST_P2P_RECEIVED_DATA = 7
 
-    CLIENT_P2P_OPENED,
-    CLIENT_P2P_CLOSED,
-    CLIENT_P2P_RECEIVED_DATA,
+    static CLIENT_P2P_OPENED = 8
+    static CLIENT_P2P_CLOSED = 9
+    static CLIENT_P2P_RECEIVED_DATA = 10
 
-    HOSTING_START,
-    HOSTING_END,
+    static HOSTING_START = 11
+    static HOSTING_END = 12
 
 }
 
@@ -2658,7 +2676,6 @@ export class Network {
     static id: string = null
     static isHosting: boolean = false
     static maxClient: number = 15
-    static linkedEngine: GameEngine = null
 
     static acceptConnections: boolean = true
     static useWhitelist: boolean = true
@@ -2722,7 +2739,7 @@ export class Network {
 
             this.connections.set(networkConnection.id, networkConnection)
 
-            for (let callback of Network.getCallbacks(NetworkEvents.PEER_OPENED))
+            for (let callback of Network.getCallbacks(NetworkEvents.PEER_CONNECTION))
                 callback.call(Network, networkConnection)
         })
 
@@ -2775,8 +2792,8 @@ export class Network {
 
     /**
      * Disable hosting, if any connection is opened at time, 
-     * uses abortIfConnections to determined if those connections should be closed and the operation should proceed
-     * Returns the new state of isHosting
+     * uses abortIfConnections to determined if those connections should be closed and the operation should proceed.
+     * Returns the new state of isHosting.
      * 
      * @param {boolean} abortIfConnections 
      * @returns {boolean} 
@@ -2797,25 +2814,19 @@ export class Network {
 
     /**
      * Tries to connect to a given peer.
-     * will throw an error if not connected to the signaling server or currently hosting
-     * Will automaticaly store the connectino into Network.connections
+     * will throw an error if not connected to the signaling server or currently hosting.
+     * Will automaticaly store the connectino into Network.connections.
+     * Will throw an error if you are already connected to a peer.
      * 
      * @param {string} id 
      * @returns {NetworkConnection}
      */
     static connectTo(id: string): NetworkConnection {
 
-        if (!Network.peer) {
-
-            throw `You can't connect to somebody without starting the Network and being connected to the signaling server`
-
-        }
-
-        if (Network.isHosting) {
-
-            throw `You can't connect to somebody while hosting`
-
-        }
+        if (id === this.id) throw `You can't connect to yourself`
+        if (!Network.peer) throw `You can't connect to somebody without starting the Network and being connected to the signaling server`
+        if (Network.isHosting) throw `You can't connect to somebody while hosting`
+        if (Network.hasConnections()) throw `You can only connect to one peer at a time`
 
         let networkConnection = new NetworkConnection(Network.peer.connect(id), false)
 
@@ -2889,7 +2900,7 @@ export class Network {
      * @param {NetworkEvents} event 
      * @param callback 
      */
-    static addCallback(event: NetworkEvents, callback: (data: any) => void): void {
+    static on(event: NetworkEvents, callback: (data: any) => void): void {
 
         if (!Network.callbacks.has(event))
             Network.callbacks.set(event, [])
@@ -2963,33 +2974,6 @@ export class Network {
 
     }
 
-    static setEngine(engine: GameEngine) {
-
-        Network.linkedEngine = engine
-
-    }
-
-}
-
-export class NetworkGameObject extends GameObject {
-
-    isDummy: boolean
-    sync: boolean = false
-
-    constructor(isDummy: boolean = false) {
-
-        super()
-
-        this.isDummy = true
-
-    }
-
-    executeUpdate(dt: number): void {
-
-        if (!this.isDummy) super.executeUpdate(dt)
-
-    }
-
 }
 
 class NetworkConnection {
@@ -3012,7 +2996,7 @@ class NetworkConnection {
 
     }
 
-    #timeout() {
+    #timeout(): void {
 
         if (this.timer.greaterThan(6000)) {
 
@@ -3026,7 +3010,7 @@ class NetworkConnection {
 
     }
 
-    #open() {
+    #open(): void {
 
         console.log(`connection opened with ${this.id}`)
 
@@ -3041,7 +3025,7 @@ class NetworkConnection {
 
             } else {
 
-                for (let callback of Network.callbacks.get(NetworkEvents.HOST_P2P_OPENED))
+                for (let callback of Network.getCallbacks(NetworkEvents.HOST_P2P_OPENED))
                     callback.call(this)
 
             }
@@ -3049,23 +3033,25 @@ class NetworkConnection {
 
         } else {
 
-            for (let callback of Network.callbacks.get(NetworkEvents.CLIENT_P2P_OPENED))
+            for (let callback of Network.getCallbacks(NetworkEvents.CLIENT_P2P_OPENED))
                 callback.call(this)
 
         }
 
     }
 
-    #close() {
+    #close(): void {
+
+        console.log(`connection closed with ${this.id}`)
 
         if (this.receiver) {
 
-            for (let callback of Network.callbacks.get(NetworkEvents.HOST_P2P_CLOSED))
+            for (let callback of Network.getCallbacks(NetworkEvents.HOST_P2P_CLOSED))
                 callback.call(this)
 
         } else {
 
-            for (let callback of Network.callbacks.get(NetworkEvents.CLIENT_P2P_CLOSED))
+            for (let callback of Network.getCallbacks(NetworkEvents.CLIENT_P2P_CLOSED))
                 callback.call(this)
 
         }
@@ -3074,21 +3060,25 @@ class NetworkConnection {
 
     }
 
-    #data(data: any) {
+    #data(data: any): void {
 
         this.timer.reset()
 
-        if (data === 'Network$CLOSE') {
+        if (data === 'Network$CLOSE')
             this.cleanclose()
-        } else {
+
+        else if (data === 'Network$IAMHERE')
+            return
+
+        else {
             if (this.receiver) {
 
-                for (let callback of Network.callbacks.get(NetworkEvents.HOST_P2P_RECEIVED_DATA))
+                for (let callback of Network.getCallbacks(NetworkEvents.HOST_P2P_RECEIVED_DATA))
                     callback.call(this, data)
 
             } else {
 
-                for (let callback of Network.callbacks.get(NetworkEvents.CLIENT_P2P_RECEIVED_DATA))
+                for (let callback of Network.getCallbacks(NetworkEvents.CLIENT_P2P_RECEIVED_DATA))
                     callback.call(this, data)
 
             }
@@ -3131,6 +3121,376 @@ class NetworkConnection {
     }
 
 }
+
+export class NetworkGameObject extends GameObject {
+
+    static list: Map<string, Map<number, NetworkGameObject>> = new Map()
+    static inherited: Map<string, new () => NetworkGameObject> = new Map()
+    static pendingUpdates: any[] = []
+
+    static inherit() { NetworkGameObject.inherited.set(this.name, this) }
+    static { this.inherit() }
+
+    static build(instruction: { data: any, proto: string }): NetworkGameObject {
+
+        let object = new (NetworkGameObject.inherited.get(instruction.proto))()
+
+        object.owner = instruction.data.owner
+        object.secID = instruction.data.id
+        object.source(instruction.data)
+
+        return object
+
+    }
+
+    static register(object: NetworkGameObject, owner: string, id: number) {
+
+        if (!NetworkGameObject.list.has(owner))
+            NetworkGameObject.list.set(owner, new Map())
+
+        NetworkGameObject.list.get(owner).set(id, object)
+
+    }
+
+    static getRegistered(owner: string): NetworkGameObject[] {
+
+        return [...(NetworkGameObject.list.get(owner)?.values() ?? [])]
+
+    }
+
+    static getRegisteredObject(owner: string, id: number): NetworkGameObject {
+
+        if (!NetworkGameObject.isRegistered(owner, id)) return null
+
+        return NetworkGameObject.list.get(owner).get(id)
+
+    }
+
+    static isRegistered(owner: string, id: number): boolean {
+
+        return NetworkGameObject.list.has(owner) && NetworkGameObject.list.get(owner).has(id)
+
+    }
+
+    static flushPendingUpdates(): void {
+
+        Network.sendToAll({ event: 'Network$updates', data: NetworkGameObject.pendingUpdates })
+
+        NetworkGameObject.pendingUpdates = []
+
+    }
+
+    static hasPendingUpdates(): boolean { return this.pendingUpdates.length !== 0 }
+
+    secID: number = null
+    synced: boolean = false
+    owner: string = null
+
+    constructor() {
+
+        super()
+
+    }
+
+    source(data: any): void { }
+
+    sync(): void {
+
+        if (!window.Peer) return
+
+        if (!this.synced) {
+
+            this.synced = true
+            this.owner = Network.id
+            this.secID = this.id
+
+            NetworkGameObject.register(this, Network.id, this.id)
+
+        }
+
+        if (this.owner !== Network.id) return
+
+        let parent = this.parent as NetworkGameObject
+
+        let message = {
+            event: 'Network$newobject',
+            data: {
+                data: badclone(this),
+                proto: this.constructor.name,
+                owner: Network.id,
+                scene: this.scene?.id,
+                parent: {
+                    owner: parent?.owner,
+                    id: parent?.secID
+                }
+            }
+        }
+
+        Network.sendToAll(message)
+
+    }
+
+    sendUpdate(data): void {
+
+        let message = { owner: this.owner, id: this.secID, data }
+
+        NetworkGameObject.pendingUpdates.push(message)
+
+    }
+
+    recvUpdate(data): void { }
+
+    syncMoveToObject(owner: string, id: number) {
+
+        NetworkGameObject.getRegisteredObject(owner, id).add(this)
+
+        let message = {
+            move: true, owner: this.owner, id: this.secID, data: {
+                scene: undefined,
+                parent: { owner, id }
+            }
+        }
+
+        NetworkGameObject.pendingUpdates.push(message)
+
+    }
+
+    syncMoveToScene(scene: string) {
+
+        GameScene.list.get(scene).add(this)
+
+        let message = {
+            move: true, owner: this.owner, id: this.secID, data: {
+                scene,
+                parent: {}
+            }
+        }
+
+        NetworkGameObject.pendingUpdates.push(message)
+
+    }
+
+    syncKill(): void {
+
+        this.kill()
+
+        let message = {
+            kill: true, owner: this.owner, id: this.secID
+        }
+
+        NetworkGameObject.pendingUpdates.push(message)
+
+        NetworkGameObject.list.get(this.owner).delete(this.secID)
+
+    }
+
+}
+
+{ // Auto NetworkGameObject Management
+
+    function moveObjectTo(object: NetworkGameObject, scene: string, parent: any) {
+
+        if (scene) {
+
+            if (!GameScene.list.has(scene))
+                throw `Missing stored scene with id ${scene}`
+
+            GameScene.list.get(scene).add(object)
+
+        } else {
+
+            if (!NetworkGameObject.isRegistered(parent.owner, parent.id)) throw `Missing move target for object ${object.owner}:${object.secID}`
+
+            NetworkGameObject.getRegisteredObject(parent.owner, parent.id).add(object)
+
+        }
+
+    }
+
+    function killObject(owner: string, id: number) {
+
+        if (NetworkGameObject.isRegistered(owner, id)) {
+
+            let object = NetworkGameObject.getRegisteredObject(owner, id)
+
+            object.kill()
+            NetworkGameObject.list.get(owner).delete(object.secID)
+
+        }
+
+    }
+
+    function createObject(message) {
+
+        if (message.event === 'Network$newobject') {
+
+            let { data, owner, scene, parent } = message.data
+
+            if (NetworkGameObject.isRegistered(owner, data.id)) return
+
+            let object = NetworkGameObject.build(message.data)
+            object.source(message.data.data)
+
+            NetworkGameObject.register(object, owner, data.id)
+            moveObjectTo(object, scene, parent)
+
+        }
+
+    }
+
+    function newuser(message) {
+
+        if (message.event === 'Network$newuser') {
+
+            executeSync()
+
+        }
+
+    }
+
+    function executeSync() {
+
+        for (let object of NetworkGameObject.getRegistered(Network.id))
+            object.sync()
+
+    }
+
+    function updates(message) {
+
+        if (message.event === 'Network$updates') {
+
+            let updates = message.data
+
+            for (let update of updates) {
+
+                let object = NetworkGameObject.getRegisteredObject(update.owner, update.id)
+
+                if (object) {
+                    if (update.move) {
+
+                        moveObjectTo(object, update.data.scene, update.data.parent)
+
+                    }
+
+                    else if (update.kill) {
+
+                        killObject(update.owner, update.id)
+
+                    }
+
+                    else object.recvUpdate(update.data)
+                }
+
+            }
+
+        }
+
+    }
+
+    Network.on(NetworkEvents.PEER_OPENED, function (id) {
+
+        let nulls = NetworkGameObject.list.get(null) ?? []
+
+        for (let [key, object] of nulls) {
+
+            object.synced = false
+            object.owner = null
+            object.secID = null
+            object.sync()
+
+        }
+
+        NetworkGameObject.list.delete(null)
+
+    })
+
+    Network.on(NetworkEvents.CLIENT_P2P_OPENED, function () {
+
+        executeSync()
+
+    })
+
+    Network.on(NetworkEvents.HOST_P2P_OPENED, function () {
+
+        executeSync()
+
+        Network.sendToAllExcept(this.id, { event: 'Network$newuser', data: this.id })
+
+    })
+
+    Network.on(NetworkEvents.CLIENT_P2P_CLOSED, function () {
+
+        for (let [owner, objects] of NetworkGameObject.list) {
+
+            if (owner === Network.id) continue
+
+            for (let [id, object] of objects)
+                object.kill()
+
+            NetworkGameObject.list.delete(owner)
+
+        }
+
+    })
+
+    Network.on(NetworkEvents.HOST_P2P_CLOSED, function () {
+
+        Network.sendToAll({ event: 'Network$killuser', data: this.id })
+
+        let objects = NetworkGameObject.getRegistered(this.id)
+
+        for (let object of objects)
+            object.kill()
+
+        NetworkGameObject.list.delete(this.id)
+
+    })
+
+    Network.on(NetworkEvents.CLIENT_P2P_RECEIVED_DATA, function (message: any) {
+
+        if (typeof message !== 'object') return
+
+        createObject(message)
+        newuser(message)
+        updates(message)
+
+    })
+
+    Network.on(NetworkEvents.HOST_P2P_RECEIVED_DATA, function (message: any) {
+
+        if (typeof message !== 'object') return
+
+        Network.sendToAllExcept(this.id, message)
+
+        createObject(message)
+        updates(message)
+
+    })
+
+}
+
+
+
+const getCircularReplacer = () => {
+
+    const seen = new WeakSet()
+
+    return (key, value) => {
+
+        if (typeof value === 'object' && value !== null) {
+
+            if (seen.has(value)) return
+
+            seen.add(value)
+
+        }
+
+        return value
+    }
+
+}
+
+export function badclone(o: any): any { return JSON.parse(JSON.stringify(o, getCircularReplacer())) }
 
 export {
     Graph,
