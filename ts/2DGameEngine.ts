@@ -11,13 +11,15 @@ const gameEngineConstructorArguments: {
     height: number,
     verticalPixels: number,
     scaling: number,
-    images: HTMLImageElement[]
+    images: { name: string, src: string }[],
+    sounds: { name: string, srcs: string[] }[]
 } = {
     width: innerWidth,
     height: innerHeight,
     verticalPixels: 100,
     scaling: 2,
-    images: []
+    images: [],
+    sounds: []
 }
 
 /**
@@ -45,9 +47,12 @@ export class GameEngine {
     #currentScene: GameScene = null
     #nextScene: GameScene = undefined
     imageBank: Map<string, HTMLImageElement> = new Map()
+    soundBank: Map<string, Sound> = new Map()
     #lock: boolean = true
     #loadedImagesCount: number = 0
     #imageToLoadCount: number = 0
+    #loadedSoundCount: number = 0
+    #soundToLoadCount: number = 0
 
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
@@ -65,6 +70,14 @@ export class GameEngine {
             vector.mult(sc).sub(half)
             vector.y *= -1
 
+            if (this.#currentScene && this.#currentScene.camera) {
+
+                let worldTransformList = this.#currentScene.camera.getWorldTransformList()
+
+                worldTransformList.forEach(func => func(vector))
+
+            }
+
             return vector
 
         })
@@ -73,11 +86,18 @@ export class GameEngine {
 
         this.resize(args.width, args.height, args.scaling, args.verticalPixels)
         this.#imageToLoadCount = args.images.length
-        this.imageBank = loadImages(args.images, (n: number) => {
-            this.#loadedImagesCount = n
-        }, () => {
-            this.#lock = false
-        })
+        this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0)
+        this.imageBank = loadImages(
+            args.images,
+            (n: number) => { this.#loadedImagesCount = n },
+            () => {
+                this.soundBank = loadSounds(
+                    args.sounds,
+                    (n: number) => { this.#loadedSoundCount = n },
+                    () => { this.#lock = false }
+                )
+            }
+        )
 
     }
 
@@ -89,6 +109,8 @@ export class GameEngine {
     get usableScale(): Vector { return new Vector(this.usableWidth, this.usableHeight) }
 
     get dt(): number { return this.#dt }
+
+    get scene(): GameScene { return this.#currentScene }
 
     /**
      * update the size of both canvas
@@ -215,12 +237,15 @@ export class GameEngine {
 
         if (this.#lock) {
 
+            let value = this.#loadedImagesCount + this.#loadedSoundCount
+            let tot = this.#imageToLoadCount + this.#soundToLoadCount
+
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
 
             this.ctx.save()
 
             this.ctx.fillStyle = 'red'
-            this.ctx.fillRect(0.1 * this.trueWidth, 0.45 * this.trueHeight, 0.8 * this.trueWidth * (this.#loadedImagesCount / this.#imageToLoadCount), 0.1 * this.trueHeight)
+            this.ctx.fillRect(0.1 * this.trueWidth, 0.45 * this.trueHeight, 0.8 * this.trueWidth * (value / tot), 0.1 * this.trueHeight)
 
             this.ctx.restore()
 
@@ -252,6 +277,8 @@ export class GameEngine {
         }
 
         this.ctx.restore()
+
+        this.input.mouseLoop()
 
         this.#switchScene()
 
@@ -337,7 +364,7 @@ export class GameScene {
 
                 ctx.translate(-wpos.x, -wpos.y)
                 ctx.rotate(-wrot)
-                ctx.scale(-1 / this.camera.scale.x, -1 / this.camera.scale.y)
+                ctx.scale(1 / this.camera.scale.x, 1 / this.camera.scale.y)
 
             }
 
@@ -558,6 +585,7 @@ export class GameObject {
     nbvc = new Map()
     parent: GameObject = null
     #scene: GameScene = null
+    #drawBeforeChild: boolean = true
 
     position: Vector = new Vector()
     zIndex: number = 0
@@ -769,16 +797,14 @@ export class GameObject {
 
         }
 
-        if (this.drawEnabled) {
-
-            this.draw(ctx)
-
-        }
+        if (this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
 
         if (this.childrenDrawEnabled)
             for (let child of this.children)
                 if (child instanceof GameObject)
                     child.executeDraw(ctx)
+
+        if (!this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
 
         ctx.restore()
 
@@ -832,6 +858,11 @@ export class GameObject {
     }
 
     /**
+     * Postpone the drawing of the object to after its children drawing
+     */
+    drawAfterChildren(): void { this.#drawBeforeChild = false }
+
+    /**
      * Return the world position of this object, thus taking into account all parent object
      * 
      * @returns {Vector}
@@ -880,6 +911,46 @@ export class GameObject {
         }
 
         return ((rotation % PI2) + PI2) % PI2
+
+    }
+
+    getWorldTransformList(): ((vec: Vector) => void)[] {
+
+        let list: ((vec: Vector) => void)[] = []
+
+        let currentObject: GameObject = this
+
+        while (currentObject) {
+
+            if (!currentObject.scale.equalS(1, 1)) {
+
+                let scale = currentObject.scale.clone()
+
+                list.push((vec: Vector) => { vec.mult(scale) })
+
+            }
+
+            if (currentObject.rotation) {
+
+                let rotation = currentObject.rotation
+
+                list.push((vec: Vector) => { vec.rotate(rotation) })
+
+            }
+
+            if (!currentObject.position.nil()) {
+
+                let position = currentObject.position.clone()
+
+                list.push((vec: Vector) => { vec.add(position) })
+
+            }
+
+            currentObject = currentObject.parent
+
+        }
+
+        return list
 
     }
 
@@ -962,7 +1033,7 @@ export class Timer {
      */
     lessThan(amount: number): boolean {
 
-        return Date.now() < amount;
+        return this.getTime() < amount;
 
     }
 
@@ -973,12 +1044,13 @@ export class Timer {
  */
 export class Input {
 
+    #codeToChar: Map<string, string> = new Map()
     #keysDown: Set<string> = new Set()
     #keysOnce: Set<string> = new Set()
     #mouseButtons: [boolean, boolean, boolean] = [false, false, false]
     #mousePosition: Vector = new Vector()
     #mouseIn: boolean = false
-    #mouseClickTimers: [Timer, Timer, Timer] = [new Timer(201), new Timer(201), new Timer(201)]
+    #mouseClick: [boolean, boolean, boolean] = [false, false, false]
     positionAdapter = function (vector: Vector) { return vector }
 
     constructor() {
@@ -987,6 +1059,8 @@ export class Input {
 
             this.#keysDown.add(evt.code)
             this.#keysOnce.add(evt.code)
+
+            this.#codeToChar.set(evt.code, evt.key)
 
         })
 
@@ -1017,9 +1091,9 @@ export class Input {
             left: this.#mouseButtons[0],
             middle: this.#mouseButtons[1],
             right: this.#mouseButtons[2],
-            leftClick: this.#mouseClickTimers[0].lessThan(16),
-            middleClick: this.#mouseClickTimers[1].lessThan(16),
-            rightClick: this.#mouseClickTimers[2].lessThan(16),
+            leftClick: this.#mouseClick[0],
+            middleClick: this.#mouseClick[1],
+            rightClick: this.#mouseClick[2],
             position: this.#mousePosition.clone(),
             in: this.#mouseIn
         }
@@ -1056,6 +1130,14 @@ export class Input {
     }
 
     /**
+     * Returns the char associated to a code that has already been pressed
+     * 
+     * @param {string} code 
+     * @returns {string}
+     */
+    codeToChar(code: string): string { return this.#codeToChar.get(code) }
+
+    /**
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
      * 
      * @param {HTMLElement} element 
@@ -1075,6 +1157,13 @@ export class Input {
 
     }
 
+    mouseLoop() {
+
+        for (let index = 0; index < 3; index++)
+            this.#mouseClick[index] = false
+
+    }
+
     /**
      * Handle the mouse related operations
      * 
@@ -1089,9 +1178,10 @@ export class Input {
         this.#mouseIn = this.#mousePosition.x > 0 && this.#mousePosition.x < 1 &&
             this.#mousePosition.y > 0 && this.#mousePosition.y < 1
 
+
         for (let index = 0; index < 3; index++)
-            if (this.#mouseButtons[index] == false && prev[index])
-                this.#mouseClickTimers[index].reset()
+            if (!this.#mouseButtons[index] && prev[index])
+                this.#mouseClick[index] = true
 
     }
 
@@ -1222,12 +1312,44 @@ export class FPSCounter extends GameObject {
 
         ctx.font = `${this.fontSize}px sans-serif`
         ctx.fillStyle = 'red'
+        ctx.textAlign = 'left'
         ctx.textBaseline = 'top'
         ctx.fillText(this.fps.toString(), this.fontSize / 2, this.fontSize / 2)
 
         ctx.restore()
 
         return true
+
+    }
+
+}
+
+export class MouseCursor extends GameObject {
+
+    constructor() {
+
+        super()
+
+    }
+
+    update(dt: number): void {
+
+        let mouse = this.scene.engine.input.mouse
+
+        this.position.copy(mouse.position)
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.fillStyle = 'red'
+
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.lineTo(0, -5)
+        ctx.lineTo(4, -4)
+        ctx.lineTo(0, 0)
+        ctx.fill()
 
     }
 
@@ -1632,6 +1754,30 @@ export class Vector {
 
 }
 
+export class PositionIntegrator {
+
+    previousPosition: Vector = new Vector()
+    position: Vector = new Vector()
+    velocity: Vector = new Vector()
+    acceleration: Vector = new Vector()
+
+    constructor() { }
+
+    integrate(t: number) {
+
+        let tt = t * t
+
+        this.previousPosition.copy(this.position)
+        this.position
+            .add(this.velocity.clone().multS(t))
+            .add(this.acceleration.clone().multS(tt * 1 / 2))
+
+        this.velocity.add(this.acceleration.clone().multS(t))
+
+    }
+
+}
+
 /**
  * loads multiple images and use callbacks for progression checks and at the end
  * 
@@ -1671,6 +1817,79 @@ export function loadImages(images: { name: string, src: string }[], incrementCal
     return bank
 }
 
+class Sound {
+
+    sounds: HTMLAudioElement[] = []
+    volume: number = 1
+    currentSound: HTMLAudioElement = null
+
+    constructor(sounds: HTMLAudioElement[]) {
+
+        this.sounds = sounds
+
+    }
+
+    play(): void {
+
+        let sound = this.sounds[Math.floor(Math.random() * this.sounds.length)]
+        sound.volume = this.volume
+
+        if (this.currentSound)
+            this.currentSound.pause()
+
+        this.currentSound = sound
+        this.currentSound.currentTime = 0
+        this.currentSound.play()
+
+    }
+
+    setVolume(volume: number) { this.volume = volume }
+
+}
+
+export function loadSounds(sounds: { name: string, srcs: string[] }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound> {
+
+    let bank: Map<string, Sound> = new Map()
+    let completed: { n: number } = { n: 0 }
+    let toComplete: { n: number } = { n: 0 }
+
+    for (let sound of sounds) {
+
+        let snds = []
+
+        for (let src of sound.srcs) {
+
+            toComplete.n++
+
+            let snd = document.createElement('audio')
+            snd.src = src
+
+            snd.onload = snd.onerror = function () {
+
+                completed.n++
+
+                incrementCallback(completed.n)
+
+                if (completed.n == toComplete.n)
+                    finishedCallback()
+
+            }
+
+            snds.push(snd)
+
+        }
+
+        bank.set(sound.name, new Sound(snds))
+
+    }
+
+    if (completed.n == toComplete.n)
+        finishedCallback()
+
+    return bank
+
+}
+
 
 /**
  * The Polygon represent a N point polygon
@@ -1694,8 +1913,20 @@ export class Polygon extends GameObject {
 
     }
 
-    get points(): Vector[] { return this.#points }
+    get points(): Vector[] { return [...this.#points] }
     set points(pts: Vector[]) { this.#points = pts }
+
+    get worldPoints(): Vector[] {
+
+        let worldTransformList = this.getWorldTransformList()
+
+        let points = this.points
+
+        worldTransformList.forEach(points.forEach.bind(points))
+
+        return points
+
+    }
 
     /**
      * Get the list of segments between the points in order
@@ -1707,10 +1938,28 @@ export class Polygon extends GameObject {
 
         let segments = []
 
-        if (this.points.length < 2) return segments
+        let points = this.points
 
-        for (let index = 0; index < this.points.length; index++) {
-            segments.push(new Segment(this.points[index].clone(), this.points[(index + 1) % this.points.length].clone()))
+        if (points.length < 2) return segments
+
+        for (let index = 0; index < points.length; index++) {
+            segments.push(new Segment(points[index].clone(), points[(index + 1) % points.length].clone()))
+        }
+
+        return segments
+
+    }
+
+    getWorldSegment(): Segment[] {
+
+        let segments = []
+
+        let points = this.worldPoints
+
+        if (points.length < 2) return segments
+
+        for (let index = 0; index < points.length; index++) {
+            segments.push(new Segment(points[index].clone(), points[(index + 1) % points.length].clone()))
         }
 
         return segments
@@ -1740,6 +1989,34 @@ export class Polygon extends GameObject {
         else ctx.stroke()
 
         return true
+
+    }
+
+    containsVector(vector: Vector): boolean {
+
+        let segments = this.getSegments()
+
+        let count = 0
+
+        let ray = new Ray(vector, new Vector(1, 0))
+
+        for (let segment of segments) if (ray.intersect(segment)) count++
+
+        return (count % 2) === 1
+
+    }
+
+    containsWorldVector(vector: Vector): boolean {
+
+        let segments = this.getWorldSegment()
+
+        let count = 0
+
+        let ray = new Ray(vector, new Vector(1, 0))
+
+        for (let segment of segments) if (ray.intersect(segment)) count++
+
+        return (count % 2) === 1
 
     }
 
@@ -1788,6 +2065,18 @@ export class Rectangle extends Polygon {
     }
 
     set points(vecs: Vector[]) { }
+
+    get worldPoints(): Vector[] {
+
+        let worldTransformList = this.getWorldTransformList()
+
+        let points = [new Vector(-.5, .5), new Vector(-.5, -.5), new Vector(.5, -.5), new Vector(.5, .5)]
+
+        worldTransformList.forEach(points.forEach.bind(points))
+
+        return points
+
+    }
 
     get x(): number { return this.position.x }
     set x(n: number) { this.position.x = n }
@@ -2110,6 +2399,247 @@ export class Drawable extends GameObject {
         ctx.restore()
 
         return true
+
+    }
+
+}
+
+export class TextBox extends GameObject {
+
+    text: string = ''
+    active: boolean = false
+    rect: Rectangle = new Rectangle(0, 0, 1, 1)
+
+    fontSize: number
+    font: string
+    width: number
+    color: string = 'white'
+    onSound: Sound
+    offSound: Sound
+
+    placeholder: string = ''
+
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: Sound = null, offSound: Sound = null) {
+
+        super()
+
+        this.fontSize = fontSize
+        this.font = font
+        this.width = width
+        this.color = color
+        this.onSound = onSound
+        this.offSound = offSound
+
+
+        this.rect.scale.set(width + 4, fontSize + 4)
+
+        this.add(this.rect)
+
+        window.addEventListener('keydown', (event) => {
+
+            if (this.active) {
+
+
+                if (event.key.length === 1)
+                    this.text += event.key
+                if (event.key === 'Backspace')
+                    this.text = this.text.slice(0, -1)
+                if (event.key === 'Enter') {
+                    this.rect.displayColor = 'red'
+                    this.active = false
+
+                    if (this.offSound)
+                        this.offSound.play()
+                }
+            }
+
+        })
+
+        this.drawAfterChildren()
+
+    }
+
+    update(dt: number): void {
+
+        let mouse = this.engine.input.mouse
+
+        if (mouse.leftClick) {
+
+            if (this.rect.containsWorldVector(mouse.position)) {
+
+                if (!this.active) {
+
+                    this.rect.displayColor = 'blue'
+                    this.active = true
+
+                    if (this.onSound)
+                        this.onSound.play()
+                }
+
+            }
+
+            else {
+
+                if (this.active) {
+
+                    this.rect.displayColor = 'red'
+                    this.active = false
+
+                    if (this.offSound)
+                        this.offSound.play()
+
+                }
+
+            }
+
+        }
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        ctx.translate(-this.width / 2, 0)
+        ctx.scale(1, -1)
+        ctx.textAlign = 'left'
+        ctx.textBaseline = 'middle'
+        ctx.font = `${this.fontSize}px ${this.font}`
+        ctx.fillStyle = this.color
+
+        let txt = this.text + (this.active ? '_' : '')
+        if (txt.length === 0) txt = this.placeholder
+
+        ctx.fillText(txt, 0, 0, this.width)
+
+        ctx.restore()
+
+    }
+
+}
+
+export class Button extends GameObject {
+
+
+    text: string = ''
+    #active: Timer = new Timer(0)
+    rect: Rectangle = new Rectangle(0, 0, 1, 1)
+
+    get active(): boolean { return this.#active.lessThan(150) }
+
+    fontSize: number
+    font: string
+    width: number
+    color: string = 'white'
+    onSound: Sound
+
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: Sound = null) {
+
+        super()
+
+        this.fontSize = fontSize
+        this.font = font
+        this.width = width
+        this.color = color
+        this.onSound = onSound
+
+        this.rect.scale.set(width + 4, fontSize + 4)
+
+        this.add(this.rect)
+
+        this.drawAfterChildren()
+
+    }
+
+    update(dt: number): void {
+
+        let mouse = this.engine.input.mouse
+
+        if (mouse.leftClick) {
+
+            if (this.rect.containsWorldVector(mouse.position) && !this.active) {
+
+                this.#active.reset()
+                this.onActive()
+
+            }
+
+        }
+
+        if (this.active) this.rect.displayColor = 'blue'
+        else this.rect.displayColor = 'red'
+
+    }
+
+    onActive() { }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        ctx.scale(1, -1)
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.font = `${this.fontSize}px ${this.font}`
+        ctx.fillStyle = this.color
+
+        ctx.fillText(this.text, 0, 0, this.width)
+
+        ctx.restore()
+
+    }
+
+}
+
+export class Label extends GameObject {
+
+    text: string = ''
+    align: CanvasTextAlign = 'left'
+    fontSize: number = 12
+    font: string = 'sans-serif'
+    color: string = 'white'
+    baseline: CanvasTextBaseline = 'middle'
+    maxWidth: number = 300
+
+    /**
+     * 
+     * @param {string} text 
+     * @param {CanvasTextAlign} align 
+     * @param {number} fontSize 
+     * @param {string} font 
+     * @param {string} color 
+     * @param {CanvasTextBaseline} baseline 
+     * @param {number} maxWidth 
+     */
+    constructor(text: string, align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number,) {
+
+        super()
+
+        this.text = text
+        this.align = align
+        this.fontSize = fontSize
+        this.font = font
+        this.color = color
+        this.baseline = baseline
+        this.maxWidth = maxWidth
+
+        this.drawAfterChildren()
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        ctx.textAlign = this.align
+        ctx.font = `${this.fontSize}px ${this.font}`
+        ctx.textBaseline = this.baseline
+        ctx.fillStyle = this.color
+
+        ctx.scale(1, -1)
+        ctx.fillText(this.text, 0, 0, this.maxWidth)
+
+        ctx.restore()
 
     }
 
@@ -2649,6 +3179,8 @@ function* range(min: number, max: number = null, step: number = 1) {
 class NetworkEvents {
 
     static PEER_OPENED = 0 // id has been obtained
+    static UNAVAILABLE_ID = 13 // id could not be obtained
+    static INVALID_ID = 14 // id is invalid
     static PEER_CONNECTION = 1 // A user is connecting to you
     static PEER_CLOSED = 2 // When peer is destroyed
     static PEER_DISCONNECT = 3 // Disconnected from signaling server
@@ -2755,7 +3287,15 @@ export class Network {
 
         peer.on('error', (error) => {
 
-            for (let callback of Network.getCallbacks(NetworkEvents.PEER_ERROR))
+            if (error.type === 'unavailable-id')
+                for (let callback of Network.getCallbacks(NetworkEvents.UNAVAILABLE_ID))
+                    callback.call(Network)
+
+            else if (error.type === 'invalid-id')
+                for (let callback of Network.getCallbacks(NetworkEvents.INVALID_ID))
+                    callback.call(Network)
+
+            else for (let callback of Network.getCallbacks(NetworkEvents.PEER_ERROR))
                 callback.call(Network, error)
 
         })
@@ -2766,6 +3306,13 @@ export class Network {
                 callback.call(Network)
 
         })
+
+    }
+
+
+    static reconnect(): void {
+
+        if (Network.peer && Network.peer.disconnected) Network.peer.reconnect()
 
     }
 

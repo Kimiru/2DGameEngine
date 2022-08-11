@@ -1,38 +1,48 @@
-import { GameObject, NetworkGameObject, PerlinNoise, Rectangle } from "../js/2DGameEngine.js";
+import { GameObject, NetworkGameObject, PerlinNoise, PositionIntegrator, Rectangle } from "../js/2DGameEngine.js";
 
 export class Player extends NetworkGameObject {
 
     static { this.inherit() }
 
-    loop = 256
+    pi = new PositionIntegrator()
 
-    perlin = new PerlinNoise(Math.floor(Math.random() * 1000), this.loop, this.loop, 1)
+    state = 0
 
-    t = 0
+    static speed = 16 * 3
 
     constructor() {
 
         super()
 
-        this.rect = new Rectangle(0, 0, 10, 10, true, 'red')
+        this.zIndex = 10
+
+        this.addTag('player')
+
+        this.rect = new Rectangle(0, 0, 16, 16, true, 'red')
 
         this.add(this.rect)
 
-        let r = Math.random() * Math.PI * 2
-
-        this.position.set(Math.cos(r), Math.sin(r)).multS(Math.random() * 50)
+        this.sync()
 
     }
 
     update(dt) {
 
-        this.t += dt
-        this.t = this.t % this.loop
+        if (this.state == 0) {
 
-        this.position.set(this.perlin.get(this.t, 0), this.perlin.get(0, this.t))
-        this.position.multS(50)
+            this.pi.velocity.set(0, 0)
 
-        this.sendUpdate(this.position.clone())
+            if (this.engine.input.isDown('KeyW')) this.pi.velocity.addS(0, 1)
+            if (this.engine.input.isDown('KeyS')) this.pi.velocity.addS(0, -1)
+            if (this.engine.input.isDown('KeyD')) this.pi.velocity.addS(1, 0)
+            if (this.engine.input.isDown('KeyA')) this.pi.velocity.addS(- 1, 0)
+
+            if (!this.pi.velocity.nil()) this.pi.velocity.normalize().multS(Player.speed)
+
+        }
+
+        this.pi.integrate(dt)
+        this.position.copy(this.pi.position)
 
     }
 
