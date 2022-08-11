@@ -41,11 +41,15 @@ class LoginButton extends Button {
 
         Network.on(Network.events.UNAVAILABLE_ID, () => {
 
+            this.engine.soundBank.get('wrong').play()
+
             this.scene.getTags('errorLabel')[0].text = 'Non disponible'
 
         })
 
         Network.on(Network.events.INVALID_ID, () => {
+
+            this.engine.soundBank.get('wrong').play()
 
             this.scene.getTags('errorLabel')[0].text = 'Invalide'
 
@@ -68,12 +72,19 @@ class LoginButton extends Button {
 
         if (!this.engine || Network.id) return
 
+        this.engine.soundBank.get('bip').play()
+
         let id = this.scene.getTags('logintextinput')[0].text
 
         let obj = this.scene.getTags('errorLabel')[0]
 
         obj.text = ''
-        if (id.length === 0) return obj.text = 'Pseudo manquant'
+        if (id.length === 0) {
+
+            this.engine.soundBank.get('wrong').play()
+
+            return obj.text = 'Pseudo manquant'
+        }
 
         Network.start(id)
 

@@ -1864,7 +1864,7 @@ export function loadSounds(sounds: { name: string, srcs: string[] }[], increment
             let snd = document.createElement('audio')
             snd.src = src
 
-            snd.onload = snd.onerror = function () {
+            snd.oncanplay = snd.onerror = function () {
 
                 completed.n++
 

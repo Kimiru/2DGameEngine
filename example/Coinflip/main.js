@@ -10,6 +10,12 @@ let engine = new GameEngine({
     verticalPixels: 200,
     images: [
 
+    ],
+    sounds: [
+        { name: 'bip', srcs: ['./sounds/menubip1.wav', './sounds/menubip2.wav', './sounds/menubip3.wav'] },
+        { name: 'hit', srcs: ['./sounds/hit1.wav', './sounds/hit2.wav', './sounds/hit3.wav'] },
+        { name: 'explosion', srcs: ['./sounds/explosion1.wav', './sounds/explosion2.wav', './sounds/explosion3.wav'] },
+        { name: 'wrong', srcs: ['./sounds/wrong.wav'] }
     ]
 })
 window.engine = engine
