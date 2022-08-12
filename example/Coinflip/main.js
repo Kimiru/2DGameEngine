@@ -36,3 +36,14 @@ new CoinFlipScene()
     Network.on(Network.events.PEER_OPENED, (id) => { console.log(`used id ${id}`) })
     Network.useWhitelist = false
 }
+
+
+let volume = .5
+
+if (localStorage.getItem('volume')) {
+
+    volume = localStorage.getItem('volume')
+
+}
+
+engine.soundBank.forEach(sound => sound.setVolume(volume))

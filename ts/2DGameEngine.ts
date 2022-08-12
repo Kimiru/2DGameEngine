@@ -48,7 +48,8 @@ export class GameEngine {
     #nextScene: GameScene = undefined
     imageBank: Map<string, HTMLImageElement> = new Map()
     soundBank: Map<string, Sound> = new Map()
-    #lock: boolean = true
+    #lock1: boolean = true
+    #lock2: boolean = true
     #loadedImagesCount: number = 0
     #imageToLoadCount: number = 0
     #loadedSoundCount: number = 0
@@ -90,13 +91,13 @@ export class GameEngine {
         this.imageBank = loadImages(
             args.images,
             (n: number) => { this.#loadedImagesCount = n },
-            () => {
-                this.soundBank = loadSounds(
-                    args.sounds,
-                    (n: number) => { this.#loadedSoundCount = n },
-                    () => { this.#lock = false }
-                )
-            }
+            () => { this.#lock1 = false }
+        )
+
+        this.soundBank = loadSounds(
+            args.sounds,
+            (n: number) => { this.#loadedSoundCount = n },
+            () => { this.#lock2 = false }
         )
 
     }
@@ -235,7 +236,7 @@ export class GameEngine {
 
         if (!this.#run) return;
 
-        if (this.#lock) {
+        if (this.#lock1 || this.#lock2) {
 
             let value = this.#loadedImagesCount + this.#loadedSoundCount
             let tot = this.#imageToLoadCount + this.#soundToLoadCount

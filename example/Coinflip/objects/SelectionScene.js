@@ -100,6 +100,30 @@ class Host extends Button {
 
 }
 
+class VolumeButton extends Button {
+
+    volume
+
+    constructor(volume, text) {
+
+        super(8, 20, 'dogicapixel', 'white', 'bip')
+        this.text = text
+
+        this.volume = volume
+        this.rect.display = true
+
+    }
+
+    onActive() {
+
+        this.engine?.soundBank.forEach(sound => sound.setVolume(this.volume))
+
+        localStorage.setItem('volume', this.volume)
+
+    }
+
+}
+
 export class SelectionScene extends GameScene {
 
     id = 'SelectionScene'
@@ -156,6 +180,20 @@ export class SelectionScene extends GameScene {
         host.bl = bannedUsers
 
         this.add(host)
+
+        let volume0 = new VolumeButton(0, '0%')
+        let volume25 = new VolumeButton(1 / 27, '25%')
+        let volume50 = new VolumeButton(1 / 9, '50%')
+        let volume75 = new VolumeButton(1 / 3, '75%')
+        let volume100 = new VolumeButton(1, '100%')
+
+        volume0.position.set(-50, -90)
+        volume25.position.set(-25, -90)
+        volume50.position.set(0, -90)
+        volume75.position.set(25, -90)
+        volume100.position.set(50, -90)
+
+        this.add(volume0, volume25, volume50, volume75, volume100)
 
         this.store()
 

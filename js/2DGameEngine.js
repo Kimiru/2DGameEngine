@@ -30,7 +30,8 @@ export class GameEngine {
     #nextScene = undefined;
     imageBank = new Map();
     soundBank = new Map();
-    #lock = true;
+    #lock1 = true;
+    #lock2 = true;
     #loadedImagesCount = 0;
     #imageToLoadCount = 0;
     #loadedSoundCount = 0;
@@ -58,9 +59,8 @@ export class GameEngine {
         this.resize(args.width, args.height, args.scaling, args.verticalPixels);
         this.#imageToLoadCount = args.images.length;
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0);
-        this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => {
-            this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => { this.#lock = false; });
-        });
+        this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => { this.#lock1 = false; });
+        this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => { this.#lock2 = false; });
     }
     get trueWidth() { return this.#trueWidth; }
     get trueHeight() { return this.#trueHeight; }
@@ -155,7 +155,7 @@ export class GameEngine {
     #loop() {
         if (!this.#run)
             return;
-        if (this.#lock) {
+        if (this.#lock1 || this.#lock2) {
             let value = this.#loadedImagesCount + this.#loadedSoundCount;
             let tot = this.#imageToLoadCount + this.#soundToLoadCount;
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight);
