@@ -48,12 +48,14 @@ export class GameEngine {
     #nextScene: GameScene = undefined
     imageBank: Map<string, HTMLImageElement> = new Map()
     soundBank: Map<string, Sound> = new Map()
+    #lock0: boolean = true
     #lock1: boolean = true
     #lock2: boolean = true
     #loadedImagesCount: number = 0
     #imageToLoadCount: number = 0
     #loadedSoundCount: number = 0
     #soundToLoadCount: number = 0
+    #ressourcesLoadedCallbacks: (() => void)[] = []
 
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
@@ -91,13 +93,36 @@ export class GameEngine {
         this.imageBank = loadImages(
             args.images,
             (n: number) => { this.#loadedImagesCount = n },
-            () => { this.#lock1 = false }
+            () => {
+
+                this.#lock1 = false
+
+                if (!this.#lock1 && !this.#lock2) {
+
+                    this.#lock0 = false
+
+                    this.#ressourcesLoadedCallbacks.forEach(func => func.call(this))
+
+                }
+
+            }
         )
 
         this.soundBank = loadSounds(
             args.sounds,
             (n: number) => { this.#loadedSoundCount = n },
-            () => { this.#lock2 = false }
+            () => {
+
+                this.#lock2 = false
+
+                if (!this.#lock1 && !this.#lock2) {
+
+                    this.#lock0 = false
+
+                    this.#ressourcesLoadedCallbacks.forEach(func => func.call(this))
+
+                }
+            }
         )
 
     }
@@ -236,7 +261,7 @@ export class GameEngine {
 
         if (!this.#run) return;
 
-        if (this.#lock1 || this.#lock2) {
+        if (this.#lock0) {
 
             let value = this.#loadedImagesCount + this.#loadedSoundCount
             let tot = this.#imageToLoadCount + this.#soundToLoadCount
@@ -285,6 +310,14 @@ export class GameEngine {
 
         requestAnimationFrame(this.#loop.bind(this));
 
+    }
+
+    onResourcesLoaded(callback) {
+        if (this.#lock0) {
+
+            this.#ressourcesLoadedCallbacks.push(callback)
+
+        } else callback.call(this)
     }
 
 }
@@ -3192,13 +3225,15 @@ export class PerlinNoise {
 
 }
 
-class TextureMapper {
+export class TextureMapper {
 
     static map(image: HTMLImageElement) {
         let canvas = document.createElement('canvas')
         canvas.width = image.width
         canvas.height = image.height
         let ctx = canvas.getContext('2d')
+        ctx.fillRect(0, 0, image.width, image.height)
+
         console.log(ctx.getImageData(0, 0, canvas.width, canvas.height))
     }
 
@@ -4110,5 +4145,4 @@ export function badclone(o: any): any { return JSON.parse(JSON.stringify(o, getC
 export {
     Graph,
     Path,
-    TextureMapper,
 }

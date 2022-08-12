@@ -30,12 +30,14 @@ export class GameEngine {
     #nextScene = undefined;
     imageBank = new Map();
     soundBank = new Map();
+    #lock0 = true;
     #lock1 = true;
     #lock2 = true;
     #loadedImagesCount = 0;
     #imageToLoadCount = 0;
     #loadedSoundCount = 0;
     #soundToLoadCount = 0;
+    #ressourcesLoadedCallbacks = [];
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
      *
@@ -59,8 +61,20 @@ export class GameEngine {
         this.resize(args.width, args.height, args.scaling, args.verticalPixels);
         this.#imageToLoadCount = args.images.length;
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0);
-        this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => { this.#lock1 = false; });
-        this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => { this.#lock2 = false; });
+        this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => {
+            this.#lock1 = false;
+            if (!this.#lock1 && !this.#lock2) {
+                this.#lock0 = false;
+                this.#ressourcesLoadedCallbacks.forEach(func => func.call(this));
+            }
+        });
+        this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => {
+            this.#lock2 = false;
+            if (!this.#lock1 && !this.#lock2) {
+                this.#lock0 = false;
+                this.#ressourcesLoadedCallbacks.forEach(func => func.call(this));
+            }
+        });
     }
     get trueWidth() { return this.#trueWidth; }
     get trueHeight() { return this.#trueHeight; }
@@ -155,7 +169,7 @@ export class GameEngine {
     #loop() {
         if (!this.#run)
             return;
-        if (this.#lock1 || this.#lock2) {
+        if (this.#lock0) {
             let value = this.#loadedImagesCount + this.#loadedSoundCount;
             let tot = this.#imageToLoadCount + this.#soundToLoadCount;
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight);
@@ -186,6 +200,13 @@ export class GameEngine {
         this.input.mouseLoop();
         this.#switchScene();
         requestAnimationFrame(this.#loop.bind(this));
+    }
+    onResourcesLoaded(callback) {
+        if (this.#lock0) {
+            this.#ressourcesLoadedCallbacks.push(callback);
+        }
+        else
+            callback.call(this);
     }
 }
 /**
@@ -2208,12 +2229,13 @@ export class PerlinNoise {
         return value;
     }
 }
-class TextureMapper {
+export class TextureMapper {
     static map(image) {
         let canvas = document.createElement('canvas');
         canvas.width = image.width;
         canvas.height = image.height;
         let ctx = canvas.getContext('2d');
+        ctx.fillRect(0, 0, image.width, image.height);
         console.log(ctx.getImageData(0, 0, canvas.width, canvas.height));
     }
 }
@@ -2810,4 +2832,4 @@ const getCircularReplacer = () => {
     };
 };
 export function badclone(o) { return JSON.parse(JSON.stringify(o, getCircularReplacer())); }
-export { Graph, Path, TextureMapper, };
+export { Graph, Path, };
