@@ -3051,7 +3051,7 @@ class Path {
 
 }
 
-export class ImagePrinter {
+export class ImageManipulator {
 
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
@@ -3068,6 +3068,10 @@ export class ImagePrinter {
 
     }
 
+    get width(): number { return this.canvas.width }
+
+    get height(): number { return this.canvas.height }
+
     setPixel(x: number, y: number, color: string) {
 
         this.ctx.fillStyle = color
@@ -3075,9 +3079,39 @@ export class ImagePrinter {
 
     }
 
+    getPixel(x: number, y: number): [number, number, number, number] {
+
+        let data: ImageData = this.ctx.getImageData(x, y, 1, 1)
+
+        return [data.data[0], data.data[1], data.data[2], data.data[3]]
+
+    }
+
     print(): string { return this.canvas.toDataURL('image/png') }
 
+    download(name: string): void {
+
+        let a = document.createElement('a')
+        a.href = this.print()
+        a.download = `${name}_${this.width}x${this.height}.png`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+    }
+
     toString(): string { return this.print() }
+
+    static fromImage(image: HTMLImageElement): ImageManipulator {
+
+        let im = new ImageManipulator(image.width, image.height)
+
+        im.ctx.drawImage(image, 0, 0)
+
+        return im
+
+    }
+
 }
 
 export class PseudoRandom {
@@ -3227,14 +3261,69 @@ export class PerlinNoise {
 
 export class TextureMapper {
 
-    static map(image: HTMLImageElement) {
-        let canvas = document.createElement('canvas')
-        canvas.width = image.width
-        canvas.height = image.height
-        let ctx = canvas.getContext('2d')
-        ctx.fillRect(0, 0, image.width, image.height)
+    static map(model: HTMLImageElement, colorChart: HTMLImageElement, texture: HTMLImageElement): ImageManipulator {
 
-        console.log(ctx.getImageData(0, 0, canvas.width, canvas.height))
+        let modelIM = ImageManipulator.fromImage(model)
+        let colorChartIM = ImageManipulator.fromImage(colorChart)
+        let textureIM = ImageManipulator.fromImage(texture)
+
+
+        let outputIM = new ImageManipulator(model.width, model.height)
+
+        for (let x = 0; x < modelIM.width; x++)
+            for (let y = 0; y < modelIM.height; y++) {
+
+                let modelColor = modelIM.getPixel(x, y)
+
+                if (modelColor[3] == 0) continue
+
+                let pixelLocation = TextureMapper.#findPixelWithColorInImage(colorChartIM, ...modelColor)
+
+                if (!pixelLocation) continue
+
+                let color = textureIM.getPixel(...pixelLocation)
+
+                outputIM.setPixel(x, y, `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`)
+
+            }
+
+        return outputIM
+
+    }
+
+    static #findPixelWithColorInImage(image: ImageManipulator, r: number, g: number, b: number, a: number): [number, number] {
+
+        for (let x = 0; x < image.width; x++)
+            for (let y = 0; y < image.height; y++) {
+
+                let data = image.getPixel(x, y)
+
+                if (data[3] == a && data[0] == r && data[1] == g && data[2] == b)
+                    return [x, y]
+            }
+
+        return null
+    }
+
+    static downloadStandardColorChart(width: number, height: number) {
+
+        if (width < 1 || width > 256 || height < 0 || height > 256) throw `Invalid dimensions`
+
+        let im = new ImageManipulator(width, height)
+
+        for (let r = 0; r < width; r++)
+            for (let g = 0; g < height; g++) {
+
+                let color = `rgb(${255 - r * 256 / width}, ${255 - g * 256 / height}, ${Math.max(r * 256 / width, g * 256 / height)})`
+
+                console.log(r, g, color)
+
+                im.setPixel(r, g, color)
+
+            }
+
+        im.download('colorchart')
+
     }
 
 }

@@ -1,16 +1,21 @@
-import { GameEngine, Network, NetworkGameObject } from './js/2DGameEngine.js'
+import { GameEngine, Network, NetworkGameObject, TextureMapper } from './js/2DGameEngine.js'
 import { CoinFlipScene } from './objects/CoinFlipScene.js'
 import { LogScene } from './objects/LogScene.js'
 import { SelectionScene } from './objects/SelectionScene.js'
 
 window.Network = Network
 window.NGO = NetworkGameObject
+window.TextureMapper = TextureMapper
 
 let engine = new GameEngine({
     width: innerWidth * .97,
     height: innerHeight * .97,
     verticalPixels: 200,
     images: [
+        { name: 'mlp16', src: './images/mlp16.png' },
+        { name: 'colorchart_4_4', src: './images/colorchart_4_4.png' },
+        { name: 'sword_4_4', src: './images/sword_4_4.png' },
+        { name: 'sword_16_16', src: './images/sword_16_16.png' },
 
     ],
     sounds: [
@@ -47,3 +52,14 @@ if (localStorage.getItem('volume')) {
 }
 
 engine.soundBank.forEach(sound => sound.setVolume(volume))
+
+
+
+
+
+
+engine.onResourcesLoaded(() => {
+
+    TextureMapper.map(engine.imageBank.get('sword_16_16'), engine.imageBank.get('colorchart_4_4'), engine.imageBank.get('sword_4_4'))
+
+})
