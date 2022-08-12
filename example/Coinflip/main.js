@@ -1,5 +1,7 @@
 import { GameEngine, Network, NetworkGameObject } from './js/2DGameEngine.js'
+import { CoinFlipScene } from './objects/CoinFlipScene.js'
 import { LogScene } from './objects/LogScene.js'
+import { SelectionScene } from './objects/SelectionScene.js'
 
 window.Network = Network
 window.NGO = NetworkGameObject
@@ -25,6 +27,8 @@ document.body.appendChild(engine.canvas)
 engine.start()
 
 engine.setScene(new LogScene())
+new SelectionScene()
+new CoinFlipScene()
 
 { // Network
 

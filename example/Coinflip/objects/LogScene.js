@@ -1,5 +1,4 @@
 import { Button, GameObject, GameScene, Label, Network, TextBox } from "../js/2DGameEngine.js";
-import { Player } from "./Player.js";
 
 class LoginTextInput extends TextBox {
 
@@ -33,9 +32,9 @@ class LoginButton extends Button {
 
     constructor() {
 
-        super(8, 40, 'dogicapixel', 'white')
+        super(8, 80, 'dogicapixel', 'white')
 
-        this.text = 'Login'
+        this.text = 'Me connecter'
 
         // this.rect.display = true
 
@@ -55,16 +54,15 @@ class LoginButton extends Button {
 
         })
 
-    }
+        Network.on(Network.events.PEER_OPENED, () => {
 
-    update(dt) {
+            if (!this.engine) return
 
-        super.update(dt)
+            this.engine.setScene(GameScene.list.get('SelectionScene'))
 
-        if (this.active)
-            this.color = 'gray'
+            console.log('logedin')
 
-        else this.color = 'white'
+        })
 
     }
 
@@ -84,6 +82,14 @@ class LoginButton extends Button {
             this.engine.soundBank.get('wrong').play()
 
             return obj.text = 'Pseudo manquant'
+        }
+
+        if (/\s/.exec(id)) {
+
+            this.engine.soundBank.get('wrong').play()
+
+            return obj.text = 'Espaces non autorisés'
+
         }
 
         Network.start(id)

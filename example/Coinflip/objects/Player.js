@@ -1,4 +1,4 @@
-import { GameObject, NetworkGameObject, PerlinNoise, PositionIntegrator, Rectangle } from "../js/2DGameEngine.js";
+import { NetworkGameObject, PositionIntegrator, Rectangle } from "../js/2DGameEngine.js";
 
 export class Player extends NetworkGameObject {
 
@@ -22,8 +22,6 @@ export class Player extends NetworkGameObject {
 
         this.add(this.rect)
 
-        this.sync()
-
     }
 
     update(dt) {
@@ -43,6 +41,8 @@ export class Player extends NetworkGameObject {
 
         this.pi.integrate(dt)
         this.position.copy(this.pi.position)
+
+        this.sendUpdate(this.position.clone())
 
     }
 

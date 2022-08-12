@@ -621,6 +621,11 @@ export class GameObject {
     get engine() { return this.scene?.engine ?? null }
 
     /**
+     * @returns {Input}
+     */
+    get input() { return this.engine?.input ?? null }
+
+    /**
      * Return the rotation of the object
      * 
      * @returns {number}
@@ -1044,7 +1049,6 @@ export class Timer {
  */
 export class Input {
 
-    #codeToChar: Map<string, string> = new Map()
     #keysDown: Set<string> = new Set()
     #keysOnce: Set<string> = new Set()
     #mouseButtons: [boolean, boolean, boolean] = [false, false, false]
@@ -1060,8 +1064,6 @@ export class Input {
             this.#keysDown.add(evt.code)
             this.#keysOnce.add(evt.code)
 
-            this.#codeToChar.set(evt.code, evt.key)
-
         })
 
         window.addEventListener('keyup', (evt) => {
@@ -1072,7 +1074,6 @@ export class Input {
         })
 
     }
-
 
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only
@@ -1128,14 +1129,6 @@ export class Input {
         return false
 
     }
-
-    /**
-     * Returns the char associated to a code that has already been pressed
-     * 
-     * @param {string} code 
-     * @returns {string}
-     */
-    codeToChar(code: string): string { return this.#codeToChar.get(code) }
 
     /**
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
@@ -2414,12 +2407,12 @@ export class TextBox extends GameObject {
     font: string
     width: number
     color: string = 'white'
-    onSound: Sound
-    offSound: Sound
+    onSound: string
+    offSound: string
 
     placeholder: string = ''
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: Sound = null, offSound: Sound = null) {
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, offSound: string = null) {
 
         super()
 
@@ -2435,21 +2428,22 @@ export class TextBox extends GameObject {
 
         this.add(this.rect)
 
-        window.addEventListener('keydown', (event) => {
+        window.addEventListener('keydown', async (event) => {
 
             if (this.active) {
 
-
-                if (event.key.length === 1)
+                if (event.code === 'KeyV' && event.ctrlKey)
+                    this.text += await navigator.clipboard.readText()
+                else if (event.key.length === 1)
                     this.text += event.key
-                if (event.key === 'Backspace')
+                else if (event.key === 'Backspace')
                     this.text = this.text.slice(0, -1)
-                if (event.key === 'Enter') {
+                else if (event.key === 'Enter') {
                     this.rect.displayColor = 'red'
                     this.active = false
 
-                    if (this.offSound)
-                        this.offSound.play()
+                    if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
+
                 }
             }
 
@@ -2461,7 +2455,7 @@ export class TextBox extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.engine.input.mouse
+        let mouse = this.input.mouse
 
         if (mouse.leftClick) {
 
@@ -2472,8 +2466,7 @@ export class TextBox extends GameObject {
                     this.rect.displayColor = 'blue'
                     this.active = true
 
-                    if (this.onSound)
-                        this.onSound.play()
+                    if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
                 }
 
             }
@@ -2485,8 +2478,7 @@ export class TextBox extends GameObject {
                     this.rect.displayColor = 'red'
                     this.active = false
 
-                    if (this.offSound)
-                        this.offSound.play()
+                    if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
 
                 }
 
@@ -2531,9 +2523,10 @@ export class Button extends GameObject {
     font: string
     width: number
     color: string = 'white'
-    onSound: Sound
+    activeColor: string = 'gray'
+    onSound: string
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: Sound = null) {
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null) {
 
         super()
 
@@ -2553,7 +2546,7 @@ export class Button extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.engine.input.mouse
+        let mouse = this.input.mouse
 
         if (mouse.leftClick) {
 
@@ -2561,6 +2554,8 @@ export class Button extends GameObject {
 
                 this.#active.reset()
                 this.onActive()
+
+                if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
 
             }
 
@@ -2581,7 +2576,7 @@ export class Button extends GameObject {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.font = `${this.fontSize}px ${this.font}`
-        ctx.fillStyle = this.color
+        ctx.fillStyle = this.active ? this.activeColor : this.color
 
         ctx.fillText(this.text, 0, 0, this.width)
 
@@ -2640,6 +2635,71 @@ export class Label extends GameObject {
         ctx.fillText(this.text, 0, 0, this.maxWidth)
 
         ctx.restore()
+
+    }
+
+}
+
+export class CheckBox extends GameObject {
+
+    checked: boolean = false
+    rect: Rectangle = new Rectangle(0, 0, 1, 1)
+    rectColor: string
+    checkColor: string
+    size: number
+    sound: string
+
+    constructor(checked: boolean = false, size: number = 10, rectColor: string = 'white', checkColor: string = 'red', sound: string = null) {
+
+        super()
+
+        this.checked = checked
+        this.rectColor = rectColor
+        this.checkColor = checkColor
+        this.size = size
+        this.sound = sound
+
+        this.rect.scale.set(size, size)
+        this.add(this.rect)
+
+    }
+
+    update(dt: number): void {
+
+        let mouse = this.input.mouse
+
+        if (this.rect.containsWorldVector(mouse.position) && mouse.leftClick) {
+
+            this.checked = !this.checked
+            this.onChange()
+
+            if (this.sound) this.engine.soundBank.get(this.sound)?.play()
+
+        }
+
+    }
+
+    onChange() { }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        let hs = this.size / 2
+
+        if (this.checked) {
+
+            ctx.strokeStyle = this.checkColor
+            ctx.beginPath()
+            ctx.moveTo(-hs, -hs)
+            ctx.lineTo(hs, hs)
+            ctx.moveTo(-hs, hs)
+            ctx.lineTo(hs, -hs)
+            ctx.stroke()
+
+        }
+
+        ctx.strokeStyle = this.rectColor
+
+        ctx.strokeRect(-hs, -hs, this.size, this.size)
 
     }
 
@@ -3193,6 +3253,7 @@ class NetworkEvents {
     static CLIENT_P2P_OPENED = 8
     static CLIENT_P2P_CLOSED = 9
     static CLIENT_P2P_RECEIVED_DATA = 10
+    static CLIENT_P2P_CONFIRMED_CONNECTION = 15
 
     static HOSTING_START = 11
     static HOSTING_END = 12
@@ -3550,10 +3611,9 @@ class NetworkConnection {
 
         if (this.timer.greaterThan(6000)) {
 
-            if (this.connection.open)
-                this.clean()
+            this.cleanclose()
 
-            this.connection.close()
+            // console.log(`Connection with "${this.id}" timed out`)
 
         } else
             this.connection.send('Network$IAMHERE')
@@ -3562,7 +3622,7 @@ class NetworkConnection {
 
     #open(): void {
 
-        console.log(`connection opened with ${this.id}`)
+        // console.log(`connection opened with ${this.id}`)
 
         if (this.receiver) {
 
@@ -3578,6 +3638,8 @@ class NetworkConnection {
                 for (let callback of Network.getCallbacks(NetworkEvents.HOST_P2P_OPENED))
                     callback.call(this)
 
+                this.connection.send('Network$CONFIRM')
+
             }
 
 
@@ -3592,7 +3654,7 @@ class NetworkConnection {
 
     #close(): void {
 
-        console.log(`connection closed with ${this.id}`)
+        // console.log(`connection closed with ${this.id}`)
 
         if (this.receiver) {
 
@@ -3620,19 +3682,21 @@ class NetworkConnection {
         else if (data === 'Network$IAMHERE')
             return
 
-        else {
-            if (this.receiver) {
+        else if (data === 'Network$CONFIRM' && !this.receiver)
+            for (let callback of Network.getCallbacks(NetworkEvents.CLIENT_P2P_CONFIRMED_CONNECTION))
+                callback.call(this, data)
 
+        else
+            if (this.receiver)
                 for (let callback of Network.getCallbacks(NetworkEvents.HOST_P2P_RECEIVED_DATA))
                     callback.call(this, data)
 
-            } else {
-
+            else
                 for (let callback of Network.getCallbacks(NetworkEvents.CLIENT_P2P_RECEIVED_DATA))
                     callback.call(this, data)
 
-            }
-        }
+
+
 
     }
 
