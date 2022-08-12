@@ -32,7 +32,7 @@ class JoinUser extends Button {
 
     constructor() {
 
-        super(10, 80, 'dogicapixel', 'white')
+        super(10, 80, 'dogicapixel', 'orange')
 
         this.text = 'Rejoindre'
         // this.rect.display = true
@@ -75,7 +75,7 @@ class Host extends Button {
 
     constructor() {
 
-        super(10, 80, 'dogicapixel', 'white')
+        super(10, 80, 'dogicapixel', 'orange')
 
         this.text = 'Héberger'
         // this.rect.display = true
@@ -106,7 +106,7 @@ class VolumeButton extends Button {
 
     constructor(volume, text) {
 
-        super(8, 20, 'dogicapixel', 'white', 'bip')
+        super(6, 20, 'dogicapixel', 'lightblue', 'bip')
         this.text = text
 
         this.volume = volume
@@ -180,6 +180,12 @@ export class SelectionScene extends GameScene {
         host.bl = bannedUsers
 
         this.add(host)
+
+        let volumeLabel = new Label('Volume son', 'center', 8, 'dogicapixel', 'white', 'middle', 200)
+
+        volumeLabel.position.set(0, -80)
+
+        this.add(volumeLabel)
 
         let volume0 = new VolumeButton(0, '0%')
         let volume25 = new VolumeButton(1 / 27, '25%')

@@ -32,7 +32,7 @@ class LoginButton extends Button {
 
     constructor() {
 
-        super(8, 80, 'dogicapixel', 'white')
+        super(8, 80, 'dogicapixel', 'orange')
 
         this.text = 'Me connecter'
 
