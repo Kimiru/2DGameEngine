@@ -110,7 +110,7 @@ class VolumeButton extends Button {
         this.text = text
 
         this.volume = volume
-        this.rect.display = true
+        // this.rect.display = true
 
     }
 
