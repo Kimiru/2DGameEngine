@@ -1823,7 +1823,22 @@ export function loadImages(images: { name: string, src: string }[], incrementCal
         let img = document.createElement('img')
         img.src = image.src
 
-        img.onload = img.onerror = function () {
+        img.onload = function () {
+
+            completed.n++
+
+            incrementCallback(completed.n)
+
+            if (completed.n == images.length)
+                finishedCallback()
+
+        }
+
+        img.onerror = function (err) {
+
+            console.error(`Could not load image "${image.name}" for source "${image.src}"`)
+
+            console.error(err)
 
             completed.n++
 
@@ -1891,7 +1906,22 @@ export function loadSounds(sounds: { name: string, srcs: string[] }[], increment
             let snd = document.createElement('audio')
             snd.src = src
 
-            snd.oncanplay = snd.onerror = function () {
+            snd.oncanplay = function () {
+
+                completed.n++
+
+                incrementCallback(completed.n)
+
+                if (completed.n == toComplete.n)
+                    finishedCallback()
+
+            }
+
+            snd.onerror = function (err) {
+
+                console.error(`Could not load sound "${sound.name}" for source "${src}"`)
+
+                console.error(err)
 
                 completed.n++
 
@@ -2416,7 +2446,7 @@ export class Drawable extends GameObject {
 
     }
 
-    draw(ctx: CanvasRenderingContext2D): boolean {
+    draw(ctx: CanvasRenderingContext2D): void {
 
         ctx.save()
 
@@ -2425,7 +2455,87 @@ export class Drawable extends GameObject {
 
         ctx.restore()
 
-        return true
+    }
+
+}
+
+const SpriteSheetOptions = {
+
+    cellWidth: 16,
+    cellHeight: 16,
+
+}
+
+export class SpriteSheet extends Drawable {
+
+    options: typeof SpriteSheetOptions
+
+    horizontalCount: number
+
+    cursor: number = 0
+    loopOrigin: number = 0
+    tileInLoop: number = 1
+
+    savedLoop: Map<string, [number, number]> = new Map()
+
+
+    constructor(image: HTMLImageElement, options: typeof SpriteSheetOptions = SpriteSheetOptions) {
+
+        super(image)
+
+        this.options = { ...SpriteSheetOptions, ...options }
+
+        this.horizontalCount = this.image.width / this.options.cellWidth
+        this.size.set(this.options.cellWidth, this.options.cellHeight)
+        this.halfSize.copy(this.size).divS(2)
+
+    }
+
+    XYToIndex(x: number, y: number) {
+
+        return x + y * this.horizontalCount
+
+    }
+
+    indexToXY(index): [number, number] {
+
+        let x = index % this.horizontalCount
+        let y = Math.floor(index / this.horizontalCount)
+
+        return [x, y]
+
+    }
+
+    saveLoop(name: string, loopOrigin: number, tileInLoop: number) { this.savedLoop.set(name, [loopOrigin, tileInLoop]) }
+
+    useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name), index) }
+
+    setLoop(loopOrigin: number, tileInLoop: number, startIndex: number = 0) {
+
+        this.loopOrigin = loopOrigin
+        this.tileInLoop = tileInLoop
+        this.cursor = this.loopOrigin + startIndex % tileInLoop
+
+    }
+
+    getLoopIndex(): number { return this.cursor - this.loopOrigin }
+
+    next() { this.cursor = this.loopOrigin + (this.getLoopIndex() + 1) % this.tileInLoop }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        let x = this.cursor % this.horizontalCount
+        let y = Math.floor(this.cursor / this.horizontalCount)
+
+        x *= this.size.x
+        y *= this.size.y
+
+        ctx.scale(1 / this.size.x, -1 / this.size.y)
+        ctx.drawImage(this.image, x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y)
+
+        ctx.restore()
 
     }
 
@@ -3079,6 +3189,16 @@ export class ImageManipulator {
 
     }
 
+    setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number) {
+
+        let imageData = new ImageData(1, 1)
+
+        imageData.data.set([r, g, b, a])
+
+        this.ctx.putImageData(imageData, x, y)
+
+    }
+
     getPixel(x: number, y: number): [number, number, number, number] {
 
         let data: ImageData = this.ctx.getImageData(x, y, 1, 1)
@@ -3100,7 +3220,27 @@ export class ImageManipulator {
 
     }
 
+    getImage(): HTMLImageElement {
+
+        let image = document.createElement('img')
+
+        image.src = this.print()
+
+        return image
+
+    }
+
     toString(): string { return this.print() }
+
+    clone(): ImageManipulator {
+
+        let im = new ImageManipulator(this.width, this.height)
+
+        im.ctx.drawImage(this.canvas, 0, 0)
+
+        return im
+
+    }
 
     static fromImage(image: HTMLImageElement): ImageManipulator {
 
@@ -3261,14 +3401,10 @@ export class PerlinNoise {
 
 export class TextureMapper {
 
-    static map(model: HTMLImageElement, colorChart: HTMLImageElement, texture: HTMLImageElement): ImageManipulator {
-
-        let modelIM = ImageManipulator.fromImage(model)
-        let colorChartIM = ImageManipulator.fromImage(colorChart)
-        let textureIM = ImageManipulator.fromImage(texture)
+    static map(modelIM: ImageManipulator, colorChartIM: ImageManipulator, textureIM: ImageManipulator): ImageManipulator {
 
 
-        let outputIM = new ImageManipulator(model.width, model.height)
+        let outputIM = new ImageManipulator(modelIM.width, modelIM.height)
 
         for (let x = 0; x < modelIM.width; x++)
             for (let y = 0; y < modelIM.height; y++) {
@@ -3277,13 +3413,19 @@ export class TextureMapper {
 
                 if (modelColor[3] == 0) continue
 
+                // console.log(modelColor)
+
                 let pixelLocation = TextureMapper.#findPixelWithColorInImage(colorChartIM, ...modelColor)
+
+                // console.log(pixelLocation)
 
                 if (!pixelLocation) continue
 
                 let color = textureIM.getPixel(...pixelLocation)
 
-                outputIM.setPixel(x, y, `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`)
+                // console.log(color)
+
+                outputIM.setPixelRGBA(x, y, ...color)
 
             }
 
