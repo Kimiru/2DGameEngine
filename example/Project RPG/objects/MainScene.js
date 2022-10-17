@@ -17,7 +17,7 @@ class MenuButton extends Button {
 
         super.update(dt)
 
-        this.position.copy(this.engine.usableScale.divS(2).subS(.5, .5))
+        this.transform.translation.copy(this.engine.usableScale.divS(2).subS(.5, .5))
 
     }
 
@@ -59,20 +59,20 @@ export class MainScene extends GameScene {
         this.add(world)
 
         let w1 = new WorldEntity()
-        w1.position.set(2, 0)
+        w1.transform.translation.set(2, 0)
         world.add(w1)
 
         let w2 = new WorldEntity()
-        w2.position.set(-3, -1)
+        w2.transform.translation.set(-3, -1)
         world.add(w2)
 
         let w3 = new WorldEntity()
-        w3.position.set(0, 0)
+        w3.transform.translation.set(0, 0)
         world.add(w3)
 
         cam.trackLag = 1
         cam.minTrack = .01
-        cam.position.set(0, 0)
+        cam.transform.translation.set(0, 0)
         cam.zIndex = Number.MAX_SAFE_INTEGER
 
         for (let i = -1.5; i < 3; i++)
@@ -85,7 +85,7 @@ export class MainScene extends GameScene {
                 for (let j = -3; j < 4; j++) {
 
                     let floor = new Floor(l)
-                    floor.position.set(i, j)
+                    floor.transform.translation.set(i, j)
 
                     world.add(floor)
 
@@ -95,11 +95,11 @@ export class MainScene extends GameScene {
         world.add(door)
 
         let layerChanger = new LayerChanger(0, 1, 1)
-        layerChanger.position.set(4, 1)
+        layerChanger.transform.translation.set(4, 1)
         world.add(layerChanger)
 
         let layerChanger2 = new LayerChanger(1, -1, 1)
-        layerChanger2.position.set(4, 1)
+        layerChanger2.transform.translation.set(4, 1)
         world.add(layerChanger2)
 
         world.cook()

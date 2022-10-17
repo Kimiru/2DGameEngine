@@ -10,8 +10,8 @@ class InterLayer extends GameObject {
 
     physics(dt) {
 
-        this.position.copy(this.scene.camera.getWorldPosition())
-        this.scale.set(this.engine.usableWidth * this.scene.camera.scale.x, this.engine.usableHeight * this.scene.camera.scale.y)
+        this.transform.translation.copy(this.scene.camera.getWorldPosition())
+        this.transform.scale.set(this.engine.usableWidth * this.scene.camera.transform.scale.x, this.engine.usableHeight * this.scene.camera.transform.scale.y)
 
     }
 
@@ -37,7 +37,7 @@ export class WorldEntity extends GameObject {
         this.addTag('semi-solid')
 
         this.image = new Drawable(window.engine.imageBank.get('mlp16'))
-        this.image.scale.set(.7, .7)
+        this.image.transform.scale.set(.7, .7)
         this.add(this.image)
 
     }
@@ -47,7 +47,7 @@ export class WorldEntity extends GameObject {
         if (this.path)
             return this.path.points[this.path.points.length - 1].clone()
         else
-            return this.position.clone()
+            return this.transform.translation.clone()
     }
 
     update(dt) {
@@ -56,7 +56,7 @@ export class WorldEntity extends GameObject {
 
             if (!this.path.end()) {
 
-                this.position.copy(this.path.follow(1.5 * dt))
+                this.transform.translation.copy(this.path.follow(1.5 * dt))
 
             } else {
 
@@ -86,7 +86,7 @@ export class SemiSolid extends GameObject {
     }
 
     get blockedPosition() {
-        return this.position.clone()
+        return this.transform.translation.clone()
     }
 
 }
@@ -129,17 +129,17 @@ export class Wall extends Segment {
 
         this.zIndex = layer * 10
 
-        this.position.copy(position)
+        this.transform.translation.copy(position)
         this.lineWidth = .1
 
         if (orientation === 'v') {
 
-            this.rotation = Math.PI / 2
+            this.transform.rotation = Math.PI / 2
 
         }
 
         this.image = new Drawable(window.engine.imageBank.get(textureName))
-        this.image.scale.set(1 + 2 / 16, 2 / 16)
+        this.image.transform.scale.set(1 + 2 / 16, 2 / 16)
         this.add(this.image)
 
     }
@@ -157,7 +157,7 @@ export class Door extends Wall {
         this.addTag('door')
         this.removeTag('wall')
 
-        this.image.scale.set(7 / 8, 1 / 4)
+        this.image.transform.scale.set(7 / 8, 1 / 4)
         this.remove(this.image)
 
     }
@@ -221,8 +221,8 @@ export class Floor extends GameObject {
         let unit = 1
 
         this.adjacentTiles = this.scene.getTags('floor').filter(sameLayer(Math.round(this.zIndex / 10))).filter(obj => {
-            return (obj.position.x == this.position.x && (obj.position.y == this.position.y + unit || obj.position.y == this.position.y - unit)) ||
-                (obj.position.y == this.position.y && (obj.position.x == this.position.x + unit || obj.position.x == this.position.x - unit))
+            return (obj.transform.translation.x == this.transform.translation.x && (obj.transform.translation.y == this.transform.translation.y + unit || obj.transform.translation.y == this.transform.translation.y - unit)) ||
+                (obj.transform.translation.y == this.transform.translation.y && (obj.transform.translation.x == this.transform.translation.x + unit || obj.transform.translation.x == this.transform.translation.x - unit))
         })
 
         if (previousAdjacentTiles.length !== this.adjacentTiles.length) for (let tile of this.adjacentTiles)
@@ -308,7 +308,7 @@ export class World extends NetworkGameObject {
         this.add(this.dummy)
 
         this.loupe = new Drawable(window.engine.imageBank.get('loupe'))
-        this.loupe.scale.set(30 * unit, 30 * unit)
+        this.loupe.transform.scale.set(30 * unit, 30 * unit)
 
         this.drawAfterChildren()
 
@@ -355,6 +355,9 @@ export class World extends NetworkGameObject {
             let menubutton = this.scene.getTags('menubutton')[0]
 
             if (menubutton.rect.containsWorldVector(mouse.position)) {
+
+                console.log('menubutton')
+
             }
 
             else {
@@ -398,9 +401,9 @@ export class World extends NetworkGameObject {
             this.track(this.selectedEntity)
 
         if (this.input.isPressed('ArrowDown'))
-            this.scene.camera.scale.addS(1 / 8, 1 / 8)
-        if (this.input.isPressed('ArrowUp')) if (this.scene.camera.scale.x > 1 / 8)
-            this.scene.camera.scale.subS(1 / 8, 1 / 8)
+            this.scene.camera.transform.scale.addS(1 / 8, 1 / 8)
+        if (this.input.isPressed('ArrowUp')) if (this.scene.camera.transform.scale.x > 1 / 8)
+            this.scene.camera.transform.scale.subS(1 / 8, 1 / 8)
 
     }
 
@@ -408,7 +411,7 @@ export class World extends NetworkGameObject {
 
         return this.scene.getTags('floor')
             .filter(sameLayer(layer))
-            .find(o => o.position.equal(vec))
+            .find(o => o.transform.translation.equal(vec))
 
     }
 
@@ -421,7 +424,7 @@ export class World extends NetworkGameObject {
 
         let layer = entity.getLayer()
 
-        let graph = new Graph(true, o => o.position.clone())
+        let graph = new Graph(true, o => o.transform.translation.clone())
 
         let walkables = this.scene.getTags('floor').filter(sameLayer(layer))
         let walls = this.scene.getTags('wall').filter(sameLayer(layer))
@@ -437,7 +440,7 @@ export class World extends NetworkGameObject {
 
                 graph.addNode([adjacentWalkable.id, adjacentWalkable])
 
-                let segment = new Segment(walkable.position.clone(), adjacentWalkable.position.clone())
+                let segment = new Segment(walkable.transform.translation.clone(), adjacentWalkable.transform.translation.clone())
 
                 if (!segments.some(seg => segment.intersect(seg)))
                     graph.addLink({ source: walkable.id, target: adjacentWalkable.id })
@@ -490,10 +493,10 @@ export class World extends NetworkGameObject {
         let graph = this.getGraphForEntity(entity)
 
         let path = graph.getShortestPathBetween(
-            this.floorAt(entity.position.clone().round(), this.selectedEntity.getLayer())?.id,
+            this.floorAt(entity.transform.translation.clone().round(), this.selectedEntity.getLayer())?.id,
             this.floorAt(position, entity.getLayer())?.id,
-            (a, b) => a.position.distanceTo(b.position)
-        )?.map(id => graph.nodesObjects.get(id).position.clone())
+            (a, b) => a.transform.translation.distanceTo(b.transform.translation)
+        )?.map(id => graph.nodesObjects.get(id).transform.translation.clone())
 
         if (path)
             return new Path(path)
@@ -524,16 +527,16 @@ export class World extends NetworkGameObject {
 
         if (this.selectedEntity && !this.selectedEntity.path) {
 
-            this.loupe.position.copy(this.selectedEntity.position)
+            this.loupe.transform.translation.copy(this.selectedEntity.transform.translation)
             this.loupe.executeDraw(ctx)
 
             // ctx.strokeStyle = 'red'
             // ctx.lineWidth = .1
             // ctx.beginPath()
-            // ctx.ellipse(this.selectedEntity.position.x, this.selectedEntity.position.y, .6, .6, 0, 0, 2 * Math.PI)
+            // ctx.ellipse(this.selectedEntity.transform.translation.x, this.selectedEntity.transform.translation.y, .6, .6, 0, 0, 2 * Math.PI)
             // ctx.stroke()
 
-            let floorChanger = this.scene.getTags('layerchanger').filter(sameLayer(this.selectedEntity.getLayer())).find(o => o.position.distanceTo(this.selectedEntity.position) < .1)
+            let floorChanger = this.scene.getTags('layerchanger').filter(sameLayer(this.selectedEntity.getLayer())).find(o => o.transform.translation.distanceTo(this.selectedEntity.transform.translation) < .1)
 
             if (floorChanger) {
 
@@ -557,7 +560,7 @@ export class World extends NetworkGameObject {
 
         let door = this.scene.getTags('door')
             .filter(sameLayer(layer))
-            .find(o => o.position.distanceTo(position) < 2 * unit)
+            .find(o => o.transform.translation.distanceTo(position) < 2 * unit)
 
         if (door) return { object: door, type: Type.DOOR }
 
@@ -565,13 +568,13 @@ export class World extends NetworkGameObject {
 
         let entity = this.scene.getTags('worldEntity')
             .filter(sameLayer(layer))
-            .find(o => o.position.equal(position))
+            .find(o => o.transform.translation.equal(position))
 
         if (entity) return { object: entity, type: Type.ENTITY }
 
         // let floor = this.scene.getTags('floor')
         //     .filter(sameLayer(layer))
-        //     .find(o => o.position.equal(position))
+        //     .find(o => o.transform.translation.equal(position))
 
         // if (floor) return { object: floor, type: Type.FLOOR }
 
@@ -583,7 +586,7 @@ export class World extends NetworkGameObject {
 
         if (this.selectedEntity === entity) {
 
-            this.track(this.selectedEntity.position)
+            this.track(this.selectedEntity.transform.translation)
             this.selectedEntity = null
 
         } else {
@@ -599,7 +602,7 @@ export class World extends NetworkGameObject {
 
         if (target instanceof Vector) {
 
-            this.dummy.position.copy(target)
+            this.dummy.transform.translation.copy(target)
             this.scene.camera.trackedObject = this.dummy
 
         }

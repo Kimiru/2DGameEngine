@@ -630,7 +630,7 @@ export class Transform {
     #rotation: number = 0
     scale: Vector = new Vector()
 
-    constructor(translation: Vector = new Vector(), rotation: number = 0, scale: Vector = new Vector(1, 1, 1)) {
+    constructor(translation: Vector = new Vector(0, 0, 0), rotation: number = 0, scale: Vector = new Vector(1, 1, 1)) {
 
         this.translation.copy(translation)
         this.rotation = rotation
@@ -710,6 +710,20 @@ export class Transform {
             x,
             y
         ]
+
+    }
+
+    toString() {
+
+        let str = 'Transform( '
+
+        if (this.translation.x !== 0 || this.translation.y !== 0) str += this.translation.toString() + ' '
+        if (this.rotation !== 0) str += this.rotation + ' '
+        if (this.scale.x !== 1 || this.scale.y !== 1) str += this.scale.toString() + ' '
+
+        str += ')'
+
+        return str
 
     }
 
@@ -2094,7 +2108,7 @@ export class Polygon extends GameObject {
 
     getWorldLinear() {
 
-        let matrix = this.transform.getMatrix()
+        let matrix = this.getWorldTransformMatrix()
 
         let points = this.getLinear()
 
@@ -2220,7 +2234,7 @@ export class Rectangle extends Polygon {
         super([], [])
 
         this.transform.translation.set(x, y)
-        this.transform.translation.set(w, h)
+        this.transform.scale.set(w, h)
 
         this.#ptmem[0].copy(this.transform.translation)
         this.#ptmem[1].copy(this.transform.scale)

@@ -109,24 +109,24 @@ export class LogScene extends GameScene {
 
         let scale = 200 / 8
         let cam = new Camera()
-        cam.scale.set(scale, scale)
+        cam.transform.scale.set(scale, scale)
         this.camera = cam
 
         this.add(new LoginTextInput())
 
         let title = new Label('Coinflip', 'center', 16, 'dogicapixel', 'white', 'middle', 200)
-        title.position.set(0, 50)
+        title.transform.translation.set(0, 50)
 
         this.add(title)
 
         let button = new LoginButton()
-        button.position.set(0, -20)
+        button.transform.translation.set(0, -20)
 
         this.add(button)
 
         let errorLabel = new Label('', 'center', 8, 'dogicapixel', 'red', 'middle', 200)
         errorLabel.addTag('errorLabel')
-        errorLabel.position.set(0, -40)
+        errorLabel.transform.translation.set(0, -40)
 
         this.add(errorLabel)
 

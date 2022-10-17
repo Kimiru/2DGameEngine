@@ -134,12 +134,12 @@ export class SelectionScene extends GameScene {
 
         let scale = 200 / 8
         let cam = new Camera()
-        cam.scale.set(scale, scale)
+        cam.transform.scale.set(scale, scale)
         this.camera = cam
 
         let userLabel = new Label(null, 'center', 15, 'dogicapixel', 'white', 'middle', 200)
         userLabel.update = function () { if (!this.text) this.text = Network.id }
-        userLabel.position.set(0, 80)
+        userLabel.transform.translation.set(0, 80)
 
         this.add(userLabel)
 
@@ -147,23 +147,23 @@ export class SelectionScene extends GameScene {
         let joinUserButton = new JoinUser()
         joinUserButton.joinUserInput = joinUserInput
 
-        joinUserInput.position.set(-50, 50)
-        joinUserButton.position.set(50, 50)
+        joinUserInput.transform.translation.set(-50, 50)
+        joinUserButton.transform.translation.set(50, 50)
 
         this.add(joinUserInput)
         this.add(joinUserButton)
 
         let useWhitelistCheckbox = new CheckBox(true, 8, 'white', 'lightgray', 'bip')
 
-        useWhitelistCheckbox.position.set(-40, 10)
+        useWhitelistCheckbox.transform.translation.set(-40, 10)
 
         this.add(useWhitelistCheckbox)
 
         let whiteListLabel = new Label('Liste blanche', 'center', 6, 'dogicapixel', 'white', 'middle', 100)
         let blackListLabel = new Label('Liste noire', 'center', 6, 'dogicapixel', 'white', 'middle', 100)
 
-        whiteListLabel.position.set(0, 10)
-        blackListLabel.position.set(0, -20)
+        whiteListLabel.transform.translation.set(0, 10)
+        blackListLabel.transform.translation.set(0, -20)
 
         this.add(whiteListLabel)
         this.add(blackListLabel)
@@ -171,14 +171,14 @@ export class SelectionScene extends GameScene {
         let allowedUsers = new UnerlinedInput(6, 150, '-> Pseudo autorisés')
         let bannedUsers = new UnerlinedInput(6, 150, '-> Pseudo bannis')
 
-        allowedUsers.position.set(0, -2)
-        bannedUsers.position.set(0, -32)
+        allowedUsers.transform.translation.set(0, -2)
+        bannedUsers.transform.translation.set(0, -32)
 
         this.add(allowedUsers)
         this.add(bannedUsers)
 
         let host = new Host()
-        host.position.set(0, -60)
+        host.transform.translation.set(0, -60)
 
         host.usewl = useWhitelistCheckbox
         host.wl = allowedUsers
@@ -188,7 +188,7 @@ export class SelectionScene extends GameScene {
 
         let volumeLabel = new Label('Volume son', 'center', 8, 'dogicapixel', 'white', 'middle', 200)
 
-        volumeLabel.position.set(0, -80)
+        volumeLabel.transform.translation.set(0, -80)
 
         this.add(volumeLabel)
 
@@ -198,11 +198,11 @@ export class SelectionScene extends GameScene {
         let volume75 = new VolumeButton(1 / 3, '75%')
         let volume100 = new VolumeButton(1, '100%')
 
-        volume0.position.set(-50, -90)
-        volume25.position.set(-25, -90)
-        volume50.position.set(0, -90)
-        volume75.position.set(25, -90)
-        volume100.position.set(50, -90)
+        volume0.transform.translation.set(-50, -90)
+        volume25.transform.translation.set(-25, -90)
+        volume50.transform.translation.set(0, -90)
+        volume75.transform.translation.set(25, -90)
+        volume100.transform.translation.set(50, -90)
 
         this.add(volume0, volume25, volume50, volume75, volume100)
 
