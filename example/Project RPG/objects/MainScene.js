@@ -1,4 +1,4 @@
-import { Button, GameObject, GameScene, NetworkGameObject, Polygon, RenderingStyle, TrackingCamera, Vector } from "../js/2DGameEngine.js";
+import { Button, GameObject, GameScene, NetworkGameObject, Polygon, RenderingStyle, TrackingCamera, Transform, TransformMatrix, Vector } from "../js/2DGameEngine.js";
 import { Door, Floor, LayerChanger, Wall, World, WorldEntity } from "./World.js";
 
 class MenuButton extends Button {
@@ -107,11 +107,6 @@ export class MainScene extends GameScene {
         let menuButton = new MenuButton()
 
         cam.add(menuButton)
-
-        let poly = new Polygon([new Vector(-2, -2), new Vector(2, -2), new Vector(0, 2)], [new Vector(1, -1), new Vector(-1, -1), new Vector(0, 1)])
-        poly.fill = true
-        poly.zIndex = 1000
-        this.add(poly)
 
     }
 

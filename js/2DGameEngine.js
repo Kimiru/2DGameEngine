@@ -266,10 +266,10 @@ export class GameScene {
         let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2;
         let cameraPosition = this.camera?.getWorldPosition() ?? new Vector(0, 0);
         if (this.camera) {
-            ctx.transform(...(this.camera.bake ?? this.camera.getViewTransformMatrix()));
+            ctx.transform(...this.camera.getViewTransformMatrix());
             drawRange *= this.camera.getRange();
         }
-        let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y);
+        let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
         if (this.renderingStyle === RenderingStyle.INFINITY) {
             for (let child of children)
                 if (child instanceof GameObject)
@@ -426,6 +426,73 @@ export class GameScene {
      */
     draw(ctx) { }
 }
+export class Transform {
+    translation = new Vector();
+    #rotation = 0;
+    scale = new Vector();
+    constructor(translation = new Vector(), rotation = 0, scale = new Vector(1, 1, 1)) {
+        this.translation.copy(translation);
+        this.rotation = rotation;
+        this.scale.copy(scale);
+    }
+    /**
+    * Return the rotation of the object
+    *
+    * @returns {number}
+    */
+    get rotation() { return this.#rotation; }
+    /**
+     * Set the rotation of the object
+     * The angle is automatically converted into modulo 2.PI > 0
+     *
+     * @param {number} angle
+     */
+    set rotation(angle) {
+        this.#rotation = ((angle % PI2) + PI2) % PI2;
+    }
+    clear() {
+        this.translation.set(0, 0, 0);
+        this.rotation = 0;
+        this.scale.set(1, 1, 1);
+    }
+    isDefault() {
+        return this.translation.x === 0 && this.translation.y === 0 &&
+            this.#rotation == 0 &&
+            this.scale.x === 1 && this.scale.y === 1;
+    }
+    getMatrix() {
+        let cos = Math.cos(this.#rotation);
+        let sin = Math.sin(this.#rotation);
+        let sx = this.scale.x;
+        let sy = this.scale.y;
+        let x = this.translation.x;
+        let y = this.translation.y;
+        return [
+            cos * sx,
+            sin * sx,
+            -sin * sy,
+            cos * sy,
+            x,
+            y
+        ];
+    }
+    getInvertMatrix() {
+        let cos = Math.cos(-this.#rotation);
+        let sin = Math.sin(-this.#rotation);
+        let sx = 1 / this.scale.x;
+        let sy = 1 / this.scale.y;
+        let x = -this.translation.x * cos * sx + -this.translation.x * -sin * sx;
+        let y = -this.translation.y * sin * sy + -this.translation.y * cos * sy;
+        return [
+            cos * sx,
+            sin * sx,
+            -sin * sy,
+            cos * sy,
+            x,
+            y
+        ];
+    }
+}
 /**
  * The GameObject class is the base brick class of the system, inhert from it to create any comonent of your system
  * Use the tags to retrieve groups of it from the scene perspective, children or not.
@@ -444,11 +511,8 @@ export class GameObject {
     parent = null;
     #scene = null;
     #drawBeforeChild = true;
-    position = new Vector();
+    transform = new Transform();
     zIndex = 0;
-    #rotation = 0;
-    scale = new Vector(1, 1);
-    bake = null;
     drawRange = 0; // If set to infinity, will always be rendered no matter the rendering style
     renderingStyle = RenderingStyle.INFINITY;
     /**
@@ -478,25 +542,9 @@ export class GameObject {
      */
     get input() { return this.engine?.input ?? null; }
     /**
-     * Return the rotation of the object
-     *
-     * @returns {number}
-     */
-    get rotation() { return this.#rotation; }
-    /**
-     * Set the rotation of the object
-     * The angle is automatically converted into modulo 2.PI > 0
-     *
-     * @param {number} angle
-     */
-    set rotation(angle) {
-        this.#rotation = ((angle % PI2) + PI2) % PI2;
-    }
-    /**
      * Return true if object is either in a scene or has a parent object
      */
     get used() { return this.scene !== null || this.parent !== null; }
-    get box() { return new Rectangle(this.position.x, this.position.y, this.scale.x, this.scale.y); }
     /**
      * Adds one or more tag to the object
      *
@@ -599,11 +647,11 @@ export class GameObject {
     */
     executeDraw(ctx, drawRange, cameraPosition) {
         ctx.save();
-        ctx.transform(...(this.bake ?? this.getLocalTransformMatrix()));
+        ctx.transform(...this.transform.getMatrix());
         if (this.#drawBeforeChild && this.drawEnabled)
             this.draw(ctx);
         if (this.childrenDrawEnabled) {
-            let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y);
+            let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
             if (this.renderingStyle === RenderingStyle.INFINITY) {
                 for (let child of children)
                     if (child instanceof GameObject)
@@ -675,12 +723,12 @@ export class GameObject {
         let currentObject = this;
         let currentPosition = defaultPosition;
         while (currentObject) {
-            if (!currentObject.scale.equalS(1, 1))
-                currentPosition.mult(currentObject.scale);
-            if (currentObject.rotation)
-                currentPosition.rotate(currentObject.rotation);
-            if (!currentObject.position.nil())
-                currentPosition.add(currentObject.position);
+            if (!currentObject.transform.scale.equalS(1, 1))
+                currentPosition.mult(currentObject.transform.scale);
+            if (currentObject.transform.rotation)
+                currentPosition.rotate(currentObject.transform.rotation);
+            if (!currentObject.transform.translation.nil())
+                currentPosition.add(currentObject.transform.translation);
             currentObject = currentObject.parent;
         }
         return currentPosition;
@@ -694,41 +742,19 @@ export class GameObject {
         let currentObject = this;
         let rotation = 0;
         while (currentObject) {
-            rotation += currentObject.rotation;
+            rotation += currentObject.transform.rotation;
             currentObject = currentObject.parent;
         }
         return ((rotation % PI2) + PI2) % PI2;
     }
     getWorldTransformMatrix() {
-        let matrix = this.getLocalTransformMatrix();
+        let matrix = this.transform.getMatrix();
         let currentObject = this.parent;
         while (currentObject) {
-            matrix = TransformMatrix.multMat(currentObject.getLocalTransformMatrix(), matrix);
+            matrix = TransformMatrix.multMat(currentObject.transform.getMatrix(), matrix);
             currentObject = currentObject.parent;
         }
         return matrix;
-    }
-    getLocalTransformMatrix() {
-        let cos = Math.cos(this.#rotation);
-        let sin = Math.sin(this.#rotation);
-        let sx = this.scale.x;
-        let sy = this.scale.y;
-        let x = this.position.x;
-        let y = this.position.y;
-        return [
-            cos * sx,
-            sin * sx,
-            -sin * sy,
-            cos * sy,
-            x,
-            y
-        ];
-    }
-    /**
-     * Bake the object transformation for quicker use
-     */
-    bakeTransform() {
-        this.bake = this.getLocalTransformMatrix();
     }
 }
 /**
@@ -977,7 +1003,7 @@ export class MouseCursor extends GameObject {
     }
     update(dt) {
         let mouse = this.scene.engine.input.mouse;
-        this.position.copy(mouse.position);
+        this.transform.translation.copy(mouse.position);
     }
     draw(ctx) {
         ctx.fillStyle = 'red';
@@ -1005,22 +1031,9 @@ export class Camera extends GameObject {
     getViewTransformMatrix() {
         let wpos = this.getWorldPosition();
         let wrot = this.getWorldRotation();
-        let cos = Math.cos(-wrot);
-        let sin = Math.sin(-wrot);
-        let sx = 1 / this.scale.x;
-        let sy = 1 / this.scale.y;
-        let x = -wpos.x;
-        let y = -wpos.y;
-        return [
-            cos * sx,
-            sin * sx,
-            -sin * sy,
-            cos * sy,
-            x,
-            y
-        ];
+        return new Transform(wpos, wrot, this.transform.scale).getInvertMatrix();
     }
-    getRange() { return Math.max(this.scale.x, this.scale.y); }
+    getRange() { return Math.max(this.transform.scale.x, this.transform.scale.y); }
 }
 export class TrackingCamera extends Camera {
     trackedObject;
@@ -1043,9 +1056,9 @@ export class TrackingCamera extends Camera {
                 offset.normalize().multS(this.minTrack);
             offset.multS(dt);
             if (offset.length() > cameraWorldPosition.distanceTo(objectWorldPosition))
-                this.position.add(rawOffset);
+                this.transform.translation.add(rawOffset);
             else
-                this.position.add(offset);
+                this.transform.translation.add(offset);
         }
     }
 }
@@ -1462,7 +1475,7 @@ export class Polygon extends GameObject {
         return points;
     }
     getWorldLinear() {
-        let matrix = this.getLocalTransformMatrix();
+        let matrix = this.transform.getMatrix();
         let points = this.getLinear();
         return points.map(point => TransformMatrix.multVec(matrix, point));
     }
@@ -1547,41 +1560,41 @@ export class Rectangle extends Polygon {
     #ptmem = [new Vector(), new Vector()];
     constructor(x = 0, y = 0, w = 1, h = 1, display = false, displayColor = 'red') {
         super([], []);
-        this.position.set(x, y);
-        this.scale.set(w, h);
-        this.#ptmem[0].copy(this.position);
-        this.#ptmem[1].copy(this.scale);
+        this.transform.translation.set(x, y);
+        this.transform.translation.set(w, h);
+        this.#ptmem[0].copy(this.transform.translation);
+        this.#ptmem[1].copy(this.transform.scale);
         this.display = display;
         this.displayColor = displayColor;
     }
     getLinear() {
-        if (this.outer.length === 0 || !this.#ptmem[0].equal(this.position) || !this.#ptmem[1].equal(this.scale)) {
+        if (this.outer.length === 0 || !this.#ptmem[0].equal(this.transform.translation) || !this.#ptmem[1].equal(this.transform.scale)) {
             this.outer = [this.topleft, this.bottomleft, this.bottomright, this.topright];
-            this.#ptmem[0].copy(this.position);
-            this.#ptmem[1].copy(this.position);
+            this.#ptmem[0].copy(this.transform.translation);
+            this.#ptmem[1].copy(this.transform.translation);
         }
         return super.getLinear();
     }
-    get x() { return this.position.x; }
-    set x(n) { this.position.x = n; }
-    get y() { return this.position.y; }
-    set y(n) { this.position.y = n; }
-    get w() { return this.scale.x; }
-    set w(n) { this.scale.x = n; }
-    get h() { return this.scale.y; }
-    set h(n) { this.scale.y = n; }
-    get halfW() { return this.scale.x / 2; }
-    set halfW(n) { this.scale.x = n * 2; }
-    get halfH() { return this.scale.y / 2; }
-    set halfH(n) { this.scale.y = n * 2; }
-    get left() { return this.position.x - this.halfW; }
-    set left(n) { this.position.x = n + this.halfW; }
-    get right() { return this.position.x + this.halfW; }
-    set right(n) { this.position.x = n - this.halfW; }
-    get bottom() { return this.position.y - this.halfH; }
-    set bottom(n) { this.position.y = n + this.halfH; }
-    get top() { return this.position.y + this.halfH; }
-    set top(n) { this.position.y = n - this.halfH; }
+    get x() { return this.transform.translation.x; }
+    set x(n) { this.transform.translation.x = n; }
+    get y() { return this.transform.translation.y; }
+    set y(n) { this.transform.translation.y = n; }
+    get w() { return this.transform.scale.x; }
+    set w(n) { this.transform.scale.x = n; }
+    get h() { return this.transform.scale.y; }
+    set h(n) { this.transform.scale.y = n; }
+    get halfW() { return this.transform.scale.x / 2; }
+    set halfW(n) { this.transform.scale.x = n * 2; }
+    get halfH() { return this.transform.scale.y / 2; }
+    set halfH(n) { this.transform.scale.y = n * 2; }
+    get left() { return this.transform.translation.x - this.halfW; }
+    set left(n) { this.transform.translation.x = n + this.halfW; }
+    get right() { return this.transform.translation.x + this.halfW; }
+    set right(n) { this.transform.translation.x = n - this.halfW; }
+    get bottom() { return this.transform.translation.y - this.halfH; }
+    set bottom(n) { this.transform.translation.y = n + this.halfH; }
+    get top() { return this.transform.translation.y + this.halfH; }
+    set top(n) { this.transform.translation.y = n - this.halfH; }
     get topleft() { return new Vector(this.left, this.top); }
     set topleft(v) { this.left = v.x; this.top = v.y; }
     get bottomleft() { return new Vector(this.left, this.bottom); }
@@ -1659,7 +1672,7 @@ export class Ray extends GameObject {
     direction = new Vector();
     constructor(position, direction) {
         super();
-        this.position.copy(position);
+        this.transform.translation.copy(position);
         this.direction = direction;
     }
     intersect(segment) {
@@ -1690,7 +1703,7 @@ export class Ray extends GameObject {
         for (let segment of segments) {
             let intersect = this.intersect(segment);
             if (intersect) {
-                let intersectLength = this.position.distanceTo(intersect);
+                let intersectLength = this.transform.translation.distanceTo(intersect);
                 if (result === null || intersectLength < length) {
                     result = intersect;
                     length = intersectLength;
@@ -1701,10 +1714,10 @@ export class Ray extends GameObject {
     }
     draw(ctx) {
         ctx.strokeStyle = 'blue';
-        ctx.strokeRect(-this.scale.x, -this.scale.y, this.scale.x * 2, this.scale.y * 2);
+        ctx.strokeRect(-this.transform.scale.x, -this.transform.scale.y, this.transform.scale.x * 2, this.transform.scale.y * 2);
         ctx.beginPath();
         ctx.moveTo(0, 0);
-        ctx.lineTo(this.direction.x * this.scale.x * 5, this.direction.y * this.scale.y * 5);
+        ctx.lineTo(this.direction.x * this.transform.scale.x * 5, this.direction.y * this.transform.scale.y * 5);
         ctx.stroke();
         return true;
     }
@@ -1841,7 +1854,7 @@ export class TextBox extends GameObject {
         this.color = color;
         this.onSound = onSound;
         this.offSound = offSound;
-        this.rect.scale.set(width + 4, fontSize + 4);
+        this.rect.transform.scale.set(width + 4, fontSize + 4);
         this.add(this.rect);
         window.addEventListener('keydown', async (event) => {
             if (this.active) {
@@ -1915,7 +1928,7 @@ export class Button extends GameObject {
         this.width = width;
         this.color = color;
         this.onSound = onSound;
-        this.rect.scale.set(width + margin, fontSize + margin);
+        this.rect.transform.scale.set(width + margin, fontSize + margin);
         this.add(this.rect);
         this.drawAfterChildren();
     }
@@ -2001,7 +2014,7 @@ export class CheckBox extends GameObject {
         this.checkColor = checkColor;
         this.size = size;
         this.sound = sound;
-        this.rect.scale.set(size, size);
+        this.rect.transform.scale.set(size, size);
         this.add(this.rect);
     }
     update(dt) {
