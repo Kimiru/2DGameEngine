@@ -4,6 +4,8 @@ declare global {
     }
 }
 
+type matrix = [number, number, number, number, number, number]
+
 const PI2 = Math.PI * 2
 
 const gameEngineConstructorArguments: {
@@ -75,9 +77,8 @@ export class GameEngine {
 
             if (this.#currentScene && this.#currentScene.camera) {
 
-                let worldTransformList = this.#currentScene.camera.getWorldTransformList()
-
-                worldTransformList.forEach(func => func(vector))
+                let matrix = this.#currentScene.camera.getWorldTransformMatrix()
+                vector = TransformMatrix.multVec(matrix, vector)
 
             }
 
@@ -322,6 +323,15 @@ export class GameEngine {
 
 }
 
+export class RenderingStyle {
+
+    static INFINITY = 0 // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
+    // static IN_VIEW = 1 // Render only the object that are in the cameraview, or at default position and range if no camera is set // Distance to camera computation for all object // Recommended when lot of object with little child depth
+    static IN_VIEW = 1 // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
+
+}
+
+
 /**
  * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering.
  * GameScene id is not used for scene unicity but for scene sorting regarding Network.
@@ -340,6 +350,8 @@ export class GameScene {
     children: GameObject[] = []
     camera: Camera = null
     engine: GameEngine = null
+
+    renderingStyle: number = RenderingStyle.INFINITY
 
     /**
      * Create a new empty GameScene
@@ -377,8 +389,10 @@ export class GameScene {
 
     }
 
+    childrenDrawFilter(children: GameObject[]): GameObject[] { return children }
+
     /**
-     * Draw the scene and its child
+     * Draw the scene and its children (children first)
      * Is called by the GameEngine to draw the scene
      * Should not be called by the user
      * 
@@ -386,31 +400,39 @@ export class GameScene {
      */
     executeDraw(ctx: CanvasRenderingContext2D) {
 
+        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2
+        let cameraPosition = this.camera?.getWorldPosition() ?? new Vector(0, 0)
+
         if (this.camera) {
+            ctx.transform(...(this.camera.bake ?? this.camera.getViewTransformMatrix()))
+            drawRange *= this.camera.getRange()
+        }
 
-            if (this.camera.bake)
-                ctx.transform(this.camera.bake[0], this.camera.bake[1], this.camera.bake[2], this.camera.bake[3], this.camera.bake[4], this.camera.bake[5])
+        let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y)
 
-            else {
+        if (this.renderingStyle === RenderingStyle.INFINITY) {
 
-                let wpos = this.camera.getWorldPosition()
-                let wrot = this.camera.getWorldRotation()
+            for (let child of children)
+                if (child instanceof GameObject) child.executeDraw(ctx, drawRange, cameraPosition)
+        }
 
-                ctx.translate(-wpos.x, -wpos.y)
-                ctx.rotate(-wrot)
-                ctx.scale(1 / this.camera.scale.x, 1 / this.camera.scale.y)
+        else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+
+            for (let child of children) {
+
+                let childPosition = child.getWorldPosition()
+                let distance = cameraPosition.distanceTo(childPosition)
+                let maxChildRange = distance - drawRange
+
+                if (child.drawRange >= maxChildRange && child instanceof GameObject) child.executeDraw(ctx, drawRange, cameraPosition)
 
             }
 
         }
 
-        this.children.sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y)
+
 
         this.draw(ctx)
-
-        for (let child of this.children)
-            if (child instanceof GameObject)
-                child.executeDraw(ctx)
 
     }
 
@@ -625,7 +647,10 @@ export class GameObject {
     zIndex: number = 0
     #rotation: number = 0
     scale: Vector = new Vector(1, 1)
-    bake: number[] = null
+    bake: matrix = null
+
+    drawRange: number = 0 // If set to infinity, will always be rendered no matter the rendering style
+    renderingStyle: number = RenderingStyle.INFINITY
 
     /**
      * Create a new raw GameObject
@@ -708,7 +733,7 @@ export class GameObject {
 
             let index = this.tags.indexOf(t)
 
-            if (index !== 1)
+            if (index !== -1)
                 this.tags.splice(index, 1)
 
         }
@@ -810,6 +835,8 @@ export class GameObject {
 
     }
 
+    childrenDrawFilter(children: GameObject[]): GameObject[] { return children }
+
     /**
     * Draw the object and its child.
     * Is called by the Scene or parent objects to draw this object.
@@ -817,31 +844,41 @@ export class GameObject {
     * 
     * @param {number} dt 
     */
-    executeDraw(ctx: CanvasRenderingContext2D) {
+    executeDraw(ctx: CanvasRenderingContext2D, drawRange: number, cameraPosition: Vector) {
 
         ctx.save()
 
-        if (this.bake)
-            ctx.transform(this.bake[0], this.bake[1], this.bake[2], this.bake[3], this.bake[4], this.bake[5])
-
-        else {
-
-            ctx.translate(this.position.x, this.position.y)
-
-            if (this.rotation !== 0)
-                ctx.rotate(this.#rotation)
-
-            if (!this.scale.equalS(1, 1))
-                ctx.scale(this.scale.x, this.scale.y)
-
-        }
+        ctx.transform(...(this.bake ?? this.getLocalTransformMatrix()))
 
         if (this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
 
-        if (this.childrenDrawEnabled)
-            for (let child of this.children)
-                if (child instanceof GameObject)
-                    child.executeDraw(ctx)
+        if (this.childrenDrawEnabled) {
+
+            let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y)
+
+            if (this.renderingStyle === RenderingStyle.INFINITY) {
+
+                for (let child of children)
+                    if (child instanceof GameObject)
+                        child.executeDraw(ctx, drawRange, cameraPosition)
+
+            }
+
+            else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+
+                for (let child of children) {
+
+                    let childPosition = child.getWorldPosition()
+                    let distance = cameraPosition.distanceTo(childPosition)
+                    let maxChildRange = distance - drawRange
+
+                    if (child.drawRange >= maxChildRange && child instanceof GameObject)
+                        child.executeDraw(ctx, drawRange, cameraPosition)
+                }
+
+            }
+
+        }
 
         if (!this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
 
@@ -953,50 +990,24 @@ export class GameObject {
 
     }
 
-    getWorldTransformList(): ((vec: Vector) => void)[] {
+    getWorldTransformMatrix(): matrix {
 
-        let list: ((vec: Vector) => void)[] = []
+        let matrix: matrix = this.getLocalTransformMatrix()
 
-        let currentObject: GameObject = this
+        let currentObject: GameObject = this.parent
 
         while (currentObject) {
 
-            if (!currentObject.scale.equalS(1, 1)) {
-
-                let scale = currentObject.scale.clone()
-
-                list.push((vec: Vector) => { vec.mult(scale) })
-
-            }
-
-            if (currentObject.rotation) {
-
-                let rotation = currentObject.rotation
-
-                list.push((vec: Vector) => { vec.rotate(rotation) })
-
-            }
-
-            if (!currentObject.position.nil()) {
-
-                let position = currentObject.position.clone()
-
-                list.push((vec: Vector) => { vec.add(position) })
-
-            }
-
+            matrix = TransformMatrix.multMat(currentObject.getLocalTransformMatrix(), matrix)
             currentObject = currentObject.parent
 
         }
 
-        return list
+        return matrix
 
     }
 
-    /**
-     * Bake the object transformation for quicker use
-     */
-    bakeTransform() {
+    getLocalTransformMatrix(): matrix {
 
         let cos = Math.cos(this.#rotation)
         let sin = Math.sin(this.#rotation)
@@ -1005,7 +1016,7 @@ export class GameObject {
         let x = this.position.x
         let y = this.position.y
 
-        this.bake = [
+        return [
             cos * sx,
             sin * sx,
             -sin * sy,
@@ -1013,6 +1024,15 @@ export class GameObject {
             x,
             y
         ]
+
+    }
+
+    /**
+     * Bake the object transformation for quicker use
+     */
+    bakeTransform(): void {
+
+        this.bake = this.getLocalTransformMatrix()
 
     }
 
@@ -1265,7 +1285,7 @@ export class Input {
 
         let result = new Vector(evt.offsetX, evt.offsetY)
         let target = evt.currentTarget as HTMLCanvasElement
-        result.div(new Vector(target.offsetWidth, target.offsetHeight))
+        result.div(new Vector(target.offsetWidth, target.offsetHeight, 1))
 
         return this.positionAdapter(result)
 
@@ -1397,31 +1417,10 @@ export class Camera extends GameObject {
         this.updateEnabled = false
         this.physicsEnabled = false
         this.drawEnabled = false
-        this.childrenUpdateEnabled = false
-        this.childrenPhysicsEnabled = false
-        this.childrenDrawEnabled = false
 
     }
 
-    /**
-     * This function has been disabled for this object in particular
-     * You cannot add children to this object
-     * 
-     * @param {number} dt 
-     */
-    add(...object: GameObject[]): this { return this }
-
-    /**
-     * This function has been disabled for this object in particular
-     * 
-     * @param {number} dt 
-     */
-    remove(...object: GameObject[]): this { return this }
-
-    /**
-     * Bake the object transformation for quicker use
-     */
-    bakeTransform() {
+    getViewTransformMatrix(): matrix {
 
         let wpos = this.getWorldPosition()
         let wrot = this.getWorldRotation()
@@ -1433,7 +1432,7 @@ export class Camera extends GameObject {
         let x = -wpos.x
         let y = -wpos.y
 
-        this.bake = [
+        return [
             cos * sx,
             sin * sx,
             -sin * sy,
@@ -1441,6 +1440,50 @@ export class Camera extends GameObject {
             x,
             y
         ]
+
+    }
+
+
+
+    getRange(): number { return Math.max(this.scale.x, this.scale.y) }
+
+}
+
+export class TrackingCamera extends Camera {
+
+    trackedObject: GameObject
+    trackLag: number = 1
+    minTrack: number = 1
+
+    constructor() {
+
+        super()
+
+        this.updateEnabled = true
+
+    }
+
+    update(dt: number): void {
+
+        if (this.trackedObject && this.scene === this.trackedObject.scene) {
+
+            let cameraWorldPosition = this.getWorldPosition()
+            let objectWorldPosition = this.trackedObject.getWorldPosition()
+
+            if (cameraWorldPosition.equal(objectWorldPosition)) return
+
+            let rawOffset = objectWorldPosition.clone().sub(cameraWorldPosition)
+            let offset = rawOffset.clone().divS(this.trackLag)
+            let len = offset.length()
+            if (len < this.minTrack) offset.normalize().multS(this.minTrack)
+            offset.multS(dt)
+
+            if (offset.length() > cameraWorldPosition.distanceTo(objectWorldPosition))
+                this.position.add(rawOffset)
+            else
+                this.position.add(offset)
+
+        }
 
     }
 
@@ -1778,12 +1821,37 @@ export class Vector {
      */
     static fromAngle(angle: number): Vector { return new Vector(Math.cos(angle), Math.sin(angle)) }
 
+    static distanceBetween(a: Vector, b: Vector) { return a.distanceTo(b) }
+
+    exec(func: (vec: Vector) => void): this {
+
+        func(this)
+
+        return this
+
+    }
+
+    /**
+     * 
+     * @returns {this}
+     */
+    round(): this {
+
+        this.x = Math.round(this.x)
+        this.y = Math.round(this.y)
+        this.z = Math.round(this.z)
+
+        return this
+
+    }
 
 }
 
 export class PositionIntegrator {
 
     previousPosition: Vector = new Vector()
+    previousVelocity: Vector = new Vector()
+    previousAcceleration: Vector = new Vector()
     position: Vector = new Vector()
     velocity: Vector = new Vector()
     acceleration: Vector = new Vector()
@@ -1795,6 +1863,8 @@ export class PositionIntegrator {
         let tt = t * t
 
         this.previousPosition.copy(this.position)
+        this.previousVelocity.copy(this.velocity)
+        this.previousAcceleration.copy(this.acceleration)
         this.position
             .add(this.velocity.clone().multS(t))
             .add(this.acceleration.clone().multS(tt * 1 / 2))
@@ -1802,6 +1872,12 @@ export class PositionIntegrator {
         this.velocity.add(this.acceleration.clone().multS(t))
 
     }
+
+    positionHasChanged() { return !this.previousPosition.equal(this.position) }
+
+    velocityHasChanged() { return !this.previousVelocity.equal(this.velocity) }
+
+    accelerationHasChanged() { return !this.previousAcceleration.equal(this.acceleration) }
 
 }
 
@@ -1955,6 +2031,10 @@ export function loadSounds(sounds: { name: string, srcs: string[] }[], increment
 export class Polygon extends GameObject {
 
     #points: Vector[] = []
+
+    outer: Vector[] = []
+    inners: Vector[][] = []
+
     fill: boolean = false
 
     /**
@@ -1962,26 +2042,38 @@ export class Polygon extends GameObject {
      * 
      * @param points 
      */
-    constructor(...points: Vector[]) {
+    constructor(outer: Vector[] = [], ...inners: Vector[][]) {
 
         super()
 
-        this.points = points
+        this.outer = outer
+        this.inners = inners
 
     }
 
-    get points(): Vector[] { return [...this.#points] }
-    set points(pts: Vector[]) { this.#points = pts }
+    /**
+     * Returns a list of points, such that it represents the polygon with theorically no holes. Duplicates the first Vector at the end of the list for practical purposes
+     * 
+     * @returns {Vector[]}
+     */
+    getLinear(): Vector[] {
 
-    get worldPoints(): Vector[] {
+        let points: Vector[] = [...this.outer, this.outer[0]]
 
-        let worldTransformList = this.getWorldTransformList()
-
-        let points = this.points
-
-        worldTransformList.forEach(points.forEach.bind(points))
+        for (let inner of this.inners)
+            points.push(...inner, points[0])
 
         return points
+
+    }
+
+    getWorldLinear() {
+
+        let matrix = this.getLocalTransformMatrix()
+
+        let points = this.getLinear()
+
+        return points.map(point => TransformMatrix.multVec(matrix, point))
 
     }
 
@@ -1995,12 +2087,12 @@ export class Polygon extends GameObject {
 
         let segments = []
 
-        let points = this.points
+        let points = this.getLinear()
 
-        if (points.length < 2) return segments
+        if (points.length < 3) return segments
 
-        for (let index = 0; index < points.length; index++) {
-            segments.push(new Segment(points[index].clone(), points[(index + 1) % points.length].clone()))
+        for (let index = 0; index < points.length - 1; index++) {
+            segments.push(new Segment(points[index].clone(), points[index + 1].clone()))
         }
 
         return segments
@@ -2011,7 +2103,7 @@ export class Polygon extends GameObject {
 
         let segments = []
 
-        let points = this.worldPoints
+        let points = this.getWorldLinear()
 
         if (points.length < 2) return segments
 
@@ -2028,24 +2120,32 @@ export class Polygon extends GameObject {
      * Should not be called by the user
      * 
      * @param {CanvasRenderingContext2D} ctx 
-     * @returns {boolean}
      */
-    draw(ctx: CanvasRenderingContext2D): boolean {
+    draw(ctx: CanvasRenderingContext2D) {
 
-        if (this.points.length === 0) return true
+        if (this.outer.length < 3) return
 
         ctx.fillStyle = ctx.strokeStyle = 'yellow'
         ctx.beginPath()
-        ctx.moveTo(this.points[0].x, this.points[0].y)
-        for (let index = 1; index < this.points.length; index++) {
-            ctx.lineTo(this.points[index].x, this.points[index].y)
+        ctx.moveTo(this.outer[0].x, this.outer[0].y)
+        for (let index = 1; index <= this.outer.length; index++) {
+            ctx.lineTo(this.outer[index % this.outer.length].x, this.outer[index % this.outer.length].y)
         }
-        ctx.lineTo(this.points[0].x, this.points[0].y)
+        ctx.closePath()
+
+        for (let inner of this.inners) {
+
+            ctx.moveTo(inner[0].x, inner[0].y)
+
+            for (let index = 1; index <= inner.length; index++)
+                ctx.lineTo(inner[index % inner.length].x, inner[index % inner.length].y)
+            ctx.closePath()
+
+        }
+
         if (this.fill)
             ctx.fill()
         else ctx.stroke()
-
-        return true
 
     }
 
@@ -2059,7 +2159,7 @@ export class Polygon extends GameObject {
 
         for (let segment of segments) if (ray.intersect(segment)) count++
 
-        return (count % 2) === 1
+        return (count & 1) === 1
 
     }
 
@@ -2073,7 +2173,7 @@ export class Polygon extends GameObject {
 
         for (let segment of segments) if (ray.intersect(segment)) count++
 
-        return (count % 2) === 1
+        return (count & 1) === 1
 
     }
 
@@ -2092,7 +2192,7 @@ export class Rectangle extends Polygon {
 
     constructor(x: number = 0, y: number = 0, w: number = 1, h: number = 1, display: boolean = false, displayColor: string = 'red') {
 
-        super()
+        super([], [])
 
         this.position.set(x, y)
         this.scale.set(w, h)
@@ -2100,38 +2200,22 @@ export class Rectangle extends Polygon {
         this.#ptmem[0].copy(this.position)
         this.#ptmem[1].copy(this.scale)
 
-        super.points = []
-
         this.display = display
         this.displayColor = displayColor
 
     }
 
-    get points(): Vector[] {
+    getLinear(): Vector[] {
 
-        if (super.points.length === 0 || !this.#ptmem[0].equal(this.position) || !this.#ptmem[1].equal(this.scale)) {
+        if (this.outer.length === 0 || !this.#ptmem[0].equal(this.position) || !this.#ptmem[1].equal(this.scale)) {
 
-            super.points = [this.topleft, this.bottomleft, this.bottomright, this.topright]
+            this.outer = [this.topleft, this.bottomleft, this.bottomright, this.topright]
             this.#ptmem[0].copy(this.position)
             this.#ptmem[1].copy(this.position)
 
         }
 
-        return super.points
-
-    }
-
-    set points(vecs: Vector[]) { }
-
-    get worldPoints(): Vector[] {
-
-        let worldTransformList = this.getWorldTransformList()
-
-        let points = [new Vector(-.5, .5), new Vector(-.5, -.5), new Vector(.5, -.5), new Vector(.5, .5)]
-
-        worldTransformList.forEach(points.forEach.bind(points))
-
-        return points
+        return super.getLinear()
 
     }
 
@@ -2205,6 +2289,7 @@ export class Segment extends GameObject {
     a: Vector = new Vector()
     b: Vector = new Vector()
     display: boolean = false
+    lineWidth: number = 1
 
     constructor(a: Vector, b: Vector, display: boolean = false) {
 
@@ -2252,8 +2337,9 @@ export class Segment extends GameObject {
 
             ctx.strokeStyle = 'red'
             ctx.beginPath()
-            ctx.moveTo(this.position.x + this.a.x, this.position.y + this.a.y)
-            ctx.lineTo(this.position.x + this.b.x, this.position.y + this.b.y)
+            ctx.lineWidth = this.lineWidth
+            ctx.moveTo(this.a.x, this.a.y)
+            ctx.lineTo(this.b.x, this.b.y)
             ctx.stroke()
         }
 
@@ -2345,21 +2431,9 @@ export class Ray extends GameObject {
 
 }
 
-export class RayCastShadow extends GameObject {
+export class RayCastVisible {
 
-    display: boolean = false
-
-    points: [number, Vector, Vector][] = []
-
-    constructor(display: boolean = false) {
-
-        super()
-
-        this.display = display
-
-    }
-
-    compute(segments: Segment[], infinity = 1000) {
+    static compute(position: Vector, segments: Segment[], infinity = 1000): Polygon {
 
         let uniques: Vector[] = [
             Vector.fromAngle(Math.PI / 4).multS(infinity),
@@ -2378,52 +2452,55 @@ export class RayCastShadow extends GameObject {
 
         }
 
-        let wp = this.getWorldPosition()
-
-        this.points = []
+        let points: [number, Vector, Vector][] = []
 
         for (let unique of uniques) {
 
-            let angle = unique.clone().sub(wp).angle()
+            let angle = unique.clone().sub(position).angle()
 
             let angle1 = angle + 0.00001
             let angle2 = angle - 0.00001
 
-            let ray = new Ray(wp.clone(), Vector.fromAngle(angle))
-            let ray1 = new Ray(wp.clone(), Vector.fromAngle(angle1))
-            let ray2 = new Ray(wp.clone(), Vector.fromAngle(angle2))
+            let ray = new Ray(position.clone(), Vector.fromAngle(angle))
+            let ray1 = new Ray(position.clone(), Vector.fromAngle(angle1))
+            let ray2 = new Ray(position.clone(), Vector.fromAngle(angle2))
 
             let pt = ray.cast(segments)
             let pt1 = ray1.cast(segments)
             let pt2 = ray2.cast(segments)
 
-            this.points.push([angle, pt ?? this.position.clone().add(ray.direction.multS(infinity)), pt?.clone().sub(wp) ?? ray.direction])
-            this.points.push([angle1, pt1 ?? this.position.clone().add(ray1.direction.multS(infinity)), pt1?.clone().sub(wp) ?? ray1.direction])
-            this.points.push([angle2, pt2 ?? this.position.clone().add(ray2.direction.multS(infinity)), pt2?.clone().sub(wp) ?? ray2.direction])
+            points.push([angle, pt ?? position.clone().add(ray.direction.multS(infinity)), pt?.clone().sub(position) ?? ray.direction])
+            points.push([angle1, pt1 ?? position.clone().add(ray1.direction.multS(infinity)), pt1?.clone().sub(position) ?? ray1.direction])
+            points.push([angle2, pt2 ?? position.clone().add(ray2.direction.multS(infinity)), pt2?.clone().sub(position) ?? ray2.direction])
 
         }
 
-        this.points.sort((a, b) => b[0] - a[0])
+        points.sort((a, b) => b[0] - a[0])
+
+        let polygon = new Polygon(points.map(e => e[2]))
+
+        return polygon
 
     }
 
-    enable() { this.display = true }
+    static cropPolygon(ctx: CanvasRenderingContext2D, polygon: Polygon): void {
 
-    disable() { this.display = false }
+        let points = polygon.getLinear()
 
-    draw(ctx: CanvasRenderingContext2D): boolean {
+        if (points.length < 4) return
 
-        if (this.display) {
-            ctx.globalCompositeOperation = 'destination-in'
-            let poly = new Polygon(...this.points.map(e => e[2]))
-            poly.fill = true
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.fillStyle = 'white'
 
-            poly.draw(ctx)
-            ctx.globalCompositeOperation = 'source-over'
+        ctx.beginPath()
 
-        }
+        ctx.moveTo(points[0].x, points[0].y)
+        for (let index = 1; index < points.length - 1; index++)
+            ctx.lineTo(points[index].x, points[index].y)
 
-        return true
+        ctx.fill()
+
+        ctx.globalCompositeOperation = 'source-over'
 
     }
 
@@ -2509,6 +2586,8 @@ export class SpriteSheet extends Drawable {
     saveLoop(name: string, loopOrigin: number, tileInLoop: number) { this.savedLoop.set(name, [loopOrigin, tileInLoop]) }
 
     useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name), index) }
+
+    isLoop(name: string): boolean { return this.loopOrigin == this.savedLoop.get(name)[0] }
 
     setLoop(loopOrigin: number, tileInLoop: number, startIndex: number = 0) {
 
@@ -2670,7 +2749,7 @@ export class Button extends GameObject {
     activeColor: string = 'gray'
     onSound: string
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null) {
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, margin = 4) {
 
         super()
 
@@ -2680,13 +2759,15 @@ export class Button extends GameObject {
         this.color = color
         this.onSound = onSound
 
-        this.rect.scale.set(width + 4, fontSize + 4)
+        this.rect.scale.set(width + margin, fontSize + margin)
 
         this.add(this.rect)
 
         this.drawAfterChildren()
 
     }
+
+    get currentColor(): string { return this.active ? this.activeColor : this.color }
 
     update(dt: number): void {
 
@@ -2720,7 +2801,7 @@ export class Button extends GameObject {
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.font = `${this.fontSize}px ${this.font}`
-        ctx.fillStyle = this.active ? this.activeColor : this.color
+        ctx.fillStyle = this.currentColor
 
         ctx.fillText(this.text, 0, 0, this.width)
 
@@ -3061,8 +3142,8 @@ class Graph<T> extends GameObject {
 
         if (this.display && this.positionGetter) {
 
-            ctx.restore()
             ctx.save()
+            ctx.restore()
 
             let positions: Map<number, Vector> = new Map()
 
@@ -3071,6 +3152,7 @@ class Graph<T> extends GameObject {
             }
 
             ctx.strokeStyle = 'blue'
+            ctx.lineWidth = .1
             for (let nodeA of this.links) {
 
                 for (let nodeB of nodeA[1]) {
@@ -3086,6 +3168,7 @@ class Graph<T> extends GameObject {
                 }
 
             }
+
 
         }
 
@@ -3491,7 +3574,7 @@ export function map(nbr: number, sourceMin: number, sourceMax: number, targetMin
 let idCount = 0
 export function id() { return ++idCount }
 
-function* range(min: number, max: number = null, step: number = 1) {
+export function* range(min: number, max: number = null, step: number = 1) {
 
     if (!max) {
         max = min
@@ -4066,6 +4149,7 @@ export class NetworkGameObject extends GameObject {
     secID: number = null
     synced: boolean = false
     owner: string = null
+    syncedFunctions: string[] = []
 
     constructor() {
 
@@ -4074,6 +4158,8 @@ export class NetworkGameObject extends GameObject {
     }
 
     source(data: any): void { }
+
+    getSource(): any { return badclone(this) }
 
     sync(): void {
 
@@ -4096,7 +4182,7 @@ export class NetworkGameObject extends GameObject {
         let message = {
             event: 'Network$newobject',
             data: {
-                data: badclone(this),
+                data: this.getSource(),
                 proto: this.constructor.name,
                 owner: Network.id,
                 scene: this.scene?.id,
@@ -4108,6 +4194,27 @@ export class NetworkGameObject extends GameObject {
         }
 
         Network.sendToAll(message)
+
+    }
+
+    syncCalls(...functionsName: string[]) {
+
+        for (let name of functionsName) {
+
+            this.syncedFunctions.push(name)
+
+            let func = this[name]
+            this[name] = function () {
+
+                console.log('called synced function')
+
+                this.sendUpdate({ event: 'CALLFUNCTION', func: name, args: arguments })
+
+                func(...arguments)
+
+            }
+
+        }
 
     }
 
@@ -4164,6 +4271,8 @@ export class NetworkGameObject extends GameObject {
         NetworkGameObject.list.get(this.owner).delete(this.secID)
 
     }
+
+    isMine(): boolean { return this.owner === Network.id }
 
 }
 
@@ -4259,6 +4368,13 @@ export class NetworkGameObject extends GameObject {
 
                     }
 
+                    else if (typeof update.data === 'object' && update.data.event === 'CALLFUNCTION') {
+
+                        if (object.syncedFunctions.includes(message.data.func))
+                            object[message.data.func](message.data.are)
+
+                    }
+
                     else object.recvUpdate(update.data)
                 }
 
@@ -4351,6 +4467,41 @@ export class NetworkGameObject extends GameObject {
 }
 
 
+export class TransformMatrix {
+
+    static multMat(m1: matrix, m2: matrix): matrix {
+
+        return [
+
+            m1[0] * m2[0] + m1[2] * m2[1],
+            m1[1] * m2[0] + m1[3] * m2[1],
+            m1[0] * m2[2] + m1[2] * m2[3],
+            m1[1] * m2[2] + m1[3] * m2[3],
+            m1[0] * m2[4] + m1[2] * m2[5] + m1[4],
+            m1[1] * m2[4] + m1[3] * m2[5] + m1[5]
+
+        ]
+
+    }
+
+    /**
+     * Multiply the given matrix by the given Vector. Mutation safe
+     * 
+     * @param m1 
+     * @param vec 
+     * @returns 
+     */
+    static multVec(m1: matrix, vec: Vector): Vector {
+
+        return new Vector(
+            m1[0] * vec.x + m1[2] * vec.y + m1[4],
+            m1[1] * vec.x + m1[3] * vec.y + m1[5],
+            0
+        )
+
+    }
+
+}
 
 const getCircularReplacer = () => {
 

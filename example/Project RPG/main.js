@@ -1,7 +1,9 @@
-import { GameEngine, Network, NetworkGameObject, TextureMapper } from './js/2DGameEngine.js'
-import { CoinFlipScene } from './objects/CoinFlipScene.js'
+import { GameEngine, GameScene, Network, NetworkGameObject, TextureMapper, TransformMatrix } from './js/2DGameEngine.js'
 import { LogScene } from './objects/LogScene.js'
+import { MainScene } from './objects/MainScene.js'
+import { MenuScene } from './objects/MenuScene.js'
 import { SelectionScene } from './objects/SelectionScene.js'
+import { WaitingRoom } from './objects/WaitingRoom.js'
 
 window.Network = Network
 window.NGO = NetworkGameObject
@@ -10,15 +12,20 @@ window.TextureMapper = TextureMapper
 let engine = new GameEngine({
     width: innerWidth * .97,
     height: innerHeight * .97,
-    verticalPixels: 200,
+    verticalPixels: 8,
     images: [
         { name: 'mlp16', src: './images/mlp16.png' },
-        { name: 'player_model', src: './images/player_model.png' },
-        { name: 'player_head', src: './images/player_head.png' },
-        { name: 'player_legs', src: './images/player_legs.png' },
-        { name: 'player_bust', src: './images/player_bust.png' },
-        { name: 'player_model_colorchart', src: './images/player_model_colorchart.png' },
-        { name: 'player_model_color_light', src: './images/player_model_color_light.png' },
+        { name: 'blank', src: './images/blank.png' },
+        { name: 'dirt', src: './images/dirt.png' },
+        { name: 'ground', src: './images/ground.png' },
+        { name: 'plank', src: './images/plank.png' },
+        { name: 'torchi', src: './images/torchi.png' },
+        { name: 'wall', src: './images/wall.png' },
+        { name: 'grid', src: './images/grid.png' },
+        { name: 'door', src: './images/wooden_door.png' },
+        { name: 'uparrow', src: './images/uparrow.png' },
+        { name: 'downarrow', src: './images/downarrow.png' },
+        { name: 'loupe', src: './images/loupe.png' },
     ],
     sounds: [
         { name: 'bip', srcs: ['./sounds/menubip1.wav', './sounds/menubip2.wav', './sounds/menubip3.wav'] },
@@ -34,9 +41,13 @@ document.body.appendChild(engine.canvas)
 engine.start()
 engine.onResourcesLoaded(() => {
 
-    engine.setScene(new LogScene())
+    new LogScene()
+    // engine.setScene(new LogScene())
     new SelectionScene()
-    new CoinFlipScene()
+    new WaitingRoom()
+    new MainScene()
+    new MenuScene()
+    engine.setScene(GameScene.list.get('MainScene'))
 
 })
 
@@ -57,4 +68,3 @@ if (localStorage.getItem('volume')) {
 }
 
 engine.soundBank.forEach(sound => sound.setVolume(volume))
-

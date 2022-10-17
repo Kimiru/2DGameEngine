@@ -594,10 +594,12 @@ export class GameObject {
         }
         if (this.#drawBeforeChild && this.drawEnabled)
             this.draw(ctx);
-        if (this.childrenDrawEnabled)
+        if (this.childrenDrawEnabled) {
+            this.children.sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.position.y - a.position.y);
             for (let child of this.children)
                 if (child instanceof GameObject)
                     child.executeDraw(ctx);
+        }
         if (!this.#drawBeforeChild && this.drawEnabled)
             this.draw(ctx);
         ctx.restore();
@@ -1290,6 +1292,8 @@ export class Vector {
 }
 export class PositionIntegrator {
     previousPosition = new Vector();
+    previousVelocity = new Vector();
+    previousAcceleration = new Vector();
     position = new Vector();
     velocity = new Vector();
     acceleration = new Vector();
@@ -1297,11 +1301,16 @@ export class PositionIntegrator {
     integrate(t) {
         let tt = t * t;
         this.previousPosition.copy(this.position);
+        this.previousVelocity.copy(this.velocity);
+        this.previousAcceleration.copy(this.acceleration);
         this.position
             .add(this.velocity.clone().multS(t))
             .add(this.acceleration.clone().multS(tt * 1 / 2));
         this.velocity.add(this.acceleration.clone().multS(t));
     }
+    positionHasChanged() { return !this.previousPosition.equal(this.position); }
+    velocityHasChanged() { return !this.previousVelocity.equal(this.velocity); }
+    accelerationHasChanged() { return !this.previousAcceleration.equal(this.acceleration); }
 }
 /**
  * loads multiple images and use callbacks for progression checks and at the end
@@ -1754,6 +1763,7 @@ export class SpriteSheet extends Drawable {
     }
     saveLoop(name, loopOrigin, tileInLoop) { this.savedLoop.set(name, [loopOrigin, tileInLoop]); }
     useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name), index); }
+    isLoop(name) { return this.loopOrigin == this.savedLoop.get(name)[0]; }
     setLoop(loopOrigin, tileInLoop, startIndex = 0) {
         this.loopOrigin = loopOrigin;
         this.tileInLoop = tileInLoop;
@@ -2839,6 +2849,7 @@ export class NetworkGameObject extends GameObject {
         NetworkGameObject.pendingUpdates.push(message);
         NetworkGameObject.list.get(this.owner).delete(this.secID);
     }
+    isMine() { return this.owner === Network.id; }
 }
 { // Auto NetworkGameObject Management
     function moveObjectTo(object, scene, parent) {

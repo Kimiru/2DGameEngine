@@ -1,5 +1,5 @@
 {
-    "name": "threejsgameengine",
+    "name": "2dgameengine",
     "version": "1.0.0",
     "description": "",
     "main": "",
@@ -8,6 +8,7 @@
         "build": "tsc --project ./tsconfig.json",
         "simple": "cp -r js example/simple_demo/ && cd example/simple_demo/ && ./fixpaths.sh",
         "coin": "cp -r js example/Coinflip/",
+        "rpg": "cp -r js example/Project\\ RPG/",
         "clean": "rm -r js/*"
     },
     "author": "Kimiru_Laeli",
