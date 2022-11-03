@@ -814,6 +814,8 @@ export class Timer {
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */
 export class Input {
+    #charDown = new Set();
+    #charOnce = new Set();
     #keysDown = new Set();
     #keysOnce = new Set();
     #mouseButtons = [false, false, false];
@@ -823,6 +825,8 @@ export class Input {
     positionAdapter = function (vector) { return vector; };
     constructor() {
         window.addEventListener('keydown', (evt) => {
+            this.#charDown.add(evt.key);
+            this.#charOnce.add(evt.key);
             this.#keysDown.add(evt.code);
             this.#keysOnce.add(evt.code);
         });
@@ -846,6 +850,26 @@ export class Input {
             in: this.#mouseIn
         };
         return result;
+    }
+    /**
+     * Return true if the given char is down
+     *
+     * @param {string} char
+     * @returns {boolean}
+     */
+    isCharDown(char) { return this.#charDown.has(char); }
+    /**
+     * return true once if the given char is down, must be repressed to return true again
+     *
+     * @param {string} code
+     * @returns {boolean}
+     */
+    isCharPressed(char) {
+        if (this.#charOnce.has(char)) {
+            this.#charOnce.delete(char);
+            return true;
+        }
+        return false;
     }
     /**
      * Return true if the given key is down
@@ -1346,6 +1370,16 @@ export class Vector {
         this.x = Math.round(this.x);
         this.y = Math.round(this.y);
         this.z = Math.round(this.z);
+        return this;
+    }
+    /**
+     *
+     * @returns {this}
+     */
+    floor() {
+        this.x = Math.floor(this.x);
+        this.y = Math.floor(this.y);
+        this.z = Math.floor(this.z);
         return this;
     }
 }
@@ -2255,10 +2289,11 @@ class Path {
         return this.currentPosition.clone();
     }
 }
-export class ImageManipulator {
+export class ImageManipulator extends GameObject {
     canvas;
     ctx;
-    constructor(width, height) {
+    constructor(width = 1, height = 1) {
+        super();
         this.canvas = document.createElement('canvas');
         this.canvas.width = width;
         this.canvas.height = height;
@@ -2267,6 +2302,11 @@ export class ImageManipulator {
     }
     get width() { return this.canvas.width; }
     get height() { return this.canvas.height; }
+    setSize(width, height) {
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.ctx.imageSmoothingEnabled = false;
+    }
     setPixel(x, y, color) {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x, y, 1, 1);
@@ -2304,6 +2344,12 @@ export class ImageManipulator {
         let im = new ImageManipulator(image.width, image.height);
         im.ctx.drawImage(image, 0, 0);
         return im;
+    }
+    draw(ctx) {
+        ctx.save();
+        ctx.scale(1 / this.width, -1 / this.height);
+        ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2);
+        ctx.restore();
     }
 }
 export class PseudoRandom {

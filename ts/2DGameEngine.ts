@@ -1156,6 +1156,8 @@ export class Timer {
  */
 export class Input {
 
+    #charDown: Set<string> = new Set()
+    #charOnce: Set<string> = new Set()
     #keysDown: Set<string> = new Set()
     #keysOnce: Set<string> = new Set()
     #mouseButtons: [boolean, boolean, boolean] = [false, false, false]
@@ -1168,6 +1170,8 @@ export class Input {
 
         window.addEventListener('keydown', (evt) => {
 
+            this.#charDown.add(evt.key)
+            this.#charOnce.add(evt.key)
             this.#keysDown.add(evt.code)
             this.#keysOnce.add(evt.code)
 
@@ -1207,6 +1211,33 @@ export class Input {
         }
 
         return result
+    }
+
+    /**
+     * Return true if the given char is down
+     * 
+     * @param {string} char 
+     * @returns {boolean}
+     */
+    isCharDown(char: string): boolean { return this.#charDown.has(char) }
+
+    /**
+     * return true once if the given char is down, must be repressed to return true again
+     * 
+     * @param {string} code 
+     * @returns {boolean}
+     */
+    isCharPressed(char: string): boolean {
+
+        if (this.#charOnce.has(char)) {
+
+            this.#charOnce.delete(char)
+
+            return true
+
+        }
+
+        return false
     }
 
     /**
@@ -1879,6 +1910,20 @@ export class Vector {
         this.x = Math.round(this.x)
         this.y = Math.round(this.y)
         this.z = Math.round(this.z)
+
+        return this
+
+    }
+
+    /**
+     * 
+     * @returns {this}
+     */
+    floor(): this {
+
+        this.x = Math.floor(this.x)
+        this.y = Math.floor(this.y)
+        this.z = Math.floor(this.z)
 
         return this
 
@@ -3283,12 +3328,14 @@ class Path {
 
 }
 
-export class ImageManipulator {
+export class ImageManipulator extends GameObject {
 
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
 
-    constructor(width: number, height: number) {
+    constructor(width: number = 1, height: number = 1) {
+
+        super()
 
         this.canvas = document.createElement('canvas')
 
@@ -3303,6 +3350,15 @@ export class ImageManipulator {
     get width(): number { return this.canvas.width }
 
     get height(): number { return this.canvas.height }
+
+    setSize(width: number, height: number) {
+
+        this.canvas.width = width
+        this.canvas.height = height
+
+        this.ctx.imageSmoothingEnabled = false
+
+    }
 
     setPixel(x: number, y: number, color: string) {
 
@@ -3371,6 +3427,17 @@ export class ImageManipulator {
         im.ctx.drawImage(image, 0, 0)
 
         return im
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        ctx.scale(1 / this.width, -1 / this.height)
+        ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
+
+        ctx.restore()
 
     }
 
