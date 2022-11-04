@@ -1929,6 +1929,16 @@ export class Vector {
 
     }
 
+    abs() {
+
+        this.x = Math.abs(this.x)
+        this.y = Math.abs(this.y)
+        this.z = Math.abs(this.z)
+
+        return this
+
+    }
+
 }
 
 export class PositionIntegrator {
@@ -3353,10 +3363,19 @@ export class ImageManipulator extends GameObject {
 
     setSize(width: number, height: number) {
 
+        let tmpcanvas = document.createElement('canvas')
+        tmpcanvas.width = this.canvas.width
+        tmpcanvas.height = this.canvas.height
+        let tmpctx = tmpcanvas.getContext('2d')
+        tmpctx.imageSmoothingEnabled = false
+        tmpctx.drawImage(this.canvas, 0, 0)
+
         this.canvas.width = width
         this.canvas.height = height
 
         this.ctx.imageSmoothingEnabled = false
+
+        this.ctx.drawImage(tmpcanvas, 0, 0)
 
     }
 

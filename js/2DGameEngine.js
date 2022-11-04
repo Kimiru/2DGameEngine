@@ -2303,9 +2303,16 @@ export class ImageManipulator extends GameObject {
     get width() { return this.canvas.width; }
     get height() { return this.canvas.height; }
     setSize(width, height) {
+        let tmpcanvas = document.createElement('canvas');
+        tmpcanvas.width = this.canvas.width;
+        tmpcanvas.height = this.canvas.height;
+        let tmpctx = tmpcanvas.getContext('2d');
+        tmpctx.imageSmoothingEnabled = false;
+        tmpctx.drawImage(this.canvas, 0, 0);
         this.canvas.width = width;
         this.canvas.height = height;
         this.ctx.imageSmoothingEnabled = false;
+        this.ctx.drawImage(tmpcanvas, 0, 0);
     }
     setPixel(x, y, color) {
         this.ctx.fillStyle = color;
