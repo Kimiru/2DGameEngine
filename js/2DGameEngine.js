@@ -1382,6 +1382,12 @@ export class Vector {
         this.z = Math.floor(this.z);
         return this;
     }
+    abs() {
+        this.x = Math.abs(this.x);
+        this.y = Math.abs(this.y);
+        this.z = Math.abs(this.z);
+        return this;
+    }
 }
 export class PositionIntegrator {
     previousPosition = new Vector();
@@ -1666,6 +1672,9 @@ export class Rectangle extends Polygon {
             ctx.restore();
         }
         return true;
+    }
+    toString() {
+        return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`;
     }
 }
 export class Segment extends GameObject {

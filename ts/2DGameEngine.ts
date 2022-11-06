@@ -2376,6 +2376,12 @@ export class Rectangle extends Polygon {
 
     }
 
+    toString() {
+
+        return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`
+
+    }
+
 }
 
 export class Segment extends GameObject {
