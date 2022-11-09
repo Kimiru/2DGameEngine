@@ -1179,6 +1179,8 @@ export class Input {
 
         window.addEventListener('keyup', (evt) => {
 
+            this.#charDown.delete(evt.key)
+            this.#charOnce.delete(evt.key)
             this.#keysDown.delete(evt.code)
             this.#keysOnce.delete(evt.code)
 
