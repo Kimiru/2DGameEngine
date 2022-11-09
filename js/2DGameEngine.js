@@ -1673,6 +1673,9 @@ export class Rectangle extends Polygon {
         }
         return true;
     }
+    clone() {
+        return new Rectangle(this.x, this.y, this.w, this.h);
+    }
     toString() {
         return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`;
     }

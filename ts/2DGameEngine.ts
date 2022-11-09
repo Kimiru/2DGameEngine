@@ -2376,6 +2376,12 @@ export class Rectangle extends Polygon {
 
     }
 
+    clone(): Rectangle {
+
+        return new Rectangle(this.x, this.y, this.w, this.h)
+
+    }
+
     toString() {
 
         return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`
