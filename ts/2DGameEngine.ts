@@ -1471,8 +1471,6 @@ export class Input {
         this.#gamepad.leftStickButton = gamepad.buttons[9].pressed
         this.#gamepad.rightStickButton = gamepad.buttons[10].pressed
 
-        let gp = this.gamepad
-
     }
 
 }
