@@ -198,6 +198,7 @@ export class GameEngine {
         }
         this.ctx.restore();
         this.input.mouseLoop();
+        this.input.gamepadLoop();
         this.#switchScene();
         requestAnimationFrame(this.#loop.bind(this));
     }
@@ -823,6 +824,28 @@ export class Input {
     #mouseIn = false;
     #mouseClick = [false, false, false];
     positionAdapter = function (vector) { return vector; };
+    #gamepad = {
+        leftJoystick: new Vector(0, 0),
+        rightJoystick: new Vector(0, 0),
+        leftStickButton: false,
+        leftButton: false,
+        leftTrigger: 0,
+        rightStickButton: false,
+        rightButton: false,
+        rightTrigger: 0,
+        A: false,
+        B: false,
+        X: false,
+        Y: false,
+        start: false,
+        select: false,
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+        home: false
+    };
+    static deadPoint = .1;
     constructor() {
         window.addEventListener('keydown', (evt) => {
             this.#charDown.add(evt.key);
@@ -852,6 +875,12 @@ export class Input {
             in: this.#mouseIn
         };
         return result;
+    }
+    get gamepad() {
+        let gamepad = badclone(this.#gamepad);
+        gamepad.leftJoystick = this.#gamepad.leftJoystick.clone();
+        gamepad.rightJoystick = this.#gamepad.rightJoystick.clone();
+        return gamepad;
     }
     /**
      * Return true if the given char is down
@@ -978,6 +1007,35 @@ export class Input {
         let target = evt.currentTarget;
         result.div(new Vector(target.offsetWidth, target.offsetHeight, 1));
         return this.positionAdapter(result);
+    }
+    gamepadLoop() {
+        let gamepad = navigator.getGamepads()[0];
+        if (!gamepad)
+            return;
+        this.#gamepad.leftJoystick.set(gamepad.axes[0], gamepad.axes[1]);
+        if (this.#gamepad.leftJoystick.length() < Input.deadPoint)
+            this.#gamepad.leftJoystick.set(0, 0);
+        this.#gamepad.leftTrigger = gamepad.axes[2];
+        this.#gamepad.rightJoystick.set(gamepad.axes[3], gamepad.axes[4]);
+        if (this.#gamepad.rightJoystick.length() < Input.deadPoint)
+            this.#gamepad.rightJoystick.set(0, 0);
+        this.#gamepad.rightTrigger = gamepad.axes[5];
+        this.#gamepad.left = gamepad.axes[6] === -1;
+        this.#gamepad.right = gamepad.axes[6] === 1;
+        this.#gamepad.up = gamepad.axes[7] === -1;
+        this.#gamepad.down = gamepad.axes[7] === 1;
+        this.#gamepad.A = gamepad.buttons[0].pressed;
+        this.#gamepad.B = gamepad.buttons[1].pressed;
+        this.#gamepad.X = gamepad.buttons[2].pressed;
+        this.#gamepad.Y = gamepad.buttons[3].pressed;
+        this.#gamepad.leftButton = gamepad.buttons[4].pressed;
+        this.#gamepad.rightButton = gamepad.buttons[5].pressed;
+        this.#gamepad.select = gamepad.buttons[6].pressed;
+        this.#gamepad.start = gamepad.buttons[7].pressed;
+        this.#gamepad.home = gamepad.buttons[8].pressed;
+        this.#gamepad.leftStickButton = gamepad.buttons[9].pressed;
+        this.#gamepad.rightStickButton = gamepad.buttons[10].pressed;
+        let gp = this.gamepad;
     }
 }
 /**
