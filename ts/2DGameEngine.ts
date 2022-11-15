@@ -2480,6 +2480,17 @@ export class Rectangle extends Polygon {
 
     }
 
+    copy(rectangle: Rectangle): this {
+
+        this.x = rectangle.x
+        this.y = rectangle.y
+        this.w = rectangle.w
+        this.h = rectangle.h
+
+        return this
+
+    }
+
     toString() {
 
         return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`

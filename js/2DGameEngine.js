@@ -1035,7 +1035,6 @@ export class Input {
         this.#gamepad.home = gamepad.buttons[8].pressed;
         this.#gamepad.leftStickButton = gamepad.buttons[9].pressed;
         this.#gamepad.rightStickButton = gamepad.buttons[10].pressed;
-        let gp = this.gamepad;
     }
 }
 /**
@@ -1735,6 +1734,13 @@ export class Rectangle extends Polygon {
     }
     clone() {
         return new Rectangle(this.x, this.y, this.w, this.h);
+    }
+    copy(rectangle) {
+        this.x = rectangle.x;
+        this.y = rectangle.y;
+        this.w = rectangle.w;
+        this.h = rectangle.h;
+        return this;
     }
     toString() {
         return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`;
