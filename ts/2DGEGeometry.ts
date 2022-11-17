@@ -1,5 +1,5 @@
-import { GameObject } from "./2DGameEngine"
-import { TransformMatrix, Vector } from "./2DGEMath"
+import { GameObject } from "./2DGameEngine.js"
+import { TransformMatrix, Vector } from "./2DGEMath.js"
 
 /**
  * The Polygon represent a N point polygon

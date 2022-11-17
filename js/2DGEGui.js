@@ -1,5 +1,5 @@
-import { GameObject, Timer } from "./2DGameEngine";
-import { Rectangle } from "./2DGEGeometry";
+import { GameObject, Timer } from "./2DGameEngine.js";
+import { Rectangle } from "./2DGEGeometry.js";
 /**
  * The FPSCounter class is, as its name says, used to display the number of FPS of the game on the top left corner of the screen in a given font size
  */

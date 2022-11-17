@@ -1,4 +1,4 @@
-import { range } from "./2DGEUtils"
+import { range } from "./2DGEUtils.js"
 
 export type matrix = [number, number, number, number, number, number]
 const PI2 = Math.PI * 2

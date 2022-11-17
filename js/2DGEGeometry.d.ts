@@ -1,5 +1,5 @@
-import { GameObject } from "./2DGameEngine";
-import { Vector } from "./2DGEMath";
+import { GameObject } from "./2DGameEngine.js";
+import { Vector } from "./2DGEMath.js";
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close

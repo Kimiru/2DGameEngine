@@ -1,6 +1,6 @@
 import { NetworkEvents, Network } from '../PeerJS-Network/js/Network.js'
 import { TransformMatrix, Vector, matrix, Transform } from './2DGEMath.js'
-import { badclone, id, range } from './2DGEUtils.js'
+import { badclone, id } from './2DGEUtils.js'
 
 const PI2 = Math.PI * 2
 

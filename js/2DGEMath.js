@@ -1,4 +1,4 @@
-import { range } from "./2DGEUtils";
+import { range } from "./2DGEUtils.js";
 const PI2 = Math.PI * 2;
 /**
  * class Vector represent a 3 dimentional vector
