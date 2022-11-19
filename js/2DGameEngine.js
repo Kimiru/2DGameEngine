@@ -1196,10 +1196,10 @@ export class ImageManipulator extends GameObject {
         return [data.data[0], data.data[1], data.data[2], data.data[3]];
     }
     print() { return this.canvas.toDataURL('image/png'); }
-    download(name) {
+    download(name, addSize = false) {
         let a = document.createElement('a');
         a.href = this.print();
-        a.download = `${name}_${this.width}x${this.height}.png`;
+        a.download = `${name}${addSize ? `_${this.width}x${this.height}` : ''}.png`;
         document.body.appendChild(a);
         a.click();
         a.remove();

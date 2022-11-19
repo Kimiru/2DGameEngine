@@ -549,7 +549,7 @@ export declare class ImageManipulator extends GameObject {
     setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number): void;
     getPixel(x: number, y: number): [number, number, number, number];
     print(): string;
-    download(name: string): void;
+    download(name: string, addSize?: boolean): void;
     getImage(): HTMLImageElement;
     toString(): string;
     clone(): ImageManipulator;

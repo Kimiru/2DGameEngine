@@ -1762,11 +1762,11 @@ export class ImageManipulator extends GameObject {
 
     print(): string { return this.canvas.toDataURL('image/png') }
 
-    download(name: string): void {
+    download(name: string, addSize: boolean = false): void {
 
         let a = document.createElement('a')
         a.href = this.print()
-        a.download = `${name}_${this.width}x${this.height}.png`
+        a.download = `${name}${addSize ? `_${this.width}x${this.height}` : ''}.png`
         document.body.appendChild(a)
         a.click()
         a.remove()
