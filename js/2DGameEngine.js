@@ -7,6 +7,7 @@ const gameEngineConstructorArguments = {
     height: innerHeight,
     verticalPixels: 100,
     scaling: 2,
+    canvas: null,
     images: [],
     sounds: []
 };
@@ -14,8 +15,8 @@ const gameEngineConstructorArguments = {
  * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
  */
 export class GameEngine {
-    canvas = document.createElement('canvas');
-    ctx = this.canvas.getContext('2d');
+    canvas = null;
+    ctx = null;
     input = new Input();
     #width = 0;
     #height = 0;
@@ -48,6 +49,8 @@ export class GameEngine {
      */
     constructor(args = gameEngineConstructorArguments) {
         args = { ...gameEngineConstructorArguments, ...args };
+        this.canvas = args.canvas ?? document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d');
         this.input.bindMouse(this.canvas, (vector) => {
             let sc = this.usableScale;
             let half = this.usableScale.clone().divS(2);

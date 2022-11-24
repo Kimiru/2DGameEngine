@@ -19,6 +19,7 @@ export declare class GameEngine {
         height: number;
         verticalPixels: number;
         scaling: number;
+        canvas: HTMLCanvasElement;
         images: {
             name: string;
             src: string;

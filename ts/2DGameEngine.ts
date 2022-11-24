@@ -9,6 +9,7 @@ const gameEngineConstructorArguments: {
     height: number,
     verticalPixels: number,
     scaling: number,
+    canvas: HTMLCanvasElement,
     images: { name: string, src: string }[],
     sounds: { name: string, srcs: string[] }[]
 } = {
@@ -16,6 +17,7 @@ const gameEngineConstructorArguments: {
     height: innerHeight,
     verticalPixels: 100,
     scaling: 2,
+    canvas: null,
     images: [],
     sounds: []
 }
@@ -25,8 +27,8 @@ const gameEngineConstructorArguments: {
  */
 export class GameEngine {
 
-    canvas: HTMLCanvasElement = document.createElement('canvas')
-    ctx: CanvasRenderingContext2D = this.canvas.getContext('2d')
+    canvas: HTMLCanvasElement = null
+    ctx: CanvasRenderingContext2D = null
     input: Input = new Input()
 
     #width: number = 0
@@ -63,6 +65,9 @@ export class GameEngine {
     constructor(args = gameEngineConstructorArguments) {
 
         args = { ...gameEngineConstructorArguments, ...args }
+
+        this.canvas = args.canvas ?? document.createElement('canvas')
+        this.ctx = this.canvas.getContext('2d')
 
         this.input.bindMouse(this.canvas, (vector: Vector) => {
 
