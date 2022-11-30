@@ -388,48 +388,17 @@ export declare class Timer {
      */
     lessThan(amount: number): boolean;
 }
+declare type GamepadControlAccess = {
+    type: string;
+    index: number;
+    inverted: boolean;
+};
 /**
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */
 export declare class Input {
     #private;
-    positionAdapter: (vector: Vector) => Vector;
-    static deadPoint: number;
     constructor();
-    /**
-     * Returns an instant of the mouse, click field if true will be available for one frame only
-     */
-    get mouse(): {
-        left: boolean;
-        middle: boolean;
-        right: boolean;
-        leftClick: boolean;
-        middleClick: boolean;
-        rightClick: boolean;
-        position: Vector;
-        in: boolean;
-    };
-    get gamepad(): {
-        leftJoystick: Vector;
-        rightJoystick: Vector;
-        leftStickButton: boolean;
-        leftButton: boolean;
-        leftTrigger: number;
-        rightStickButton: boolean;
-        rightButton: boolean;
-        rightTrigger: number;
-        A: boolean;
-        B: boolean;
-        X: boolean;
-        Y: boolean;
-        start: boolean;
-        select: boolean;
-        left: boolean;
-        right: boolean;
-        up: boolean;
-        down: boolean;
-        home: boolean;
-    };
     /**
      * Return true if the given char is down
      *
@@ -458,6 +427,20 @@ export declare class Input {
      * @returns {boolean}
      */
     isPressed(code: string): boolean;
+    positionAdapter: (vector: Vector) => Vector;
+    /**
+     * Returns an instant of the mouse, click field if true will be available for one frame only
+     */
+    get mouse(): {
+        left: boolean;
+        middle: boolean;
+        right: boolean;
+        leftClick: boolean;
+        middleClick: boolean;
+        rightClick: boolean;
+        position: Vector;
+        in: boolean;
+    };
     /**
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
      *
@@ -466,7 +449,89 @@ export declare class Input {
      */
     bindMouse(element: HTMLElement, positionAdapter?: (vector: Vector) => Vector): void;
     mouseLoop(): void;
+    deadPoint: number;
+    get isGamepadCalibrating(): boolean;
+    get gamepad(): {
+        left_joystick: Vector;
+        left_joystick_right_dir: number;
+        left_joystick_left_dir: number;
+        left_joystick_up_dir: number;
+        left_joystick_down_dir: number;
+        left_joystick_button: number;
+        left_button: number;
+        left_trigger: number;
+        right_joystick: Vector;
+        right_joystick_right_dir: number;
+        right_joystick_left_dir: number;
+        right_joystick_up_dir: number;
+        right_joystick_down_dir: number;
+        right_joystick_button: number;
+        right_button: number;
+        right_trigger: number;
+        button_A: number;
+        button_B: number;
+        button_X: number;
+        button_Y: number;
+        button_left_arrow: number;
+        button_right_arrow: number;
+        button_up_arrow: number;
+        button_down_arrow: number;
+        button_back: number;
+        button_start: number;
+        button_home: number;
+    };
+    /**
+     * Start the process of calibrating the axes of the connected controller.
+     * This includes but is not limited to: Joysticks, Triggers, Cross buttons...
+     *
+     * @param {(axesStates: number[]) => void | null} updateCallback
+     * @returns {Promise<void>}
+     */
+    calibrateGamepad(updateCallback?: (axesStates: number[]) => void): Promise<void>;
+    getGamepadControlAccess(gamepadControl: number): GamepadControlAccess;
     gamepadLoop(): void;
+    recordGamepadControl(gamepadControl: number): Promise<void>;
+    unsetGamepadControl(gamepadControl: number): void;
+    /**
+     * Returns an array containing the if of the control that have been defined
+     *
+     * @returns {number[]}
+     */
+    getDefinedGamepadControls(): number[];
+    /**
+     * Returns the control currently waiting for a the user to interact with the gamepad
+     *
+     * @returns {number | null}
+     */
+    getRecording(): number | null;
+}
+export declare class GamepadControl {
+    #private;
+    static left_joystick_right_dir: number;
+    static left_joystick_left_dir: number;
+    static left_joystick_up_dir: number;
+    static left_joystick_down_dir: number;
+    static left_joystick_button: number;
+    static left_button: number;
+    static left_trigger: number;
+    static right_joystick_right_dir: number;
+    static right_joystick_left_dir: number;
+    static right_joystick_up_dir: number;
+    static right_joystick_down_dir: number;
+    static right_joystick_button: number;
+    static right_button: number;
+    static right_trigger: number;
+    static button_A: number;
+    static button_B: number;
+    static button_X: number;
+    static button_Y: number;
+    static button_left_arrow: number;
+    static button_right_arrow: number;
+    static button_up_arrow: number;
+    static button_down_arrow: number;
+    static button_back: number;
+    static button_start: number;
+    static button_home: number;
 }
 /**
  * The Camera class is used to set the center of the view inside a scene
