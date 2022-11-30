@@ -1316,6 +1316,7 @@ export class Input {
         button_home: 0,
     }
 
+    #calibrated: boolean = false
     deadPoint = .1
     #recordInput: number = null
     #recordOK: () => void = null
@@ -1360,6 +1361,9 @@ export class Input {
         button_back: number,
         button_start: number,
         button_home: number,
+        is_calibrating: boolean,
+        is_calibrated: boolean,
+        has_gamepad: boolean
     } {
 
         return {
@@ -1390,6 +1394,9 @@ export class Input {
             button_back: this.#gamepad.button_back,
             button_start: this.#gamepad.button_start,
             button_home: this.#gamepad.button_home,
+            is_calibrating: this.isGamepadCalibrating,
+            is_calibrated: this.#calibrated,
+            has_gamepad: navigator.getGamepads().length != 0
         }
 
     }
@@ -1509,6 +1516,7 @@ export class Input {
 
             this.#gamepadCalibration.ok()
             this.#gamepadCalibration = null
+            this.#calibrated = true
 
         }
 

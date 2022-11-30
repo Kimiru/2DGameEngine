@@ -479,6 +479,9 @@ export declare class Input {
         button_back: number;
         button_start: number;
         button_home: number;
+        is_calibrating: boolean;
+        is_calibrated: boolean;
+        has_gamepad: boolean;
     };
     /**
      * Start the process of calibrating the axes of the connected controller.

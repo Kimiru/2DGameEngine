@@ -940,6 +940,7 @@ export class Input {
         button_start: 0,
         button_home: 0,
     };
+    #calibrated = false;
     deadPoint = .1;
     #recordInput = null;
     #recordOK = null;
@@ -976,6 +977,9 @@ export class Input {
             button_back: this.#gamepad.button_back,
             button_start: this.#gamepad.button_start,
             button_home: this.#gamepad.button_home,
+            is_calibrating: this.isGamepadCalibrating,
+            is_calibrated: this.#calibrated,
+            has_gamepad: navigator.getGamepads().length != 0
         };
     }
     #getCorrectedAxisValue(gamepad, index) {
@@ -1050,6 +1054,7 @@ export class Input {
         if (this.#gamepadCalibration.axesStates.every(entry => entry === 2)) {
             this.#gamepadCalibration.ok();
             this.#gamepadCalibration = null;
+            this.#calibrated = true;
         }
     }
     #calibrationLoop(gamepad) {
