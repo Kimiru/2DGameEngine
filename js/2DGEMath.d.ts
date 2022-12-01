@@ -1,4 +1,4 @@
-export declare type matrix = [number, number, number, number, number, number];
+export type matrix = [number, number, number, number, number, number];
 /**
  * class Vector represent a 3 dimentional vector
  * it also contains function that are used in 2d context for practical purposes

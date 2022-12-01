@@ -388,7 +388,7 @@ export declare class Timer {
      */
     lessThan(amount: number): boolean;
 }
-declare type GamepadControlAccess = {
+type GamepadControlAccess = {
     type: string;
     index: number;
     inverted: boolean;
