@@ -802,8 +802,10 @@ export class Input {
         return false;
     }
     // Mouse
+    #bindedElement;
     #mouseButtons = [false, false, false];
     #mousePosition = new Vector();
+    #trueMousePosition = new Vector();
     #mouseIn = false;
     #mouseClick = [false, false, false];
     #mouseScroll = 0;
@@ -819,7 +821,7 @@ export class Input {
             leftClick: this.#mouseClick[0],
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
-            position: this.#mousePosition.clone(),
+            position: this.#trueMousePosition.clone(),
             scroll: this.#mouseScroll,
             in: this.#mouseIn
         };
@@ -833,6 +835,7 @@ export class Input {
      */
     bindMouse(element, positionAdapter = function (vector) { return vector; }) {
         this.positionAdapter = positionAdapter;
+        this.#bindedElement = element;
         element.addEventListener('contextmenu', evt => evt.preventDefault());
         element.addEventListener('mousedown', this.#handleMouseEvent.bind(this));
         element.addEventListener('mouseup', this.#handleMouseEvent.bind(this));
@@ -842,6 +845,7 @@ export class Input {
         element.addEventListener('wheel', this.#handleMouseEvent.bind(this));
     }
     mouseLoop() {
+        this.#to01();
         for (let index = 0; index < 3; index++)
             this.#mouseClick[index] = false;
         this.#mouseScroll = 0;
@@ -854,7 +858,7 @@ export class Input {
     #handleMouseEvent(evt) {
         let prev = [this.#mouseButtons[0], this.#mouseButtons[1], this.#mouseButtons[2]];
         this.#handleButtons(evt.buttons);
-        this.#mousePosition.copy(this.#to01(evt));
+        this.#mousePosition.set(evt.offsetX, evt.offsetY);
         this.#mouseIn = this.#mousePosition.x > 0 && this.#mousePosition.x < 1 &&
             this.#mousePosition.y > 0 && this.#mousePosition.y < 1;
         for (let index = 0; index < 3; index++)
@@ -909,11 +913,10 @@ export class Input {
      * @param evt
      * @returns
      */
-    #to01(evt) {
-        let result = new Vector(evt.offsetX, evt.offsetY);
-        let target = evt.currentTarget;
-        result.div(new Vector(target.offsetWidth, target.offsetHeight, 1));
-        return this.positionAdapter(result);
+    #to01() {
+        this.#trueMousePosition = this.positionAdapter(this.#mousePosition
+            .clone()
+            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1)));
     }
     // Gamepad
     #gamepadMap = new Map();

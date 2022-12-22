@@ -448,7 +448,7 @@ export declare class Input {
      * @param {HTMLElement} element
      * @param {(vector:Vector)=>Vector} positionAdapter
      */
-    bindMouse(element: HTMLElement, positionAdapter?: (vector: Vector) => Vector): void;
+    bindMouse(element: HTMLCanvasElement, positionAdapter?: (vector: Vector) => Vector): void;
     mouseLoop(): void;
     deadPoint: number;
     get isGamepadCalibrating(): boolean;

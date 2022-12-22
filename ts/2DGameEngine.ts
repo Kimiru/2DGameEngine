@@ -1141,8 +1141,10 @@ export class Input {
 
     // Mouse
 
+    #bindedElement: HTMLCanvasElement
     #mouseButtons: [boolean, boolean, boolean] = [false, false, false]
     #mousePosition: Vector = new Vector()
+    #trueMousePosition: Vector = new Vector()
     #mouseIn: boolean = false
     #mouseClick: [boolean, boolean, boolean] = [false, false, false]
     #mouseScroll: number = 0
@@ -1169,7 +1171,7 @@ export class Input {
             leftClick: this.#mouseClick[0],
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
-            position: this.#mousePosition.clone(),
+            position: this.#trueMousePosition.clone(),
             scroll: this.#mouseScroll,
             in: this.#mouseIn
         }
@@ -1183,9 +1185,10 @@ export class Input {
      * @param {HTMLElement} element 
      * @param {(vector:Vector)=>Vector} positionAdapter 
      */
-    bindMouse(element: HTMLElement, positionAdapter = function (vector: Vector) { return vector }) {
+    bindMouse(element: HTMLCanvasElement, positionAdapter = function (vector: Vector) { return vector }) {
 
         this.positionAdapter = positionAdapter
+        this.#bindedElement = element
 
         element.addEventListener('contextmenu', evt => evt.preventDefault())
 
@@ -1199,6 +1202,8 @@ export class Input {
     }
 
     mouseLoop() {
+
+        this.#to01()
 
         for (let index = 0; index < 3; index++)
             this.#mouseClick[index] = false
@@ -1217,7 +1222,7 @@ export class Input {
         let prev: [boolean, boolean, boolean] = [this.#mouseButtons[0], this.#mouseButtons[1], this.#mouseButtons[2]]
 
         this.#handleButtons(evt.buttons)
-        this.#mousePosition.copy(this.#to01(evt))
+        this.#mousePosition.set(evt.offsetX, evt.offsetY)
         this.#mouseIn = this.#mousePosition.x > 0 && this.#mousePosition.x < 1 &&
             this.#mousePosition.y > 0 && this.#mousePosition.y < 1
 
@@ -1280,14 +1285,12 @@ export class Input {
      * @param evt 
      * @returns 
      */
-    #to01(evt: MouseEvent): Vector {
+    #to01(): void {
 
-        let result = new Vector(evt.offsetX, evt.offsetY)
-        let target = evt.currentTarget as HTMLCanvasElement
-        result.div(new Vector(target.offsetWidth, target.offsetHeight, 1))
-
-        return this.positionAdapter(result)
-
+        this.#trueMousePosition = this.positionAdapter(this.#mousePosition
+            .clone()
+            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1))
+        )
     }
 
 
