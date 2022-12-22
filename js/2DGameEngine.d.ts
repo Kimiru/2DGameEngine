@@ -439,6 +439,7 @@ export declare class Input {
         middleClick: boolean;
         rightClick: boolean;
         position: Vector;
+        scroll: number;
         in: boolean;
     };
     /**

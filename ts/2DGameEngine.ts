@@ -261,7 +261,7 @@ export class GameEngine {
      */
     #loop(): void {
 
-        if (!this.#run) return;
+        if (!this.#run) return
 
         if (this.#lock0) {
 
@@ -283,9 +283,9 @@ export class GameEngine {
 
         }
 
-        let time: number = Date.now();
-        this.#dt = (time - this.#lastTime) / 1000;
-        this.#lastTime = time;
+        let time: number = Date.now()
+        this.#dt = (time - this.#lastTime) / 1000
+        this.#lastTime = time
         this.#dt = Math.min(this.#dt, 0.2)
         this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
         this.ctx.save()
@@ -311,7 +311,7 @@ export class GameEngine {
 
         this.#switchScene()
 
-        requestAnimationFrame(this.#loop.bind(this));
+        requestAnimationFrame(this.#loop.bind(this))
 
     }
 
@@ -1000,7 +1000,7 @@ export class Timer {
      */
     constructor(time = Date.now()) {
 
-        this.begin = time;
+        this.begin = time
 
     }
 
@@ -1018,7 +1018,7 @@ export class Timer {
      */
     getTime(): number {
 
-        return Date.now() - this.begin;
+        return Date.now() - this.begin
 
     }
 
@@ -1029,7 +1029,7 @@ export class Timer {
      */
     greaterThan(amount: number): boolean {
 
-        return this.getTime() > amount;
+        return this.getTime() > amount
 
     }
 
@@ -1040,7 +1040,7 @@ export class Timer {
      */
     lessThan(amount: number): boolean {
 
-        return this.getTime() < amount;
+        return this.getTime() < amount
 
     }
 
@@ -1145,6 +1145,7 @@ export class Input {
     #mousePosition: Vector = new Vector()
     #mouseIn: boolean = false
     #mouseClick: [boolean, boolean, boolean] = [false, false, false]
+    #mouseScroll: number = 0
     positionAdapter = function (vector: Vector) { return vector }
 
     /**
@@ -1157,7 +1158,8 @@ export class Input {
         leftClick: boolean
         middleClick: boolean
         rightClick: boolean
-        position: Vector
+        position: Vector,
+        scroll: number,
         in: boolean
     } {
         let result = {
@@ -1168,6 +1170,7 @@ export class Input {
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
             position: this.#mousePosition.clone(),
+            scroll: this.#mouseScroll,
             in: this.#mouseIn
         }
 
@@ -1184,13 +1187,14 @@ export class Input {
 
         this.positionAdapter = positionAdapter
 
-        element.addEventListener('contextmenu', evt => evt.preventDefault());
+        element.addEventListener('contextmenu', evt => evt.preventDefault())
 
         element.addEventListener('mousedown', this.#handleMouseEvent.bind(this))
         element.addEventListener('mouseup', this.#handleMouseEvent.bind(this))
         element.addEventListener('mousemove', this.#handleMouseEvent.bind(this))
         element.addEventListener('mouseleave', this.#handleMouseEvent.bind(this))
         element.addEventListener('mouseenter', this.#handleMouseEvent.bind(this))
+        element.addEventListener('wheel', this.#handleMouseEvent.bind(this))
 
     }
 
@@ -1198,6 +1202,8 @@ export class Input {
 
         for (let index = 0; index < 3; index++)
             this.#mouseClick[index] = false
+
+        this.#mouseScroll = 0
 
     }
 
@@ -1220,6 +1226,9 @@ export class Input {
             if (!this.#mouseButtons[index] && prev[index])
                 this.#mouseClick[index] = true
 
+        if (evt instanceof WheelEvent)
+            this.#mouseScroll += Math.sign(evt.deltaY)
+
     }
 
     /**
@@ -1238,7 +1247,7 @@ export class Input {
                 break
             default:
                 this.#mouseButtons[0] = false
-                break;
+                break
         }
         switch (buttons) {
             case 4:
@@ -1249,7 +1258,7 @@ export class Input {
                 break
             default:
                 this.#mouseButtons[1] = false
-                break;
+                break
         }
         switch (buttons) {
             case 2:
@@ -1260,7 +1269,7 @@ export class Input {
                 break
             default:
                 this.#mouseButtons[2] = false
-                break;
+                break
         }
 
     }

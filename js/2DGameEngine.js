@@ -806,6 +806,7 @@ export class Input {
     #mousePosition = new Vector();
     #mouseIn = false;
     #mouseClick = [false, false, false];
+    #mouseScroll = 0;
     positionAdapter = function (vector) { return vector; };
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only
@@ -819,6 +820,7 @@ export class Input {
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
             position: this.#mousePosition.clone(),
+            scroll: this.#mouseScroll,
             in: this.#mouseIn
         };
         return result;
@@ -837,10 +839,12 @@ export class Input {
         element.addEventListener('mousemove', this.#handleMouseEvent.bind(this));
         element.addEventListener('mouseleave', this.#handleMouseEvent.bind(this));
         element.addEventListener('mouseenter', this.#handleMouseEvent.bind(this));
+        element.addEventListener('wheel', this.#handleMouseEvent.bind(this));
     }
     mouseLoop() {
         for (let index = 0; index < 3; index++)
             this.#mouseClick[index] = false;
+        this.#mouseScroll = 0;
     }
     /**
      * Handle the mouse related operations
@@ -856,6 +860,8 @@ export class Input {
         for (let index = 0; index < 3; index++)
             if (!this.#mouseButtons[index] && prev[index])
                 this.#mouseClick[index] = true;
+        if (evt instanceof WheelEvent)
+            this.#mouseScroll += Math.sign(evt.deltaY);
     }
     /**
      * Convert the buttons input number to the adapted button boolean
