@@ -87,6 +87,7 @@ export class GameEngine {
     get usableWidth() { return this.#usableWidth; }
     get usableHeight() { return this.#usableHeight; }
     get usableScale() { return new Vector(this.usableWidth, this.usableHeight); }
+    get verticalPixels() { return this.#verticalPixels; }
     get dt() { return this.#dt; }
     get scene() { return this.#currentScene; }
     /**
@@ -216,8 +217,9 @@ export class GameEngine {
             callback.call(this);
     }
 }
-export function fullScreenResizeHandler(verticalPixels, engine) {
-    return function () {
+export function fullScreen(engine) {
+    let verticalPixels = engine.verticalPixels;
+    const handler = () => {
         if (innerHeight < innerWidth)
             engine.resize(innerWidth, innerHeight, devicePixelRatio, verticalPixels);
         else {
@@ -226,6 +228,8 @@ export function fullScreenResizeHandler(verticalPixels, engine) {
             engine.resize(innerWidth, innerHeight, devicePixelRatio, adaptedVerticalPixels);
         }
     };
+    window.addEventListener('resize', handler);
+    handler();
 }
 export class RenderingStyle {
     static INFINITY = 0; // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object

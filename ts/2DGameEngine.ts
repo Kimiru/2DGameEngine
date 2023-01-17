@@ -135,6 +135,7 @@ export class GameEngine {
     get usableWidth(): number { return this.#usableWidth }
     get usableHeight(): number { return this.#usableHeight }
     get usableScale(): Vector { return new Vector(this.usableWidth, this.usableHeight) }
+    get verticalPixels(): number { return this.#verticalPixels }
 
     get dt(): number { return this.#dt }
 
@@ -325,10 +326,11 @@ export class GameEngine {
 
 }
 
-export function fullScreenResizeHandler(verticalPixels: number, engine: GameEngine) {
+export function fullScreen(engine: GameEngine) {
 
-    return function () {
+    let verticalPixels: number = engine.verticalPixels
 
+    const handler = () => {
         if (innerHeight < innerWidth)
             engine.resize(innerWidth, innerHeight, devicePixelRatio, verticalPixels)
 
@@ -340,8 +342,10 @@ export function fullScreenResizeHandler(verticalPixels: number, engine: GameEngi
             engine.resize(innerWidth, innerHeight, devicePixelRatio, adaptedVerticalPixels)
 
         }
-
     }
+
+    window.addEventListener('resize', handler)
+    handler()
 
 }
 

@@ -34,6 +34,7 @@ export declare class GameEngine {
     get usableWidth(): number;
     get usableHeight(): number;
     get usableScale(): Vector;
+    get verticalPixels(): number;
     get dt(): number;
     get scene(): GameScene;
     /**
@@ -67,7 +68,7 @@ export declare class GameEngine {
     stop(): void;
     onResourcesLoaded(callback: any): void;
 }
-export declare function fullScreenResizeHandler(verticalPixels: number, engine: GameEngine): () => void;
+export declare function fullScreen(engine: GameEngine): void;
 export declare class RenderingStyle {
     static INFINITY: number;
     static IN_VIEW: number;
