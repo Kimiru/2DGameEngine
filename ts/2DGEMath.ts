@@ -429,6 +429,20 @@ export class HexVector {
         this.#r += r
         this.#s += s
 
+        this.updateVector()
+
+        return this
+
+    }
+
+    add(hexVector: HexVector): this {
+
+        return this.addS(hexVector.q, hexVector.r, hexVector.s)
+
+    }
+
+    updateVector(): void {
+
         let sqrt3 = Math.sqrt(3)
 
         if (this.orientation === HexOrientation.pointy) this.vector.set(
@@ -439,14 +453,6 @@ export class HexVector {
             this.unit * (3 / 2 * this.#q),
             this.unit * (sqrt3 / 2 * this.#q + sqrt3 * this.#r)
         )
-
-        return this
-
-    }
-
-    add(hexVector: HexVector): this {
-
-        return this.addS(hexVector.q, hexVector.r, hexVector.s)
 
     }
 
@@ -461,6 +467,8 @@ export class HexVector {
     equal(hexVector: HexVector): boolean { return this.#q === hexVector.q && this.#r === hexVector.r && this.#s === hexVector.s }
 
     equalS(q: number, r: number, s: number): boolean { return this.#q === q && this.#r === r && this.#s === s }
+
+    clone() { return new HexVector(this.orientation, this.unit, this.vector, this.#q, this.#r, this.#s) }
 
     neighbors(): HexVector[] {
         return this.units().map((hexVector: HexVector) => hexVector.add(this))

@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js";
-import { Vector } from "./2DGEMath.js";
+import { HexVector, Vector } from "./2DGEMath.js";
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -83,6 +83,20 @@ export declare class Rectangle extends Polygon {
     clone(): Rectangle;
     copy(rectangle: Rectangle): this;
     toString(): string;
+}
+export declare class Hexagon extends Polygon {
+    unit: number;
+    orientation: number;
+    display: boolean;
+    color: string;
+    constructor(position?: Vector, orientation?: number, unit?: number);
+    getLinear(): Vector[];
+    draw(ctx: CanvasRenderingContext2D): void;
+}
+export declare class GridHexagon extends Hexagon {
+    hexVector: HexVector;
+    constructor(hexVector?: HexVector);
+    getLinear(): Vector[];
 }
 export declare class Segment extends GameObject {
     a: Vector;

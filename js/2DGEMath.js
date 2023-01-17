@@ -319,15 +319,18 @@ export class HexVector {
         this.#q += q;
         this.#r += r;
         this.#s += s;
+        this.updateVector();
+        return this;
+    }
+    add(hexVector) {
+        return this.addS(hexVector.q, hexVector.r, hexVector.s);
+    }
+    updateVector() {
         let sqrt3 = Math.sqrt(3);
         if (this.orientation === HexOrientation.pointy)
             this.vector.set(this.unit * (sqrt3 * this.#q + sqrt3 / 2 * this.#r), this.unit * (3 / 2 * this.#r));
         else
             this.vector.set(this.unit * (3 / 2 * this.#q), this.unit * (sqrt3 / 2 * this.#q + sqrt3 * this.#r));
-        return this;
-    }
-    add(hexVector) {
-        return this.addS(hexVector.q, hexVector.r, hexVector.s);
     }
     distanceTo(hexVector) {
         if (this.orientation !== hexVector.orientation)
@@ -336,6 +339,7 @@ export class HexVector {
     }
     equal(hexVector) { return this.#q === hexVector.q && this.#r === hexVector.r && this.#s === hexVector.s; }
     equalS(q, r, s) { return this.#q === q && this.#r === r && this.#s === s; }
+    clone() { return new HexVector(this.orientation, this.unit, this.vector, this.#q, this.#r, this.#s); }
     neighbors() {
         return this.units().map((hexVector) => hexVector.add(this));
     }

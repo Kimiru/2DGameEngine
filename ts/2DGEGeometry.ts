@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js"
-import { TransformMatrix, Vector } from "./2DGEMath.js"
+import { HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js"
 
 /**
  * The Polygon represent a N point polygon
@@ -279,6 +279,96 @@ export class Rectangle extends Polygon {
     toString() {
 
         return `Rectangle(${this.x}, ${this.y}, ${this.w}, ${this.h})`
+
+    }
+
+}
+
+export class Hexagon extends Polygon {
+
+    unit: number
+    orientation: number
+
+    display: boolean = false
+    color: string = 'red'
+
+    constructor(position: Vector = new Vector(), orientation: number = HexOrientation.pointy, unit: number = 1) {
+
+        super()
+
+        this.transform.translation.copy(position)
+        this.unit = unit
+        this.orientation = orientation
+
+    }
+
+    getLinear(): Vector[] {
+
+        let points: Vector[] = []
+
+        let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0
+
+        let radius = this.unit / 2
+
+        for (let i = 0; i < 6; i++) {
+
+            let angle = Math.PI / 3 * i + angleOffset
+
+            points.push(this.transform.translation.clone().addS(Math.cos(angle) * radius, Math.sin(angle) * radius))
+
+        }
+
+        return points
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        if (!this.display) return
+
+        ctx.lineWidth = .1
+        ctx.strokeStyle = this.color
+
+        ctx.beginPath()
+
+        let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0
+
+        ctx.moveTo(Math.cos(angleOffset) * this.unit, Math.sin(angleOffset) * this.unit)
+
+        for (let i = 1; i < 7; i++) {
+
+            let angle = Math.PI / 3 * i + angleOffset
+
+            ctx.lineTo(Math.cos(angle) * this.unit, Math.sin(angle) * this.unit)
+
+        }
+
+        ctx.stroke()
+
+    }
+
+}
+
+export class GridHexagon extends Hexagon {
+
+    hexVector: HexVector
+
+    constructor(hexVector: HexVector = new HexVector()) {
+
+        super(undefined, hexVector.orientation, hexVector.unit)
+
+        this.hexVector = hexVector.clone()
+        this.hexVector.vector = this.transform.translation
+        this.hexVector.updateVector()
+
+    }
+
+    getLinear(): Vector[] {
+
+        this.orientation = this.hexVector.orientation
+        this.unit = this.hexVector.unit
+
+        return super.getLinear()
 
     }
 

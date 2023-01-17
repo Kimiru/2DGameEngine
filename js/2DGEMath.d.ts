@@ -214,9 +214,11 @@ export declare class HexVector {
     get s(): number;
     addS(q: number, r: number, s: number): this;
     add(hexVector: HexVector): this;
+    updateVector(): void;
     distanceTo(hexVector: HexVector): number;
     equal(hexVector: HexVector): boolean;
     equalS(q: number, r: number, s: number): boolean;
+    clone(): HexVector;
     neighbors(): HexVector[];
     units(): HexVector[];
     static units(orientation: number, unit: number): HexVector[];
