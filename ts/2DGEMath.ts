@@ -385,6 +385,104 @@ export class Vector {
 
 }
 
+export class HexOrientation {
+
+    static flat: number = 0
+    static pointy: number = 1
+
+}
+
+export class HexVector {
+
+    orientation: number
+
+    #q: number = 0
+    #r: number = 0
+    #s: number = 0
+
+
+    vector: Vector
+
+    unit: number
+
+    constructor(orientation: number = HexOrientation.pointy, unit: number = 1, vector: Vector = new Vector(), q = 0, r = 0, s = 0) {
+
+        this.orientation = orientation
+        this.unit = unit
+        this.vector = vector
+
+        this.addS(q, r, s)
+
+    }
+
+    get q(): number { return this.#q }
+    get r(): number { return this.#r }
+    get s(): number { return this.#s }
+
+    addS(q: number, r: number, s: number): this {
+
+        let sum = this.#q + q + this.#r + r + this.#s + s
+
+        if (sum !== 0) throw `Check sum for hex positioning should be equal to zero q(${this.#q + q}) + r(${this.#r + r}) + s(${this.#s + s}) === ${sum}`
+
+        this.#q += q
+        this.#r += r
+        this.#s += s
+
+        let sqrt3 = Math.sqrt(3)
+
+        if (this.orientation === HexOrientation.pointy) this.vector.set(
+            this.unit * (sqrt3 * this.#q + sqrt3 / 2 * this.#r),
+            this.unit * (3 / 2 * this.#r)
+        )
+        else this.vector.set(
+            this.unit * (3 / 2 * this.#q),
+            this.unit * (sqrt3 / 2 * this.#q + sqrt3 * this.#r)
+        )
+
+        return this
+
+    }
+
+    add(hexVector: HexVector): this {
+
+        return this.addS(hexVector.q, hexVector.r, hexVector.s)
+
+    }
+
+    distanceTo(hexVector: HexVector): number {
+
+        if (this.orientation !== hexVector.orientation) throw 'HexVector have incompatible orientations'
+
+        return (Math.abs(this.q - hexVector.q) + Math.abs(this.r - hexVector.r) + Math.abs(this.s - hexVector.s)) / 2
+
+    }
+
+    equal(hexVector: HexVector): boolean { return this.#q === hexVector.q && this.#r === hexVector.r && this.#s === hexVector.s }
+
+    equalS(q: number, r: number, s: number): boolean { return this.#q === q && this.#r === r && this.#s === s }
+
+    neighbors(): HexVector[] {
+        return this.units().map((hexVector: HexVector) => hexVector.add(this))
+    }
+
+    units(): HexVector[] { return HexVector.units(this.orientation, this.unit) }
+
+    static units(orientation: number, unit: number): HexVector[] {
+
+        return [
+            new HexVector(orientation, unit, undefined, 1, -1, 0),
+            new HexVector(orientation, unit, undefined, -1, 1, 0),
+            new HexVector(orientation, unit, undefined, 0, 1, -1),
+            new HexVector(orientation, unit, undefined, 0, -1, 1),
+            new HexVector(orientation, unit, undefined, 1, 0, -1),
+            new HexVector(orientation, unit, undefined, -1, 0, 1),
+        ]
+
+    }
+
+}
+
 export class Transform {
 
     translation: Vector = new Vector()

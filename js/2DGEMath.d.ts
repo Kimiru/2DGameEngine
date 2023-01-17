@@ -199,6 +199,28 @@ export declare class Vector {
     floor(): this;
     abs(): this;
 }
+export declare class HexOrientation {
+    static flat: number;
+    static pointy: number;
+}
+export declare class HexVector {
+    #private;
+    orientation: number;
+    vector: Vector;
+    unit: number;
+    constructor(orientation?: number, unit?: number, vector?: Vector, q?: number, r?: number, s?: number);
+    get q(): number;
+    get r(): number;
+    get s(): number;
+    addS(q: number, r: number, s: number): this;
+    add(hexVector: HexVector): this;
+    distanceTo(hexVector: HexVector): number;
+    equal(hexVector: HexVector): boolean;
+    equalS(q: number, r: number, s: number): boolean;
+    neighbors(): HexVector[];
+    units(): HexVector[];
+    static units(orientation: number, unit: number): HexVector[];
+}
 export declare class Transform {
     #private;
     translation: Vector;
