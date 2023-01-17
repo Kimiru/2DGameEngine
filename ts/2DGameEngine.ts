@@ -325,6 +325,26 @@ export class GameEngine {
 
 }
 
+export function fullScreenResizeHandler(verticalPixels: number, engine: GameEngine) {
+
+    return function () {
+
+        if (innerHeight < innerWidth)
+            engine.resize(innerWidth, innerHeight, devicePixelRatio, verticalPixels)
+
+        else {
+
+            const ratio = innerHeight / innerWidth
+            const adaptedVerticalPixels = verticalPixels * ratio
+
+            engine.resize(innerWidth, innerHeight, devicePixelRatio, adaptedVerticalPixels)
+
+        }
+
+    }
+
+}
+
 export class RenderingStyle {
 
     static INFINITY = 0 // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object

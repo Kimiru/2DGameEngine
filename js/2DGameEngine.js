@@ -216,6 +216,17 @@ export class GameEngine {
             callback.call(this);
     }
 }
+export function fullScreenResizeHandler(verticalPixels, engine) {
+    return function () {
+        if (innerHeight < innerWidth)
+            engine.resize(innerWidth, innerHeight, devicePixelRatio, verticalPixels);
+        else {
+            const ratio = innerHeight / innerWidth;
+            const adaptedVerticalPixels = verticalPixels * ratio;
+            engine.resize(innerWidth, innerHeight, devicePixelRatio, adaptedVerticalPixels);
+        }
+    };
+}
 export class RenderingStyle {
     static INFINITY = 0; // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
     // static IN_VIEW = 1 // Render only the object that are in the cameraview, or at default position and range if no camera is set // Distance to camera computation for all object // Recommended when lot of object with little child depth

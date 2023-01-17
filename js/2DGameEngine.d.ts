@@ -67,6 +67,7 @@ export declare class GameEngine {
     stop(): void;
     onResourcesLoaded(callback: any): void;
 }
+export declare function fullScreenResizeHandler(verticalPixels: number, engine: GameEngine): () => void;
 export declare class RenderingStyle {
     static INFINITY: number;
     static IN_VIEW: number;
