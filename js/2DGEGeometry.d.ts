@@ -91,6 +91,7 @@ export declare class Hexagon extends Polygon {
     color: string;
     constructor(position?: Vector, orientation?: number, unit?: number);
     getLinear(): Vector[];
+    drawPath(ctx: any): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
 export declare class GridHexagon extends Hexagon {

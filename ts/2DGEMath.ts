@@ -1060,6 +1060,21 @@ export class Path {
 
     }
 
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.lineWidth = .1
+        ctx.strokeStyle = 'lime'
+
+        ctx.beginPath()
+        ctx.moveTo(this.points[0].x, this.points[0].y)
+
+        for (let index = 1; index < this.points.length; index++)
+            ctx.lineTo(this.points[index].x, this.points[index].y)
+
+        ctx.stroke()
+
+    }
+
 }
 
 export class PseudoRandom {

@@ -734,6 +734,15 @@ export class Path {
         this.currentPosition.add(next.clone().sub(this.currentPosition).normalize().multS(length));
         return this.currentPosition.clone();
     }
+    draw(ctx) {
+        ctx.lineWidth = .1;
+        ctx.strokeStyle = 'lime';
+        ctx.beginPath();
+        ctx.moveTo(this.points[0].x, this.points[0].y);
+        for (let index = 1; index < this.points.length; index++)
+            ctx.lineTo(this.points[index].x, this.points[index].y);
+        ctx.stroke();
+    }
 }
 export class PseudoRandom {
     static a = 1664525;

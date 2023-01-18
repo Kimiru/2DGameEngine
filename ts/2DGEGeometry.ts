@@ -326,14 +326,7 @@ export class Hexagon extends Polygon {
 
     }
 
-    draw(ctx: CanvasRenderingContext2D): void {
-
-        if (!this.display) return
-
-        ctx.lineWidth = .1
-        ctx.strokeStyle = this.color
-
-        ctx.beginPath()
+    drawPath(ctx): void {
 
         let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0
 
@@ -348,6 +341,18 @@ export class Hexagon extends Polygon {
         }
 
         ctx.closePath()
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        if (!this.display) return
+
+        ctx.lineWidth = .1
+        ctx.strokeStyle = this.color
+
+        ctx.beginPath()
+
+        this.drawPath(ctx)
 
         ctx.stroke()
 

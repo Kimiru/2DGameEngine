@@ -214,12 +214,7 @@ export class Hexagon extends Polygon {
         }
         return points;
     }
-    draw(ctx) {
-        if (!this.display)
-            return;
-        ctx.lineWidth = .1;
-        ctx.strokeStyle = this.color;
-        ctx.beginPath();
+    drawPath(ctx) {
         let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0;
         ctx.moveTo(Math.cos(angleOffset) * this.unit, Math.sin(angleOffset) * this.unit);
         for (let i = 1; i < 7; i++) {
@@ -227,6 +222,14 @@ export class Hexagon extends Polygon {
             ctx.lineTo(Math.cos(angle) * this.unit, Math.sin(angle) * this.unit);
         }
         ctx.closePath();
+    }
+    draw(ctx) {
+        if (!this.display)
+            return;
+        ctx.lineWidth = .1;
+        ctx.strokeStyle = this.color;
+        ctx.beginPath();
+        this.drawPath(ctx);
         ctx.stroke();
     }
 }

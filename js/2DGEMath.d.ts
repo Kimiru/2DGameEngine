@@ -335,6 +335,7 @@ export declare class Path {
     reset(): void;
     end(): boolean;
     follow(length: number): Vector;
+    draw(ctx: CanvasRenderingContext2D): void;
 }
 export declare class PseudoRandom {
     static a: number;
