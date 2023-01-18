@@ -613,6 +613,63 @@ export class Graph {
         }
         return null;
     }
+    getFlood(source, maxDistance = Number.MAX_SAFE_INTEGER, estimateDistance) {
+        if (!this.hasNode(source))
+            return null;
+        let nodes = new Map();
+        this.nodes.forEach(id => nodes.set(id, new Node(id)));
+        let start = nodes.get(source);
+        let closed = [];
+        let opened = [start];
+        while (opened.length) {
+            // Get the nearest path
+            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.cost < b.cost ? a : b)), 1)[0];
+            let currentObject = this.nodesObjects.get(current.id);
+            closed.push(current);
+            for (let neighbour of this.links.get(current.id)) {
+                let node = nodes.get(neighbour);
+                if (node === start)
+                    continue;
+                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id));
+                if (node.previous) {
+                    // If the cost is same or greater, we can ignore
+                    if (node.cost <= cost)
+                        continue;
+                    node.cost = cost;
+                    node.previous = current;
+                    // If it was closed, unclose it
+                    if (closed.includes(node))
+                        closed.splice(closed.indexOf(node), 1);
+                    // Open it to update neighbors the same way
+                    if (!opened.includes(node))
+                        opened.push(node);
+                }
+                else {
+                    // If cost it too great, ignore node
+                    if (cost > maxDistance)
+                        continue;
+                    node.cost = cost;
+                    // No heuristic used here
+                    node.previous = current;
+                    opened.push(node);
+                }
+            }
+        }
+        let paths = new Map();
+        for (let closedNode of closed) {
+            if (closedNode === start)
+                continue;
+            let list = [closedNode.id];
+            let node = closedNode;
+            while (node.previous) {
+                node = node.previous;
+                list.push(node.id);
+            }
+            paths.set(closedNode.id, list.reverse());
+        }
+        return paths;
+    }
+    populate(nodes) { return nodes.map(id => this.nodesObjects.get(id)); }
     draw(ctx) {
         if (this.display && this.positionGetter) {
             ctx.save();

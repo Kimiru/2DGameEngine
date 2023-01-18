@@ -315,6 +315,8 @@ export declare class Graph<T> {
     isConnected(node: number): boolean;
     isFullyConnected(): boolean;
     getShortestPathBetween(source: number, target: number, estimateDistance: (nodeA: T, nodeB: T) => number): number[];
+    getFlood(source: number, maxDistance: number, estimateDistance: (nodeA: T, nodeB: T) => number): Map<number, number[]>;
+    populate(nodes: number[]): T[];
     draw(ctx: CanvasRenderingContext2D): boolean;
 }
 export declare class Node {

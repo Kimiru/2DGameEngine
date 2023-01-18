@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js";
-import { HexVector, Vector } from "./2DGEMath.js";
+import { Graph, HexVector, Vector } from "./2DGEMath.js";
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -97,6 +97,7 @@ export declare class GridHexagon extends Hexagon {
     hexVector: HexVector;
     constructor(hexVector?: HexVector);
     getLinear(): Vector[];
+    static graphify(gridHexagons: GridHexagon[]): Graph<GridHexagon>;
 }
 export declare class Segment extends GameObject {
     a: Vector;

@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js"
-import { HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js"
+import { Graph, HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js"
 
 /**
  * The Polygon represent a N point polygon
@@ -22,6 +22,8 @@ export class Polygon extends GameObject {
     constructor(outer: Vector[] = [], ...inners: Vector[][]) {
 
         super()
+
+        this.addTag('polygon')
 
         this.outer = outer
         this.inners = inners
@@ -171,6 +173,8 @@ export class Rectangle extends Polygon {
 
         super([], [])
 
+        this.addTag('rectangle')
+
         this.transform.translation.set(x, y)
         this.transform.scale.set(w, h)
 
@@ -246,10 +250,8 @@ export class Rectangle extends Polygon {
             ctx.save()
             ctx.scale(1 / this.w, 1 / this.h)
 
-            ctx.strokeStyle = this.displayColor
-            ctx.strokeRect(this.left, this.bottom, this.w, this.h)
             ctx.fillStyle = this.displayColor
-            ctx.fillRect(-1, -1, 2, 2)
+            ctx.fillRect(-.5, -.5, 1, 1)
 
             ctx.restore()
 
@@ -296,6 +298,8 @@ export class Hexagon extends Polygon {
 
         super()
 
+        this.addTag('hexagon')
+
         this.transform.translation.copy(position)
         this.unit = unit
         this.orientation = orientation
@@ -308,13 +312,13 @@ export class Hexagon extends Polygon {
 
         let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0
 
-        let radius = this.unit / 2
+        let radius = this.unit
 
         for (let i = 0; i < 6; i++) {
 
             let angle = Math.PI / 3 * i + angleOffset
 
-            points.push(this.transform.translation.clone().addS(Math.cos(angle) * radius, Math.sin(angle) * radius))
+            points.push(new Vector(Math.cos(angle) * radius, Math.sin(angle) * radius))
 
         }
 
@@ -343,6 +347,8 @@ export class Hexagon extends Polygon {
 
         }
 
+        ctx.closePath()
+
         ctx.stroke()
 
     }
@@ -369,6 +375,26 @@ export class GridHexagon extends Hexagon {
         this.unit = this.hexVector.unit
 
         return super.getLinear()
+
+    }
+
+    static graphify(gridHexagons: GridHexagon[]): Graph<GridHexagon> {
+
+        let graph = new Graph<GridHexagon>(false, hv => hv.transform.translation.clone())
+
+        for (let gridHexagon of gridHexagons)
+            graph.addNode([gridHexagon.id, gridHexagon])
+
+        for (let gridHexagon of gridHexagons)
+            for (let neighbor of gridHexagon.hexVector.neighbors()) {
+                let neighborGridHexagon = gridHexagons.find(hex => hex.hexVector.equal(neighbor))
+                if (neighborGridHexagon)
+                    graph.addLink({ source: gridHexagon.id, target: neighborGridHexagon.id })
+            }
+
+
+
+        return graph
 
     }
 
