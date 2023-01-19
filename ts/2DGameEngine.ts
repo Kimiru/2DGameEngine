@@ -1,5 +1,5 @@
-import { NetworkEvents, Network } from '../PeerJS-Network/js/Network.js'
-import { TransformMatrix, Vector, matrix, Transform, map } from './2DGEMath.js'
+import { Network, NetworkEvents } from '../PeerJS-Network/js/Network.js'
+import { Transform, TransformMatrix, Vector, map, matrix } from './2DGEMath.js'
 import { badclone, id, range } from './2DGEUtils.js'
 
 const PI2 = Math.PI * 2
@@ -751,6 +751,8 @@ export class GameObject {
 
         for (let obj of object) if (obj instanceof GameObject) {
 
+            if (obj instanceof GameComponent && obj.unique && this.getComponent(obj.componentTag)) throw `Cannot add more than one unique component of type "${obj.componentTag}"`
+
             if (obj.used)
                 obj.kill()
 
@@ -806,6 +808,25 @@ export class GameObject {
      * Should not be called by the user
      */
     onRemove(): void { }
+
+    getComponent(componentTag: string): GameComponent | null {
+
+        return this.children.find(
+            child =>
+                child.tags.includes('component') &&
+                child.tags.includes(componentTag)
+        ) as GameComponent ?? null
+    }
+
+    getComponents(componentTag: string): GameComponent[] {
+
+        return this.children.filter(
+            child =>
+                child.tags.includes('component') &&
+                child.tags.includes(componentTag)
+        ) as GameComponent[]
+
+    }
 
     /**
     * Update the object and its child.
@@ -1005,6 +1026,22 @@ export class GameObject {
         }
 
         return matrix
+
+    }
+
+}
+
+export class GameComponent extends GameObject {
+
+    unique: boolean = false
+    componentTag: string = 'basic-component'
+
+    constructor() {
+
+        super()
+
+        this.addTag('component')
+        this.addTag(this.componentTag)
 
     }
 
@@ -1829,6 +1866,8 @@ export class TrackingCamera extends Camera {
     }
 
 }
+
+
 
 /**
  * loads multiple images and use callbacks for progression checks and at the end

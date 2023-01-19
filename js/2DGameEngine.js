@@ -1,5 +1,5 @@
-import { NetworkEvents, Network } from '../PeerJS-Network/js/Network.js';
-import { TransformMatrix, Vector, Transform, map } from './2DGEMath.js';
+import { Network, NetworkEvents } from '../PeerJS-Network/js/Network.js';
+import { Transform, TransformMatrix, Vector, map } from './2DGEMath.js';
 import { badclone, id, range } from './2DGEUtils.js';
 const PI2 = Math.PI * 2;
 const gameEngineConstructorArguments = {
@@ -529,6 +529,8 @@ export class GameObject {
     add(...object) {
         for (let obj of object)
             if (obj instanceof GameObject) {
+                if (obj instanceof GameComponent && obj.unique && this.getComponent(obj.componentTag))
+                    throw `Cannot add more than one unique component of type "${obj.componentTag}"`;
                 if (obj.used)
                     obj.kill();
                 obj.parent = this;
@@ -569,6 +571,14 @@ export class GameObject {
      * Should not be called by the user
      */
     onRemove() { }
+    getComponent(componentTag) {
+        return this.children.find(child => child.tags.includes('component') &&
+            child.tags.includes(componentTag)) ?? null;
+    }
+    getComponents(componentTag) {
+        return this.children.filter(child => child.tags.includes('component') &&
+            child.tags.includes(componentTag));
+    }
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -710,6 +720,15 @@ export class GameObject {
             currentObject = currentObject.parent;
         }
         return matrix;
+    }
+}
+export class GameComponent extends GameObject {
+    unique = false;
+    componentTag = 'basic-component';
+    constructor() {
+        super();
+        this.addTag('component');
+        this.addTag(this.componentTag);
     }
 }
 /**

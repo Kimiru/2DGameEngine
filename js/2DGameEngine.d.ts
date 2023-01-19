@@ -1,4 +1,4 @@
-import { Vector, matrix, Transform } from './2DGEMath.js';
+import { Transform, Vector, matrix } from './2DGEMath.js';
 /**
  * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
  */
@@ -288,6 +288,8 @@ export declare class GameObject {
      * Should not be called by the user
      */
     onRemove(): void;
+    getComponent(componentTag: string): GameComponent | null;
+    getComponents(componentTag: string): GameComponent[];
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -357,6 +359,11 @@ export declare class GameObject {
      */
     getWorldRotation(): number;
     getWorldTransformMatrix(): matrix;
+}
+export declare class GameComponent extends GameObject {
+    unique: boolean;
+    componentTag: string;
+    constructor();
 }
 /**
  * The Timer class is used to mesure time easily
