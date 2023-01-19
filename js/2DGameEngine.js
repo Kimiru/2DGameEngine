@@ -277,6 +277,15 @@ export class GameScene {
                 child.executePhysics(dt);
     }
     childrenDrawFilter(children) { return children; }
+    getDrawRange() {
+        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2;
+        if (this.camera)
+            drawRange *= this.camera.getRange();
+        return drawRange;
+    }
+    getCameraPosition() {
+        return this.camera?.getWorldPosition() ?? new Vector(0, 0);
+    }
     /**
      * Draw the scene and its children (children first)
      * Is called by the GameEngine to draw the scene
@@ -285,11 +294,10 @@ export class GameScene {
      * @param ctx
      */
     executeDraw(ctx) {
-        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2;
-        let cameraPosition = this.camera?.getWorldPosition() ?? new Vector(0, 0);
+        let drawRange = this.getDrawRange();
+        let cameraPosition = this.getCameraPosition();
         if (this.camera) {
             ctx.transform(...this.camera.getViewTransformMatrix());
-            drawRange *= this.camera.getRange();
         }
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
         if (this.renderingStyle === RenderingStyle.INFINITY) {

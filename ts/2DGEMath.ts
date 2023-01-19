@@ -411,13 +411,35 @@ export class HexVector {
         this.unit = unit
         this.vector = vector
 
-        this.addS(q, r, s)
+        this.setS(q, r, s)
 
     }
 
     get q(): number { return this.#q }
     get r(): number { return this.#r }
     get s(): number { return this.#s }
+
+    setS(q: number, r: number, s: number): this {
+
+        let sum = q + r + s
+
+        if (sum !== 0) throw `Check sum for hex positioning should be equal to zero q(${this.#q + q}) + r(${this.#r + r}) + s(${this.#s + s}) === ${sum}`
+
+        this.#q = q
+        this.#r = r
+        this.#s = s
+
+        this.updateVector()
+
+        return this
+
+    }
+
+    set(hexVector: HexVector): this {
+
+        return this.setS(hexVector.q, hexVector.r, hexVector.s)
+
+    }
 
     addS(q: number, r: number, s: number): this {
 

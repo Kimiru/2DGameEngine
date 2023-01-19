@@ -383,9 +383,9 @@ export class GridHexagon extends Hexagon {
 
     }
 
-    static graphify(gridHexagons: GridHexagon[]): Graph<GridHexagon> {
+    static graphify<T extends GridHexagon>(gridHexagons: T[]): Graph<T> {
 
-        let graph = new Graph<GridHexagon>(false, hv => hv.transform.translation.clone())
+        let graph = new Graph<T>(false, hv => hv.transform.translation.clone())
 
         for (let gridHexagon of gridHexagons)
             graph.addNode([gridHexagon.id, gridHexagon])

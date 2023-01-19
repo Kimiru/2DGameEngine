@@ -98,7 +98,7 @@ export declare class GridHexagon extends Hexagon {
     hexVector: HexVector;
     constructor(hexVector?: HexVector);
     getLinear(): Vector[];
-    static graphify(gridHexagons: GridHexagon[]): Graph<GridHexagon>;
+    static graphify<T extends GridHexagon>(gridHexagons: T[]): Graph<T>;
 }
 export declare class Segment extends GameObject {
     a: Vector;

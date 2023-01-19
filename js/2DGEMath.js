@@ -307,11 +307,24 @@ export class HexVector {
         this.orientation = orientation;
         this.unit = unit;
         this.vector = vector;
-        this.addS(q, r, s);
+        this.setS(q, r, s);
     }
     get q() { return this.#q; }
     get r() { return this.#r; }
     get s() { return this.#s; }
+    setS(q, r, s) {
+        let sum = q + r + s;
+        if (sum !== 0)
+            throw `Check sum for hex positioning should be equal to zero q(${this.#q + q}) + r(${this.#r + r}) + s(${this.#s + s}) === ${sum}`;
+        this.#q = q;
+        this.#r = r;
+        this.#s = s;
+        this.updateVector();
+        return this;
+    }
+    set(hexVector) {
+        return this.setS(hexVector.q, hexVector.r, hexVector.s);
+    }
     addS(q, r, s) {
         let sum = this.#q + q + this.#r + r + this.#s + s;
         if (sum !== 0)

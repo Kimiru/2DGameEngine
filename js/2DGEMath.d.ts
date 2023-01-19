@@ -212,6 +212,8 @@ export declare class HexVector {
     get q(): number;
     get r(): number;
     get s(): number;
+    setS(q: number, r: number, s: number): this;
+    set(hexVector: HexVector): this;
     addS(q: number, r: number, s: number): this;
     add(hexVector: HexVector): this;
     updateVector(): void;

@@ -103,6 +103,8 @@ export declare class GameScene {
     executeUpdate(dt: number): void;
     executePhysics(dt: number): void;
     childrenDrawFilter(children: GameObject[]): GameObject[];
+    getDrawRange(): number;
+    getCameraPosition(): Vector;
     /**
      * Draw the scene and its children (children first)
      * Is called by the GameEngine to draw the scene

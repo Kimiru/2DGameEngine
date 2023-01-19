@@ -416,6 +416,23 @@ export class GameScene {
 
     childrenDrawFilter(children: GameObject[]): GameObject[] { return children }
 
+    getDrawRange(): number {
+
+        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2
+
+        if (this.camera)
+            drawRange *= this.camera.getRange()
+
+        return drawRange
+
+    }
+
+    getCameraPosition(): Vector {
+
+        return this.camera?.getWorldPosition() ?? new Vector(0, 0)
+
+    }
+
     /**
      * Draw the scene and its children (children first)
      * Is called by the GameEngine to draw the scene
@@ -425,12 +442,11 @@ export class GameScene {
      */
     executeDraw(ctx: CanvasRenderingContext2D) {
 
-        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2
-        let cameraPosition = this.camera?.getWorldPosition() ?? new Vector(0, 0)
+        let drawRange = this.getDrawRange()
+        let cameraPosition = this.getCameraPosition()
 
         if (this.camera) {
             ctx.transform(...this.camera.getViewTransformMatrix())
-            drawRange *= this.camera.getRange()
         }
 
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y)
