@@ -1062,6 +1062,8 @@ export class Path {
 
     follow(length: number): Vector {
 
+        if (this.end()) return this.currentPosition.clone()
+
         let next = this.points[this.currentSegment]
         let distance = this.currentPosition.distanceTo(next)
 

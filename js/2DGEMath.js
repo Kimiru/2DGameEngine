@@ -734,6 +734,8 @@ export class Path {
     }
     end() { return this.points.length == this.currentSegment; }
     follow(length) {
+        if (this.end())
+            return this.currentPosition.clone();
         let next = this.points[this.currentSegment];
         let distance = this.currentPosition.distanceTo(next);
         while (distance <= length) {
