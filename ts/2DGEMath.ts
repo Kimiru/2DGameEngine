@@ -385,16 +385,11 @@ export class Vector {
 
 }
 
-export class HexOrientation {
-
-    static flat: number = 0
-    static pointy: number = 1
-
-}
+export enum HexOrientation { flat, pointy }
 
 export class HexVector {
 
-    orientation: number
+    orientation: HexOrientation
 
     #q: number = 0
     #r: number = 0
@@ -405,7 +400,7 @@ export class HexVector {
 
     unit: number
 
-    constructor(orientation: number = HexOrientation.pointy, unit: number = 1, vector: Vector = new Vector(), q = 0, r = 0, s = 0) {
+    constructor(orientation: HexOrientation = HexOrientation.pointy, unit: number = 1, vector: Vector = new Vector(), q = 0, r = 0, s = 0) {
 
         this.orientation = orientation
         this.unit = unit
@@ -478,6 +473,38 @@ export class HexVector {
 
     }
 
+    updateFromVector(): void {
+
+        let fracQ, fracR
+
+        if (this.orientation === HexOrientation.pointy) {
+            fracQ = (Math.sqrt(3) / 3 * this.vector.x - 1 / 3 * this.vector.y) / this.unit
+            fracR = (2 / 3 * this.vector.y) / this.unit
+        } else {
+            fracQ = (2 / 3 * this.vector.x) / this.unit
+            fracR = (-1 / 3 * this.vector.x + Math.sqrt(3) / 3 * this.vector.y) / this.unit
+        }
+
+        let fracS = -fracQ - fracR
+
+        let q = Math.round(fracQ)
+        let r = Math.round(fracR)
+        let s = Math.round(fracS)
+
+        let qDiff = Math.abs(q - fracQ)
+        let rDiff = Math.abs(r - fracR)
+        let sDiff = Math.abs(s - fracS)
+
+        if (qDiff > rDiff && qDiff > sDiff)
+            q = -r - s
+        else if (rDiff > sDiff)
+            r = -q - s
+        else s = -q - r
+
+        this.setS(q, r, s)
+
+    }
+
     distanceTo(hexVector: HexVector): number {
 
         if (this.orientation !== hexVector.orientation) throw 'HexVector have incompatible orientations'
@@ -490,7 +517,7 @@ export class HexVector {
 
     equalS(q: number, r: number, s: number): boolean { return this.#q === q && this.#r === r && this.#s === s }
 
-    clone() { return new HexVector(this.orientation, this.unit, this.vector, this.#q, this.#r, this.#s) }
+    clone() { return new HexVector(this.orientation, this.unit, undefined, this.#q, this.#r, this.#s) }
 
     neighbors(): HexVector[] {
         return this.units().map((hexVector: HexVector) => hexVector.add(this))
@@ -498,7 +525,7 @@ export class HexVector {
 
     units(): HexVector[] { return HexVector.units(this.orientation, this.unit) }
 
-    static units(orientation: number, unit: number): HexVector[] {
+    static units(orientation: HexOrientation, unit: number): HexVector[] {
 
         return [
             new HexVector(orientation, unit, undefined, 1, -1, 0),
@@ -1096,6 +1123,35 @@ export class Path {
             ctx.lineTo(this.points[index].x, this.points[index].y)
 
         ctx.stroke()
+
+    }
+
+}
+
+export interface HexagonGraphInterface {
+
+    id: number
+    hexVector: HexVector
+
+}
+
+export class HexagonGraph {
+
+    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<T> {
+
+        let graph = new Graph<T>(false, object => object.hexVector.clone().vector)
+
+        for (let object of HexagonGraphObjects)
+            graph.addNode([object.id, object])
+
+        for (let object of HexagonGraphObjects)
+            for (let neighbor of object.hexVector.neighbors()) {
+                let neighborGridHexagon = HexagonGraphObjects.find(hex => hex.hexVector.equal(neighbor))
+                if (neighborGridHexagon)
+                    graph.addLink({ source: object.id, target: neighborGridHexagon.id })
+            }
+
+        return graph
 
     }
 

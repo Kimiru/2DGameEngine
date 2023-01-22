@@ -69,9 +69,9 @@ export declare class GameEngine {
     onResourcesLoaded(callback: any): void;
 }
 export declare function fullScreen(engine: GameEngine): void;
-export declare class RenderingStyle {
-    static INFINITY: number;
-    static IN_VIEW: number;
+export declare enum RenderingType {
+    INFINITY = 0,
+    IN_VIEW = 1
 }
 /**
  * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering.
@@ -87,7 +87,7 @@ export declare class GameScene {
     children: GameObject[];
     camera: Camera;
     engine: GameEngine;
-    renderingStyle: number;
+    renderingType: RenderingType;
     /**
      * Create a new empty GameScene
      */
@@ -222,7 +222,7 @@ export declare class GameObject {
     transform: Transform;
     zIndex: number;
     drawRange: number;
-    renderingStyle: number;
+    renderingType: RenderingType;
     /**
      * Create a new raw GameObject
      */
@@ -503,50 +503,49 @@ export declare class Input {
      * @returns {Promise<void>}
      */
     calibrateGamepad(updateCallback?: (axesStates: number[]) => void): Promise<void>;
-    getGamepadControlAccess(gamepadControl: number): GamepadControlAccess;
+    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess;
     gamepadLoop(): void;
-    recordGamepadControl(gamepadControl: number): Promise<void>;
-    unsetGamepadControl(gamepadControl: number): void;
+    recordGamepadControl(gamepadControl: GamepadControl): Promise<void>;
+    unsetGamepadControl(gamepadControl: GamepadControl): void;
     /**
      * Returns an array containing the if of the control that have been defined
      *
      * @returns {number[]}
      */
-    getDefinedGamepadControls(): number[];
+    getDefinedGamepadControls(): GamepadControl[];
     /**
      * Returns the control currently waiting for a the user to interact with the gamepad
      *
      * @returns {number | null}
      */
-    getRecording(): number | null;
+    getRecording(): GamepadControl | null;
 }
-export declare class GamepadControl {
-    #private;
-    static left_joystick_right_dir: number;
-    static left_joystick_left_dir: number;
-    static left_joystick_up_dir: number;
-    static left_joystick_down_dir: number;
-    static left_joystick_button: number;
-    static left_button: number;
-    static left_trigger: number;
-    static right_joystick_right_dir: number;
-    static right_joystick_left_dir: number;
-    static right_joystick_up_dir: number;
-    static right_joystick_down_dir: number;
-    static right_joystick_button: number;
-    static right_button: number;
-    static right_trigger: number;
-    static button_A: number;
-    static button_B: number;
-    static button_X: number;
-    static button_Y: number;
-    static button_left_arrow: number;
-    static button_right_arrow: number;
-    static button_up_arrow: number;
-    static button_down_arrow: number;
-    static button_back: number;
-    static button_start: number;
-    static button_home: number;
+export declare enum GamepadControl {
+    left_joystick_right_dir = 0,
+    left_joystick_left_dir = 1,
+    left_joystick_up_dir = 2,
+    left_joystick_down_dir = 3,
+    left_joystick_button = 4,
+    left_button = 5,
+    left_trigger = 6,
+    right_joystick_right_dir = 7,
+    right_joystick_left_dir = 8,
+    right_joystick_up_dir = 9,
+    right_joystick_down_dir = 10,
+    right_joystick_button = 11,
+    right_button = 12,
+    right_trigger = 13,
+    button_A = 14,
+    button_B = 15,
+    button_X = 16,
+    button_Y = 17,
+    button_left_arrow = 18,
+    button_right_arrow = 19,
+    button_up_arrow = 20,
+    button_down_arrow = 21,
+    button_back = 22,
+    button_start = 23,
+    button_home = 24
 }
 /**
  * The Camera class is used to set the center of the view inside a scene

@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js";
-import { Graph, HexVector, Vector } from "./2DGEMath.js";
+import { HexagonGraphInterface, HexOrientation, HexVector, Vector } from "./2DGEMath.js";
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -86,19 +86,19 @@ export declare class Rectangle extends Polygon {
 }
 export declare class Hexagon extends Polygon {
     unit: number;
-    orientation: number;
+    orientation: HexOrientation;
     display: boolean;
     color: string;
-    constructor(position?: Vector, orientation?: number, unit?: number);
+    constructor(position?: Vector, orientation?: HexOrientation, unit?: number);
     getLinear(): Vector[];
-    drawPath(ctx: any): void;
+    static ctxPath(ctx: CanvasRenderingContext2D, orientation: HexOrientation, unit: number): void;
+    ctxPath(ctx: any): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export declare class GridHexagon extends Hexagon {
+export declare class GridHexagon extends Hexagon implements HexagonGraphInterface {
     hexVector: HexVector;
     constructor(hexVector?: HexVector);
     getLinear(): Vector[];
-    static graphify<T extends GridHexagon>(gridHexagons: T[]): Graph<T>;
 }
 export declare class Segment extends GameObject {
     a: Vector;

@@ -292,10 +292,11 @@ export class Vector {
         return this;
     }
 }
-export class HexOrientation {
-    static flat = 0;
-    static pointy = 1;
-}
+export var HexOrientation;
+(function (HexOrientation) {
+    HexOrientation[HexOrientation["flat"] = 0] = "flat";
+    HexOrientation[HexOrientation["pointy"] = 1] = "pointy";
+})(HexOrientation || (HexOrientation = {}));
 export class HexVector {
     orientation;
     #q = 0;
@@ -345,6 +346,31 @@ export class HexVector {
         else
             this.vector.set(this.unit * (3 / 2 * this.#q), this.unit * (sqrt3 / 2 * this.#q + sqrt3 * this.#r));
     }
+    updateFromVector() {
+        let fracQ, fracR;
+        if (this.orientation === HexOrientation.pointy) {
+            fracQ = (Math.sqrt(3) / 3 * this.vector.x - 1 / 3 * this.vector.y) / this.unit;
+            fracR = (2 / 3 * this.vector.y) / this.unit;
+        }
+        else {
+            fracQ = (2 / 3 * this.vector.x) / this.unit;
+            fracR = (-1 / 3 * this.vector.x + Math.sqrt(3) / 3 * this.vector.y) / this.unit;
+        }
+        let fracS = -fracQ - fracR;
+        let q = Math.round(fracQ);
+        let r = Math.round(fracR);
+        let s = Math.round(fracS);
+        let qDiff = Math.abs(q - fracQ);
+        let rDiff = Math.abs(r - fracR);
+        let sDiff = Math.abs(s - fracS);
+        if (qDiff > rDiff && qDiff > sDiff)
+            q = -r - s;
+        else if (rDiff > sDiff)
+            r = -q - s;
+        else
+            s = -q - r;
+        this.setS(q, r, s);
+    }
     distanceTo(hexVector) {
         if (this.orientation !== hexVector.orientation)
             throw 'HexVector have incompatible orientations';
@@ -352,7 +378,7 @@ export class HexVector {
     }
     equal(hexVector) { return this.#q === hexVector.q && this.#r === hexVector.r && this.#s === hexVector.s; }
     equalS(q, r, s) { return this.#q === q && this.#r === r && this.#s === s; }
-    clone() { return new HexVector(this.orientation, this.unit, this.vector, this.#q, this.#r, this.#s); }
+    clone() { return new HexVector(this.orientation, this.unit, undefined, this.#q, this.#r, this.#s); }
     neighbors() {
         return this.units().map((hexVector) => hexVector.add(this));
     }
@@ -757,6 +783,20 @@ export class Path {
         for (let index = 1; index < this.points.length; index++)
             ctx.lineTo(this.points[index].x, this.points[index].y);
         ctx.stroke();
+    }
+}
+export class HexagonGraph {
+    static buildGraph(HexagonGraphObjects) {
+        let graph = new Graph(false, object => object.hexVector.clone().vector);
+        for (let object of HexagonGraphObjects)
+            graph.addNode([object.id, object]);
+        for (let object of HexagonGraphObjects)
+            for (let neighbor of object.hexVector.neighbors()) {
+                let neighborGridHexagon = HexagonGraphObjects.find(hex => hex.hexVector.equal(neighbor));
+                if (neighborGridHexagon)
+                    graph.addLink({ source: object.id, target: neighborGridHexagon.id });
+            }
+        return graph;
     }
 }
 export class PseudoRandom {

@@ -231,11 +231,12 @@ export function fullScreen(engine) {
     window.addEventListener('resize', handler);
     handler();
 }
-export class RenderingStyle {
-    static INFINITY = 0; // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
+export var RenderingType;
+(function (RenderingType) {
+    RenderingType[RenderingType["INFINITY"] = 0] = "INFINITY";
     // static IN_VIEW = 1 // Render only the object that are in the cameraview, or at default position and range if no camera is set // Distance to camera computation for all object // Recommended when lot of object with little child depth
-    static IN_VIEW = 1; // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
-}
+    RenderingType[RenderingType["IN_VIEW"] = 1] = "IN_VIEW"; // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
+})(RenderingType || (RenderingType = {}));
 /**
  * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering.
  * GameScene id is not used for scene unicity but for scene sorting regarding Network.
@@ -250,7 +251,7 @@ export class GameScene {
     children = [];
     camera = null;
     engine = null;
-    renderingStyle = RenderingStyle.INFINITY;
+    renderingType = RenderingType.INFINITY;
     /**
      * Create a new empty GameScene
      */
@@ -300,12 +301,12 @@ export class GameScene {
             ctx.transform(...this.camera.getViewTransformMatrix());
         }
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
-        if (this.renderingStyle === RenderingStyle.INFINITY) {
+        if (this.renderingType === RenderingType.INFINITY) {
             for (let child of children)
                 if (child instanceof GameObject)
                     child.executeDraw(ctx, drawRange, cameraPosition);
         }
-        else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+        else if (this.renderingType === RenderingType.IN_VIEW) {
             for (let child of children) {
                 let childPosition = child.getWorldPosition();
                 let distance = cameraPosition.distanceTo(childPosition);
@@ -477,7 +478,7 @@ export class GameObject {
     transform = new Transform();
     zIndex = 0;
     drawRange = 0; // If set to infinity, will always be rendered no matter the rendering style
-    renderingStyle = RenderingStyle.INFINITY;
+    renderingType = RenderingType.INFINITY;
     /**
      * Create a new raw GameObject
      */
@@ -625,12 +626,12 @@ export class GameObject {
             this.draw(ctx);
         if (this.childrenDrawEnabled) {
             let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
-            if (this.renderingStyle === RenderingStyle.INFINITY) {
+            if (this.renderingType === RenderingType.INFINITY) {
                 for (let child of children)
                     if (child instanceof GameObject)
                         child.executeDraw(ctx, drawRange, cameraPosition);
             }
-            else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+            else if (this.renderingType === RenderingType.IN_VIEW) {
                 for (let child of children) {
                     let childPosition = child.getWorldPosition();
                     let distance = cameraPosition.distanceTo(childPosition);
@@ -1205,34 +1206,34 @@ export class Input {
      */
     getRecording() { return this.#recordInput; }
 }
-export class GamepadControl {
-    static #index = 0;
-    static left_joystick_right_dir = this.#index++;
-    static left_joystick_left_dir = this.#index++;
-    static left_joystick_up_dir = this.#index++;
-    static left_joystick_down_dir = this.#index++;
-    static left_joystick_button = this.#index++;
-    static left_button = this.#index++;
-    static left_trigger = this.#index++;
-    static right_joystick_right_dir = this.#index++;
-    static right_joystick_left_dir = this.#index++;
-    static right_joystick_up_dir = this.#index++;
-    static right_joystick_down_dir = this.#index++;
-    static right_joystick_button = this.#index++;
-    static right_button = this.#index++;
-    static right_trigger = this.#index++;
-    static button_A = this.#index++;
-    static button_B = this.#index++;
-    static button_X = this.#index++;
-    static button_Y = this.#index++;
-    static button_left_arrow = this.#index++;
-    static button_right_arrow = this.#index++;
-    static button_up_arrow = this.#index++;
-    static button_down_arrow = this.#index++;
-    static button_back = this.#index++;
-    static button_start = this.#index++;
-    static button_home = this.#index++;
-}
+export var GamepadControl;
+(function (GamepadControl) {
+    GamepadControl[GamepadControl["left_joystick_right_dir"] = 0] = "left_joystick_right_dir";
+    GamepadControl[GamepadControl["left_joystick_left_dir"] = 1] = "left_joystick_left_dir";
+    GamepadControl[GamepadControl["left_joystick_up_dir"] = 2] = "left_joystick_up_dir";
+    GamepadControl[GamepadControl["left_joystick_down_dir"] = 3] = "left_joystick_down_dir";
+    GamepadControl[GamepadControl["left_joystick_button"] = 4] = "left_joystick_button";
+    GamepadControl[GamepadControl["left_button"] = 5] = "left_button";
+    GamepadControl[GamepadControl["left_trigger"] = 6] = "left_trigger";
+    GamepadControl[GamepadControl["right_joystick_right_dir"] = 7] = "right_joystick_right_dir";
+    GamepadControl[GamepadControl["right_joystick_left_dir"] = 8] = "right_joystick_left_dir";
+    GamepadControl[GamepadControl["right_joystick_up_dir"] = 9] = "right_joystick_up_dir";
+    GamepadControl[GamepadControl["right_joystick_down_dir"] = 10] = "right_joystick_down_dir";
+    GamepadControl[GamepadControl["right_joystick_button"] = 11] = "right_joystick_button";
+    GamepadControl[GamepadControl["right_button"] = 12] = "right_button";
+    GamepadControl[GamepadControl["right_trigger"] = 13] = "right_trigger";
+    GamepadControl[GamepadControl["button_A"] = 14] = "button_A";
+    GamepadControl[GamepadControl["button_B"] = 15] = "button_B";
+    GamepadControl[GamepadControl["button_X"] = 16] = "button_X";
+    GamepadControl[GamepadControl["button_Y"] = 17] = "button_Y";
+    GamepadControl[GamepadControl["button_left_arrow"] = 18] = "button_left_arrow";
+    GamepadControl[GamepadControl["button_right_arrow"] = 19] = "button_right_arrow";
+    GamepadControl[GamepadControl["button_up_arrow"] = 20] = "button_up_arrow";
+    GamepadControl[GamepadControl["button_down_arrow"] = 21] = "button_down_arrow";
+    GamepadControl[GamepadControl["button_back"] = 22] = "button_back";
+    GamepadControl[GamepadControl["button_start"] = 23] = "button_start";
+    GamepadControl[GamepadControl["button_home"] = 24] = "button_home";
+})(GamepadControl || (GamepadControl = {}));
 /**
  * The Camera class is used to set the center of the view inside a scene
  */

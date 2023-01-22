@@ -349,11 +349,11 @@ export function fullScreen(engine: GameEngine) {
 
 }
 
-export class RenderingStyle {
+export enum RenderingType {
 
-    static INFINITY = 0 // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
+    INFINITY,  // DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
     // static IN_VIEW = 1 // Render only the object that are in the cameraview, or at default position and range if no camera is set // Distance to camera computation for all object // Recommended when lot of object with little child depth
-    static IN_VIEW = 1 // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
+    IN_VIEW  // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
 
 }
 
@@ -376,7 +376,7 @@ export class GameScene {
     camera: Camera = null
     engine: GameEngine = null
 
-    renderingStyle: number = RenderingStyle.INFINITY
+    renderingType: RenderingType = RenderingType.INFINITY
 
     /**
      * Create a new empty GameScene
@@ -451,13 +451,13 @@ export class GameScene {
 
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y)
 
-        if (this.renderingStyle === RenderingStyle.INFINITY) {
+        if (this.renderingType === RenderingType.INFINITY) {
 
             for (let child of children)
                 if (child instanceof GameObject) child.executeDraw(ctx, drawRange, cameraPosition)
         }
 
-        else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+        else if (this.renderingType === RenderingType.IN_VIEW) {
 
             for (let child of children) {
 
@@ -688,7 +688,7 @@ export class GameObject {
     zIndex: number = 0
 
     drawRange: number = 0 // If set to infinity, will always be rendered no matter the rendering style
-    renderingStyle: number = RenderingStyle.INFINITY
+    renderingType: RenderingType = RenderingType.INFINITY
 
     /**
      * Create a new raw GameObject
@@ -894,7 +894,7 @@ export class GameObject {
 
             let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y)
 
-            if (this.renderingStyle === RenderingStyle.INFINITY) {
+            if (this.renderingType === RenderingType.INFINITY) {
 
                 for (let child of children)
                     if (child instanceof GameObject)
@@ -902,7 +902,7 @@ export class GameObject {
 
             }
 
-            else if (this.renderingStyle === RenderingStyle.IN_VIEW) {
+            else if (this.renderingType === RenderingType.IN_VIEW) {
 
                 for (let child of children) {
 
@@ -1373,7 +1373,7 @@ export class Input {
 
     // Gamepad
 
-    #gamepadMap: Map<number, GamepadControlAccess> = new Map()
+    #gamepadMap: Map<GamepadControl, GamepadControlAccess> = new Map()
 
     #gamepad = {
         left_joystick: new Vector(),
@@ -1407,9 +1407,9 @@ export class Input {
 
     #calibrated: boolean = false
     deadPoint = .1
-    #recordInput: number = null
+    #recordInput: GamepadControl = null
     #recordOK: () => void = null
-    #recordKO: (gamepadControl: number) => void = null
+    #recordKO: (gamepadControl: GamepadControl) => void = null
 
     #gamepadCalibration: {
         ok: () => void,
@@ -1624,7 +1624,7 @@ export class Input {
     // Record Controls
 
 
-    getGamepadControlAccess(gamepadControl: number): GamepadControlAccess {
+    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess {
 
         let gca = this.#gamepadMap.get(gamepadControl)
 
@@ -1676,7 +1676,7 @@ export class Input {
 
     }
 
-    #processGamepadControl(gamepad: Gamepad, gamepadControl: number): number {
+    #processGamepadControl(gamepad: Gamepad, gamepadControl: GamepadControl): number {
 
         let gamepadControlAccess = this.#gamepadMap.get(gamepadControl)
         if (!gamepadControlAccess) return 0
@@ -1731,7 +1731,7 @@ export class Input {
 
     }
 
-    recordGamepadControl(gamepadControl: number): Promise<void> {
+    recordGamepadControl(gamepadControl: GamepadControl): Promise<void> {
 
         return new Promise((ok, ko) => {
 
@@ -1745,7 +1745,7 @@ export class Input {
 
     }
 
-    unsetGamepadControl(gamepadControl: number) {
+    unsetGamepadControl(gamepadControl: GamepadControl) {
 
         this.#gamepadMap.delete(gamepadControl)
 
@@ -1756,7 +1756,7 @@ export class Input {
      * 
      * @returns {number[]}
      */
-    getDefinedGamepadControls(): number[] {
+    getDefinedGamepadControls(): GamepadControl[] {
 
         return [...this.#gamepadMap.keys()]
 
@@ -1767,45 +1767,43 @@ export class Input {
      * 
      * @returns {number | null}
      */
-    getRecording(): number | null { return this.#recordInput }
+    getRecording(): GamepadControl | null { return this.#recordInput }
 
 }
 
-export class GamepadControl {
+export enum GamepadControl {
 
-    static #index = 0
+    left_joystick_right_dir,
+    left_joystick_left_dir,
+    left_joystick_up_dir,
+    left_joystick_down_dir,
+    left_joystick_button,
 
-    static left_joystick_right_dir = this.#index++
-    static left_joystick_left_dir = this.#index++
-    static left_joystick_up_dir = this.#index++
-    static left_joystick_down_dir = this.#index++
-    static left_joystick_button = this.#index++
+    left_button,
+    left_trigger,
 
-    static left_button = this.#index++
-    static left_trigger = this.#index++
+    right_joystick_right_dir,
+    right_joystick_left_dir,
+    right_joystick_up_dir,
+    right_joystick_down_dir,
+    right_joystick_button,
 
-    static right_joystick_right_dir = this.#index++
-    static right_joystick_left_dir = this.#index++
-    static right_joystick_up_dir = this.#index++
-    static right_joystick_down_dir = this.#index++
-    static right_joystick_button = this.#index++
+    right_button,
+    right_trigger,
 
-    static right_button = this.#index++
-    static right_trigger = this.#index++
+    button_A,
+    button_B,
+    button_X,
+    button_Y,
 
-    static button_A = this.#index++
-    static button_B = this.#index++
-    static button_X = this.#index++
-    static button_Y = this.#index++
+    button_left_arrow,
+    button_right_arrow,
+    button_up_arrow,
+    button_down_arrow,
 
-    static button_left_arrow = this.#index++
-    static button_right_arrow = this.#index++
-    static button_up_arrow = this.#index++
-    static button_down_arrow = this.#index++
-
-    static button_back = this.#index++
-    static button_start = this.#index++
-    static button_home = this.#index++
+    button_back,
+    button_start,
+    button_home
 
 }
 

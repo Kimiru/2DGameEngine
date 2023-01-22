@@ -1,5 +1,5 @@
 import { GameObject } from "./2DGameEngine.js";
-import { Graph, HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js";
+import { HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js";
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -214,14 +214,17 @@ export class Hexagon extends Polygon {
         }
         return points;
     }
-    drawPath(ctx) {
-        let angleOffset = this.orientation === HexOrientation.pointy ? Math.PI / 6 : 0;
-        ctx.moveTo(Math.cos(angleOffset) * this.unit, Math.sin(angleOffset) * this.unit);
+    static ctxPath(ctx, orientation, unit) {
+        let angleOffset = orientation === HexOrientation.pointy ? Math.PI / 6 : 0;
+        ctx.moveTo(Math.cos(angleOffset) * unit, Math.sin(angleOffset) * unit);
         for (let i = 1; i < 7; i++) {
             let angle = Math.PI / 3 * i + angleOffset;
-            ctx.lineTo(Math.cos(angle) * this.unit, Math.sin(angle) * this.unit);
+            ctx.lineTo(Math.cos(angle) * unit, Math.sin(angle) * unit);
         }
         ctx.closePath();
+    }
+    ctxPath(ctx) {
+        Hexagon.ctxPath(ctx, this.orientation, this.unit);
     }
     draw(ctx) {
         if (!this.display)
@@ -229,7 +232,7 @@ export class Hexagon extends Polygon {
         ctx.lineWidth = .1;
         ctx.strokeStyle = this.color;
         ctx.beginPath();
-        this.drawPath(ctx);
+        this.ctxPath(ctx);
         ctx.stroke();
     }
 }
@@ -245,18 +248,6 @@ export class GridHexagon extends Hexagon {
         this.orientation = this.hexVector.orientation;
         this.unit = this.hexVector.unit;
         return super.getLinear();
-    }
-    static graphify(gridHexagons) {
-        let graph = new Graph(false, hv => hv.transform.translation.clone());
-        for (let gridHexagon of gridHexagons)
-            graph.addNode([gridHexagon.id, gridHexagon]);
-        for (let gridHexagon of gridHexagons)
-            for (let neighbor of gridHexagon.hexVector.neighbors()) {
-                let neighborGridHexagon = gridHexagons.find(hex => hex.hexVector.equal(neighbor));
-                if (neighborGridHexagon)
-                    graph.addLink({ source: gridHexagon.id, target: neighborGridHexagon.id });
-            }
-        return graph;
     }
 }
 export class Segment extends GameObject {

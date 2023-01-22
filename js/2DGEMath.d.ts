@@ -199,16 +199,16 @@ export declare class Vector {
     floor(): this;
     abs(): this;
 }
-export declare class HexOrientation {
-    static flat: number;
-    static pointy: number;
+export declare enum HexOrientation {
+    flat = 0,
+    pointy = 1
 }
 export declare class HexVector {
     #private;
-    orientation: number;
+    orientation: HexOrientation;
     vector: Vector;
     unit: number;
-    constructor(orientation?: number, unit?: number, vector?: Vector, q?: number, r?: number, s?: number);
+    constructor(orientation?: HexOrientation, unit?: number, vector?: Vector, q?: number, r?: number, s?: number);
     get q(): number;
     get r(): number;
     get s(): number;
@@ -217,13 +217,14 @@ export declare class HexVector {
     addS(q: number, r: number, s: number): this;
     add(hexVector: HexVector): this;
     updateVector(): void;
+    updateFromVector(): void;
     distanceTo(hexVector: HexVector): number;
     equal(hexVector: HexVector): boolean;
     equalS(q: number, r: number, s: number): boolean;
     clone(): HexVector;
     neighbors(): HexVector[];
     units(): HexVector[];
-    static units(orientation: number, unit: number): HexVector[];
+    static units(orientation: HexOrientation, unit: number): HexVector[];
 }
 export declare class Transform {
     #private;
@@ -338,6 +339,13 @@ export declare class Path {
     end(): boolean;
     follow(length: number): Vector;
     draw(ctx: CanvasRenderingContext2D): void;
+}
+export interface HexagonGraphInterface {
+    id: number;
+    hexVector: HexVector;
+}
+export declare class HexagonGraph {
+    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<T>;
 }
 export declare class PseudoRandom {
     static a: number;
