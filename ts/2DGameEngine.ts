@@ -1,6 +1,6 @@
 import { Network, NetworkEvents } from '../PeerJS-Network/js/Network.js'
 import { Transform, TransformMatrix, Vector, map, matrix } from './2DGEMath.js'
-import { badclone, id, range } from './2DGEUtils.js'
+import { SVGStringToImage, badclone, id, range } from './2DGEUtils.js'
 
 const PI2 = Math.PI * 2
 
@@ -11,7 +11,8 @@ const gameEngineConstructorArguments: {
     scaling: number,
     canvas: HTMLCanvasElement,
     images: { name: string, src: string }[],
-    sounds: { name: string, srcs: string[] }[]
+    svgs: { name: string, src: string }[],
+    sounds: { name: string, srcs: string[] }[],
 } = {
     width: innerWidth,
     height: innerHeight,
@@ -19,6 +20,7 @@ const gameEngineConstructorArguments: {
     scaling: 2,
     canvas: null,
     images: [],
+    svgs: [],
     sounds: []
 }
 
@@ -47,12 +49,14 @@ export class GameEngine {
     #currentScene: GameScene = null
     #nextScene: GameScene = undefined
     imageBank: Map<string, HTMLImageElement> = new Map()
+    svgBank: Map<string, { raw: string, image: HTMLImageElement }> = new Map()
     soundBank: Map<string, Sound> = new Map()
     #lock0: boolean = true
-    #lock1: boolean = true
-    #lock2: boolean = true
+    #locks: [boolean, boolean, boolean] = [true, true, true]
     #loadedImagesCount: number = 0
     #imageToLoadCount: number = 0
+    #loadedSVGCount: number = 0
+    #svgToLoadCount: number = 0
     #loadedSoundCount: number = 0
     #soundToLoadCount: number = 0
     #ressourcesLoadedCallbacks: (() => void)[] = []
@@ -91,21 +95,16 @@ export class GameEngine {
 
         this.resize(args.width, args.height, args.scaling, args.verticalPixels)
         this.#imageToLoadCount = args.images.length
+        this.#svgToLoadCount = args.svgs.length
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0)
         this.imageBank = loadImages(
             args.images,
             (n: number) => { this.#loadedImagesCount = n },
             () => {
 
-                this.#lock1 = false
+                this.#locks[0] = false
 
-                if (!this.#lock1 && !this.#lock2) {
-
-                    this.#lock0 = false
-
-                    this.#ressourcesLoadedCallbacks.forEach(func => func.call(this))
-
-                }
+                this.#checkLocks()
 
             }
         )
@@ -115,15 +114,22 @@ export class GameEngine {
             (n: number) => { this.#loadedSoundCount = n },
             () => {
 
-                this.#lock2 = false
+                this.#locks[1] = false
 
-                if (!this.#lock1 && !this.#lock2) {
+                this.#checkLocks()
 
-                    this.#lock0 = false
+            }
+        )
 
-                    this.#ressourcesLoadedCallbacks.forEach(func => func.call(this))
+        this.svgBank = loadSVGs(
+            args.svgs,
+            (n: number) => { this.#loadedSVGCount = n },
+            () => {
 
-                }
+                this.#locks[2] = false
+
+                this.#checkLocks()
+
             }
         )
 
@@ -140,6 +146,18 @@ export class GameEngine {
     get dt(): number { return this.#dt }
 
     get scene(): GameScene { return this.#currentScene }
+
+    #checkLocks() {
+
+        if (this.#locks.every(lock => lock === false)) {
+
+            this.#lock0 = false
+
+            this.#ressourcesLoadedCallbacks.forEach(func => func.call(this))
+
+        }
+
+    }
 
     /**
      * update the size of both canvas
@@ -266,8 +284,8 @@ export class GameEngine {
 
         if (this.#lock0) {
 
-            let value = this.#loadedImagesCount + this.#loadedSoundCount
-            let tot = this.#imageToLoadCount + this.#soundToLoadCount
+            let value = this.#loadedImagesCount + this.#loadedSVGCount + this.#loadedSoundCount
+            let tot = this.#imageToLoadCount + this.#svgToLoadCount + this.#soundToLoadCount
 
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
 
@@ -1937,6 +1955,68 @@ export function loadImages(images: { name: string, src: string }[], incrementCal
     return bank
 }
 
+export function loadSVGs(svgs: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, { raw: string, image: HTMLImageElement }> {
+
+    let bank: Map<string, { raw: string, image: HTMLImageElement }> = new Map()
+    let completed: { n: number } = { n: 0 }
+
+    for (let svg of svgs) {
+
+        let data: { raw: string, image: HTMLImageElement } = { raw: '', image: null }
+
+        fetch(svg.src)
+            .then(res => {
+
+                if (res.ok) return res.text()
+                throw res
+
+            })
+            .then(svg => {
+
+                data.raw = svg
+
+                return svg
+
+            })
+            .then(SVGStringToImage)
+            .then(image => {
+
+                data.image = image
+
+                completed.n++
+
+                incrementCallback(completed.n)
+
+            })
+            .catch(err => {
+
+                console.error(`Could not load image "${svg.name}" for source "${svg.src}"`)
+
+                console.error(err)
+
+                completed.n++
+
+                incrementCallback(completed.n)
+
+            })
+            .finally(() => {
+
+                if (completed.n == svgs.length)
+                    finishedCallback()
+
+            })
+
+        bank.set(svg.name, data)
+
+    }
+
+    if (svgs.length === 0)
+        finishedCallback()
+
+    return bank
+
+}
+
 class Sound {
 
     sounds: HTMLAudioElement[] = []
@@ -2031,7 +2111,7 @@ export class Drawable extends GameObject {
     size: Vector = new Vector()
     halfSize: Vector = new Vector()
 
-    constructor(image) {
+    constructor(image: HTMLImageElement) {
 
         super()
 

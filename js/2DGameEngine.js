@@ -1,6 +1,6 @@
 import { Network, NetworkEvents } from '../PeerJS-Network/js/Network.js';
 import { Transform, TransformMatrix, Vector, map } from './2DGEMath.js';
-import { badclone, id, range } from './2DGEUtils.js';
+import { SVGStringToImage, badclone, id, range } from './2DGEUtils.js';
 const PI2 = Math.PI * 2;
 const gameEngineConstructorArguments = {
     width: innerWidth,
@@ -9,6 +9,7 @@ const gameEngineConstructorArguments = {
     scaling: 2,
     canvas: null,
     images: [],
+    svgs: [],
     sounds: []
 };
 /**
@@ -33,12 +34,14 @@ export class GameEngine {
     #currentScene = null;
     #nextScene = undefined;
     imageBank = new Map();
+    svgBank = new Map();
     soundBank = new Map();
     #lock0 = true;
-    #lock1 = true;
-    #lock2 = true;
+    #locks = [true, true, true];
     #loadedImagesCount = 0;
     #imageToLoadCount = 0;
+    #loadedSVGCount = 0;
+    #svgToLoadCount = 0;
     #loadedSoundCount = 0;
     #soundToLoadCount = 0;
     #ressourcesLoadedCallbacks = [];
@@ -66,20 +69,19 @@ export class GameEngine {
         this.canvas.style.backgroundColor = 'black';
         this.resize(args.width, args.height, args.scaling, args.verticalPixels);
         this.#imageToLoadCount = args.images.length;
+        this.#svgToLoadCount = args.svgs.length;
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0);
         this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => {
-            this.#lock1 = false;
-            if (!this.#lock1 && !this.#lock2) {
-                this.#lock0 = false;
-                this.#ressourcesLoadedCallbacks.forEach(func => func.call(this));
-            }
+            this.#locks[0] = false;
+            this.#checkLocks();
         });
         this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => {
-            this.#lock2 = false;
-            if (!this.#lock1 && !this.#lock2) {
-                this.#lock0 = false;
-                this.#ressourcesLoadedCallbacks.forEach(func => func.call(this));
-            }
+            this.#locks[1] = false;
+            this.#checkLocks();
+        });
+        this.svgBank = loadSVGs(args.svgs, (n) => { this.#loadedSVGCount = n; }, () => {
+            this.#locks[2] = false;
+            this.#checkLocks();
         });
     }
     get trueWidth() { return this.#trueWidth; }
@@ -90,6 +92,12 @@ export class GameEngine {
     get verticalPixels() { return this.#verticalPixels; }
     get dt() { return this.#dt; }
     get scene() { return this.#currentScene; }
+    #checkLocks() {
+        if (this.#locks.every(lock => lock === false)) {
+            this.#lock0 = false;
+            this.#ressourcesLoadedCallbacks.forEach(func => func.call(this));
+        }
+    }
     /**
      * update the size of both canvas
      * if a scene is curently used, update it's camera
@@ -177,8 +185,8 @@ export class GameEngine {
         if (!this.#run)
             return;
         if (this.#lock0) {
-            let value = this.#loadedImagesCount + this.#loadedSoundCount;
-            let tot = this.#imageToLoadCount + this.#soundToLoadCount;
+            let value = this.#loadedImagesCount + this.#loadedSVGCount + this.#loadedSoundCount;
+            let tot = this.#imageToLoadCount + this.#svgToLoadCount + this.#soundToLoadCount;
             this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight);
             this.ctx.save();
             this.ctx.fillStyle = 'red';
@@ -1312,6 +1320,43 @@ export function loadImages(images, incrementCallback, finishedCallback) {
         bank.set(image.name, img);
     }
     if (images.length === 0)
+        finishedCallback();
+    return bank;
+}
+export function loadSVGs(svgs, incrementCallback, finishedCallback) {
+    let bank = new Map();
+    let completed = { n: 0 };
+    for (let svg of svgs) {
+        let data = { raw: '', image: null };
+        fetch(svg.src)
+            .then(res => {
+            if (res.ok)
+                return res.text();
+            throw res;
+        })
+            .then(svg => {
+            data.raw = svg;
+            return svg;
+        })
+            .then(SVGStringToImage)
+            .then(image => {
+            data.image = image;
+            completed.n++;
+            incrementCallback(completed.n);
+        })
+            .catch(err => {
+            console.error(`Could not load image "${svg.name}" for source "${svg.src}"`);
+            console.error(err);
+            completed.n++;
+            incrementCallback(completed.n);
+        })
+            .finally(() => {
+            if (completed.n == svgs.length)
+                finishedCallback();
+        });
+        bank.set(svg.name, data);
+    }
+    if (svgs.length === 0)
         finishedCallback();
     return bank;
 }

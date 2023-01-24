@@ -8,6 +8,10 @@ export declare class GameEngine {
     ctx: CanvasRenderingContext2D;
     input: Input;
     imageBank: Map<string, HTMLImageElement>;
+    svgBank: Map<string, {
+        raw: string;
+        image: HTMLImageElement;
+    }>;
     soundBank: Map<string, Sound>;
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
@@ -21,6 +25,10 @@ export declare class GameEngine {
         scaling: number;
         canvas: HTMLCanvasElement;
         images: {
+            name: string;
+            src: string;
+        }[];
+        svgs: {
             name: string;
             src: string;
         }[];
@@ -577,6 +585,13 @@ export declare function loadImages(images: {
     name: string;
     src: string;
 }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement>;
+export declare function loadSVGs(svgs: {
+    name: string;
+    src: string;
+}[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, {
+    raw: string;
+    image: HTMLImageElement;
+}>;
 declare class Sound {
     sounds: HTMLAudioElement[];
     volume: number;
@@ -593,7 +608,7 @@ export declare class Drawable extends GameObject {
     image: HTMLImageElement;
     size: Vector;
     halfSize: Vector;
-    constructor(image: any);
+    constructor(image: HTMLImageElement);
     draw(ctx: CanvasRenderingContext2D): void;
 }
 declare const SpriteSheetOptions: {
