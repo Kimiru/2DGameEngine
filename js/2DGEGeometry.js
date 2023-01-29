@@ -72,6 +72,7 @@ export class Polygon extends GameObject {
         if (this.outer.length < 3)
             return;
         ctx.fillStyle = ctx.strokeStyle = 'yellow';
+        ctx.lineWidth = .1;
         ctx.beginPath();
         ctx.moveTo(this.outer[0].x, this.outer[0].y);
         for (let index = 1; index <= this.outer.length; index++) {
@@ -106,6 +107,80 @@ export class Polygon extends GameObject {
             if (ray.intersect(segment))
                 count++;
         return (count & 1) === 1;
+    }
+    static #extractHolesFromPolygon(...polygons) {
+        let results = [];
+        for (let polygon of polygons) {
+            let line = [];
+            for (let point of polygon.outer)
+                line.push(point.clone());
+            results.push(line);
+            for (let inner of polygon.inners) {
+                line = [];
+                for (let point of inner)
+                    line.push(point.clone());
+                results.push(line);
+            }
+        }
+        return results;
+    }
+    static #treatIntersectionInPath(...paths) {
+        let resultingPaths = [];
+        for (let path of paths) {
+            let points = [];
+            for (let pathIndex = 0; pathIndex < path.length; pathIndex++) {
+                points.push(path[pathIndex]);
+                let segment = new Segment(path[pathIndex], path[(pathIndex + 1) % path.length]);
+                for (let comparedPath of paths) {
+                    if (path === comparedPath)
+                        continue;
+                    for (let comparedPathIndex = 0; comparedPathIndex < path.length; comparedPathIndex++) {
+                        let comparedSegment = new Segment(comparedPath[comparedPathIndex], comparedPath[(comparedPathIndex + 1) % comparedPath.length]);
+                        let intersection = segment.intersect(comparedSegment);
+                        if (intersection)
+                            points.push(intersection);
+                    }
+                }
+            }
+            resultingPaths.push(points);
+            console.log('points', points);
+        }
+        return resultingPaths;
+    }
+    static #mapPathToVectorList(...paths) {
+        let result = {
+            paths: [],
+            points: []
+        };
+        for (let path of paths) {
+            let resultPath = [];
+            for (let point of path) {
+                let success = false;
+                for (let index in result.points) {
+                    let resultPoint = result.points[index];
+                    if (resultPoint.equal(point)) {
+                        resultPath.push(Number(index));
+                        success = true;
+                        break;
+                    }
+                }
+                if (!success) {
+                    resultPath.push(result.points.length);
+                    result.points.push(point.clone());
+                }
+            }
+            result.paths.push(resultPath);
+        }
+        return result;
+    }
+    static clipPolygons(...polygons) {
+        let paths = this.#extractHolesFromPolygon(...polygons);
+        let noIntersectionPaths = this.#mapPathToVectorList(...this.#treatIntersectionInPath(...paths));
+        console.log(noIntersectionPaths);
+    }
+    static union(...polygons) {
+    }
+    static intersection() {
     }
 }
 /**

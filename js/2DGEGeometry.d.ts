@@ -39,6 +39,9 @@ export declare class Polygon extends GameObject {
     draw(ctx: CanvasRenderingContext2D): void;
     containsVector(vector: Vector): boolean;
     containsWorldVector(vector: Vector): boolean;
+    static clipPolygons(...polygons: Polygon[]): void;
+    static union(...polygons: Polygon[]): void;
+    static intersection(): void;
 }
 /**
  *

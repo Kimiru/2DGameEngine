@@ -16,8 +16,20 @@ const gameEngineConstructorArguments = {
  * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
  */
 export class GameEngine {
+    /**
+     * The canvas on which the GameEngine will draw.
+     * Shall not be modified.
+     * Can be accessed to retrieved generated canvas if none is passed as argument.
+     */
     canvas = null;
+    /**
+     * The context on which the GameEngine will draw.
+     * Shall not be modified.
+     */
     ctx = null;
+    /**
+     * The input is here to query the keyboard inputs and the mouse inputs.
+     */
     input = new Input();
     #width = 0;
     #height = 0;
@@ -33,8 +45,17 @@ export class GameEngine {
     #dt = 0;
     #currentScene = null;
     #nextScene = undefined;
+    /**
+     * Contains all the images loaded at the engine contruction.
+     */
     imageBank = new Map();
+    /**
+     * Contains all the svg loaded at the engine construction.
+     */
     svgBank = new Map();
+    /**
+     * Contains all the sounds loaded at the engine construction.
+     */
     soundBank = new Map();
     #lock0 = true;
     #locks = [true, true, true];
@@ -1262,10 +1283,30 @@ export class Camera extends GameObject {
     }
     getRange() { return Math.max(this.transform.scale.x, this.transform.scale.y); }
 }
+export var TrackingCameraDisableMode;
+(function (TrackingCameraDisableMode) {
+    TrackingCameraDisableMode[TrackingCameraDisableMode["DISABLE"] = 0] = "DISABLE";
+    TrackingCameraDisableMode[TrackingCameraDisableMode["DISABLE_ONCE"] = 1] = "DISABLE_ONCE";
+    TrackingCameraDisableMode[TrackingCameraDisableMode["DONT_DISABLE"] = 2] = "DONT_DISABLE";
+})(TrackingCameraDisableMode || (TrackingCameraDisableMode = {}));
 export class TrackingCamera extends Camera {
-    trackedObject;
+    /**
+     * The object the camera should track, if null, stops tracking
+     */
+    trackedObject = null;
+    /**
+     * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
+     */
     trackLag = 1;
-    minTrack = 1;
+    /**
+     * The minimum speed at which the camera should travel when the speed reach do to the track lag is to slow
+     */
+    minTrackSpeed = 1;
+    autoDisableTracking = TrackingCameraDisableMode.DONT_DISABLE;
+    trackedZoom = null;
+    zoomTrackLag = 1;
+    zoomMinTrackSpeed = 1;
+    autoDisableZoomTracking = TrackingCameraDisableMode.DONT_DISABLE;
     constructor() {
         super();
         this.updateEnabled = true;
@@ -1274,18 +1315,49 @@ export class TrackingCamera extends Camera {
         if (this.trackedObject && this.scene === this.trackedObject.scene) {
             let cameraWorldPosition = this.getWorldPosition();
             let objectWorldPosition = this.trackedObject.getWorldPosition();
-            if (cameraWorldPosition.equal(objectWorldPosition))
-                return;
-            let rawOffset = objectWorldPosition.clone().sub(cameraWorldPosition);
-            let offset = rawOffset.clone().divS(this.trackLag);
-            let len = offset.length();
-            if (len < this.minTrack)
-                offset.normalize().multS(this.minTrack);
-            offset.multS(dt);
-            if (offset.length() > cameraWorldPosition.distanceTo(objectWorldPosition))
-                this.transform.translation.add(rawOffset);
-            else
-                this.transform.translation.add(offset);
+            if (!cameraWorldPosition.equal(objectWorldPosition)) {
+                let rawOffset = objectWorldPosition.clone().sub(cameraWorldPosition);
+                let offset = rawOffset.clone().divS(this.trackLag);
+                let len = offset.length();
+                if (len < this.minTrackSpeed)
+                    offset.normalize().multS(this.minTrackSpeed);
+                offset.multS(dt);
+                if (offset.length() > cameraWorldPosition.distanceTo(objectWorldPosition))
+                    this.transform.translation.add(rawOffset);
+                else
+                    this.transform.translation.add(offset);
+            }
+            else {
+                if (this.autoDisableTracking === TrackingCameraDisableMode.DISABLE_ONCE) {
+                    this.trackedObject = null;
+                    this.autoDisableTracking = TrackingCameraDisableMode.DONT_DISABLE;
+                }
+                else if (this.autoDisableTracking === TrackingCameraDisableMode.DISABLE)
+                    this.trackedObject = null;
+            }
+        }
+        if (this.trackedZoom) {
+            if (this.transform.scale.x !== this.trackedZoom) {
+                let rawZoomOffset = this.trackedZoom - this.transform.scale.x;
+                let offset = rawZoomOffset / this.zoomTrackLag;
+                let len = Math.abs(offset);
+                if (len < this.zoomMinTrackSpeed)
+                    offset = Math.sign(offset) * this.zoomMinTrackSpeed;
+                offset *= dt;
+                let trueDist = this.transform.scale.x - this.transform.scale.x * (1 + offset);
+                if (Math.abs(trueDist) > Math.abs(rawZoomOffset))
+                    this.transform.scale.set(this.trackedZoom, this.trackedZoom);
+                else
+                    this.transform.scale.multS(1 + offset);
+            }
+            else {
+                if (this.autoDisableZoomTracking === TrackingCameraDisableMode.DISABLE_ONCE) {
+                    this.trackedZoom = undefined;
+                    this.autoDisableZoomTracking = TrackingCameraDisableMode.DONT_DISABLE;
+                }
+                else if (this.autoDisableZoomTracking === TrackingCameraDisableMode.DISABLE)
+                    this.trackedZoom = undefined;
+            }
         }
     }
 }

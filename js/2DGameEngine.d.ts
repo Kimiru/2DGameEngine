@@ -4,14 +4,35 @@ import { Transform, Vector, matrix } from './2DGEMath.js';
  */
 export declare class GameEngine {
     #private;
+    /**
+     * The canvas on which the GameEngine will draw.
+     * Shall not be modified.
+     * Can be accessed to retrieved generated canvas if none is passed as argument.
+     */
     canvas: HTMLCanvasElement;
+    /**
+     * The context on which the GameEngine will draw.
+     * Shall not be modified.
+     */
     ctx: CanvasRenderingContext2D;
+    /**
+     * The input is here to query the keyboard inputs and the mouse inputs.
+     */
     input: Input;
+    /**
+     * Contains all the images loaded at the engine contruction.
+     */
     imageBank: Map<string, HTMLImageElement>;
+    /**
+     * Contains all the svg loaded at the engine construction.
+     */
     svgBank: Map<string, {
         raw: string;
         image: HTMLImageElement;
     }>;
+    /**
+     * Contains all the sounds loaded at the engine construction.
+     */
     soundBank: Map<string, Sound>;
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
@@ -566,10 +587,29 @@ export declare class Camera extends GameObject {
     getViewTransformMatrix(): matrix;
     getRange(): number;
 }
+export declare enum TrackingCameraDisableMode {
+    DISABLE = 0,
+    DISABLE_ONCE = 1,
+    DONT_DISABLE = 2
+}
 export declare class TrackingCamera extends Camera {
+    /**
+     * The object the camera should track, if null, stops tracking
+     */
     trackedObject: GameObject;
+    /**
+     * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
+     */
     trackLag: number;
-    minTrack: number;
+    /**
+     * The minimum speed at which the camera should travel when the speed reach do to the track lag is to slow
+     */
+    minTrackSpeed: number;
+    autoDisableTracking: TrackingCameraDisableMode;
+    trackedZoom: number;
+    zoomTrackLag: number;
+    zoomMinTrackSpeed: number;
+    autoDisableZoomTracking: TrackingCameraDisableMode;
     constructor();
     update(dt: number): void;
 }
