@@ -1,6 +1,164 @@
 import { GameObject } from "./2DGameEngine.js"
 import { HexagonGraphInterface, HexOrientation, HexVector, TransformMatrix, Vector } from "./2DGEMath.js"
 
+// see https://github.com/tcql/greiner-hormann
+class Vertex extends Vector {
+
+    alpha: number = 0.0
+    intersect: boolean = false
+    entry: boolean = true
+    checked: boolean = false
+    degenerate: boolean = false
+    neighbor: Vertex = null
+    next: Vertex = null
+    prev: Vertex = null
+    type: string = null
+    remove: boolean = false
+
+    constructor(x: number, y: number, alpha: number = 0, intersect: boolean = false, degenerate: boolean = false) {
+
+        super(x, y)
+
+        this.alpha = alpha
+        this.intersect = intersect
+        this.degenerate = degenerate
+
+    }
+
+    setTypeUsing(polygon: Polygon) {
+
+        if (this.type) return
+
+        this.type = polygon.containsVector(this) ? 'in' : 'out'
+
+    }
+
+    pairing(): string {
+
+        return `${this.prev.type}/${this.next.type}`
+
+    }
+
+    entryPairing = function () {
+
+        var entry = this.entry ? 'en' : 'ex'
+        var neightborEntry = this.neighbor.entry ? 'en' : 'ex'
+
+        return `${entry}/${neightborEntry}`
+
+    }
+
+}
+
+class Ring {
+
+    first: Vertex = null
+
+    constructor(coordinates: Vector[]) {
+
+        if (!Polygon.isClockwise(coordinates))
+            coordinates = [...coordinates].reverse()
+
+        for (let coordinate of coordinates)
+            this.push(new Vertex(coordinate.x, coordinate.y))
+
+    }
+
+    push(vertex: Vertex) {
+
+        if (!this.first) {
+
+            this.first = vertex
+            this.first.prev = vertex
+            this.first.next = vertex
+
+        } else {
+
+            let next: Vertex = this.first
+            let prev: Vertex = next.prev
+            next.prev = vertex
+            vertex.next = next
+            vertex.prev = prev
+            prev.next = vertex
+
+        }
+
+    }
+
+    insert(vertex: Vertex, start: Vertex, end: Vertex) {
+        let currentVertex: Vertex = start.next
+
+        while (currentVertex !== end && currentVertex.alpha < vertex.alpha)
+            currentVertex = currentVertex.next
+
+        vertex.next = currentVertex
+        let prev: Vertex = currentVertex.prev
+        vertex.prev = prev
+        prev.next = vertex
+        currentVertex.prev = vertex
+    }
+
+    nextNonIntersectVertex(start: Vertex) {
+
+        var currentVertex: Vertex = start
+        do
+            currentVertex = currentVertex.next
+        while (currentVertex.intersect && currentVertex !== start)
+
+        return currentVertex
+    }
+
+    firstIntersectVertexfunction(): Vertex {
+        var currentVertex: Vertex = this.first
+
+        while (true) {
+
+            if (currentVertex.intersect && !currentVertex.checked)
+                return currentVertex
+
+            currentVertex = currentVertex.next
+
+            if (currentVertex === this.first)
+                break
+
+        }
+
+    }
+
+    firstIntersect(): Vertex {
+
+        var currentVertex = this.first
+
+        do {
+
+            if (currentVertex.intersect && !currentVertex.checked)
+                return currentVertex
+
+            currentVertex = currentVertex.next
+
+        } while (currentVertex !== this.first)
+
+    }
+
+    count(predicate: (vertex: Vertex) => boolean = () => true): number {
+
+        let currentVertex: Vertex = this.first
+        let count = 0
+
+        do {
+
+            if (predicate(currentVertex)) count++
+
+            currentVertex = currentVertex.next
+
+        } while (currentVertex !== this.first)
+
+        return count
+
+    }
+
+}
+
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -27,6 +185,53 @@ export class Polygon extends GameObject {
 
         this.outer = outer
         this.inners = inners
+
+    }
+
+    static isClockwise(vectors: Vector[]): boolean {
+
+        let sum = 0
+
+        for (let index_0 = 0; index_0 < vectors.length; index_0++) {
+
+            let index_1 = (index_0 + 1) % vectors.length
+
+            let vec_0 = vectors[index_0]
+            let vec_1 = vectors[index_1]
+
+            sum += ((vec_1.x - vec_0.x) * (vec_1.y + vec_0.y))
+
+        }
+
+        return sum > 0
+
+    }
+
+    getOuter(index: number) {
+
+        return this.outer[index % this.outer.length]
+
+    }
+
+    hasInners(): boolean {
+
+        return this.inners.length !== 0
+
+    }
+
+    popInners(): Polygon[] {
+
+        let polygons: Polygon[] = this.inners.map(inner => new Polygon(inner))
+
+        this.inners = []
+
+        return polygons
+
+    }
+
+    clone() {
+
+        return new Polygon([...this.outer], ...this.inners.map(inner => inner.map(vec => vec.clone())))
 
     }
 
@@ -157,127 +362,451 @@ export class Polygon extends GameObject {
     }
 
 
-    static #extractHolesFromPolygon(...polygons: Polygon[]): Vector[][] {
-
-        let results: Vector[][] = []
-
-        for (let polygon of polygons) {
-
-            let line = []
-
-            for (let point of polygon.outer)
-                line.push(point.clone())
-
-            results.push(line)
-
-            for (let inner of polygon.inners) {
-
-                line = []
-
-                for (let point of inner)
-                    line.push(point.clone())
-
-                results.push(line)
-
-            }
+    // clipping operation
 
 
 
-        }
+    static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[][] {
 
-        return results
+        let subjectRing: Ring = new Ring(subject.outer)
+        let clipperRing: Ring = new Ring(clipper.outer)
+
+        this.#computeInterections(subjectRing, clipperRing, subject, clipper)
+        this.#markDegeneratesAsIntersections(subjectRing)
+
+        let result = this.#checkQuitCases(subjectRing, clipperRing, subject, clipper, this.#getMode(subjectForward, clipperForward))
+        if (result) return result
+
+        this.#setEntryVertexAndExitVertex(subjectRing)
+
+        return this.#buildPolygons(subjectRing, subjectForward, clipperForward)
 
     }
 
-    static #treatIntersectionInPath(...paths: Vector[][]) {
+    static #getMode(subjectForward: boolean, clipperForward: boolean): string {
 
-        let resultingPaths: Vector[][] = []
+        if (subjectForward)
+            if (clipperForward) return 'intersect'
+            else return 'substractA'
+        else
+            if (clipperForward) return 'substractB'
+            else return 'union'
 
-        for (let path of paths) {
+    }
 
-            let points = []
+    static #computeInterections(subjectRing: Ring, clipperRing: Ring, subject: Polygon, clipper: Polygon) {
 
-            for (let pathIndex = 0; pathIndex < path.length; pathIndex++) {
+        let subjectCurrentVertex = subjectRing.first
 
-                points.push(path[pathIndex])
+        do {
 
-                let segment = new Segment(
-                    path[pathIndex],
-                    path[(pathIndex + 1) % path.length]
-                )
+            subjectCurrentVertex.setTypeUsing(clipper)
 
-                for (let comparedPath of paths) {
+            let clipperCurrentVertex = clipperRing.first
 
-                    if (path === comparedPath) continue
+            if (!subjectCurrentVertex.intersect)
+                do {
 
-                    for (let comparedPathIndex = 0; comparedPathIndex < path.length; comparedPathIndex++) {
+                    clipperCurrentVertex.setTypeUsing(subject)
 
-                        let comparedSegment = new Segment(
-                            comparedPath[comparedPathIndex],
-                            comparedPath[(comparedPathIndex + 1) % comparedPath.length]
-                        )
+                    if (!clipperCurrentVertex.intersect) {
 
-                        let intersection = segment.intersect(comparedSegment)
+                        let subjectSegmentEnd = subjectRing.nextNonIntersectVertex(subjectCurrentVertex)
+                        let clipperSegmentEnd = clipperRing.nextNonIntersectVertex(clipperCurrentVertex)
 
-                        if (intersection) points.push(intersection)
+                        let subjectSegment = new Segment(subjectCurrentVertex, subjectSegmentEnd)
+                        let clipperSegment = new Segment(clipperCurrentVertex, clipperSegmentEnd)
 
+                        let intersectionVector = subjectSegment.intersect(clipperSegment)
+
+                        if (intersectionVector) {
+
+                            let subjectAlpha = subjectCurrentVertex.distanceTo(intersectionVector) / subjectSegment.length()
+                            let clipperAlpha = clipperCurrentVertex.distanceTo(intersectionVector) / clipperSegment.length()
+
+                            clipperCurrentVertex = this.#handleIntersection(subjectRing, clipperRing, subjectCurrentVertex, subjectSegmentEnd, clipperCurrentVertex, clipperSegmentEnd, intersectionVector, subjectAlpha, clipperAlpha)
+
+                        }
 
                     }
 
-                }
+                    clipperCurrentVertex = clipperCurrentVertex.next
 
-            }
+                } while (clipperCurrentVertex !== clipperRing.first)
 
-            resultingPaths.push(points)
+            subjectCurrentVertex = subjectCurrentVertex.next
 
-            console.log('points', points)
+        } while (subjectCurrentVertex !== subjectRing.first)
 
-        }
+        console.log(subjectRing, clipperRing)
 
-        return resultingPaths
 
     }
 
-    static #mapPathToVectorList(...paths: Vector[][]): { paths: number[][], points: Vector[] } {
+    static #handleIntersection(subjectRing: Ring, clipperRing: Ring, subjectSegmentStart: Vertex, subjectSegmentEnd: Vertex, clipperSegmentStart: Vertex, clipperSegmentEnd: Vertex, intersectionVector: Vector, subjectAlpha: number, clipperAlpha: number): Vertex {
+
+        let subjectBetween = 0 < subjectAlpha && subjectAlpha < 1
+        let clipperBetween = 0 < clipperAlpha && clipperAlpha < 1
+
+        let subjectVertex: Vertex, clipperVertex: Vertex
+
+        // If all is fine
+        if (subjectBetween && clipperBetween) {
+
+            // Insert vertex into rings
+
+            subjectVertex = new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true)
+            subjectRing.insert(new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true), subjectSegmentStart, subjectSegmentEnd)
+
+            clipperVertex = new Vertex(intersectionVector.x, intersectionVector.y, clipperAlpha, true)
+            clipperRing.insert(clipperVertex, clipperSegmentStart, clipperSegmentEnd)
 
 
-        let result: { paths: number[][], points: Vector[] } = {
-            paths: [],
-            points: []
+        } else {
+
+            // Handle bad stuff
+
+            if (subjectBetween) {
+
+                subjectVertex = new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true, true)
+                subjectRing.insert(new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true), subjectSegmentStart, subjectSegmentEnd)
+
+            }
+
+            else if (subjectAlpha === 0) {
+
+                subjectSegmentStart.intersect = true
+                subjectSegmentStart.degenerate = true
+                subjectSegmentStart.alpha = subjectAlpha
+
+                subjectVertex = subjectSegmentStart
+
+            }
+
+            else if (subjectAlpha === 1) {
+
+                subjectSegmentEnd.intersect = false
+                subjectSegmentEnd.degenerate = true
+                subjectSegmentEnd.alpha = subjectAlpha
+
+                subjectVertex = subjectSegmentEnd
+
+            }
+
+            if (clipperBetween) {
+
+                clipperVertex = new Vertex(intersectionVector.x, intersectionVector.y, clipperAlpha, true, true)
+                clipperRing.insert(new Vertex(intersectionVector.x, intersectionVector.y, clipperAlpha, true), clipperSegmentStart, clipperSegmentEnd)
+
+            }
+
+            else if (clipperAlpha === 0) {
+
+                clipperSegmentStart.intersect = true
+                clipperSegmentStart.degenerate = true
+                clipperSegmentStart.alpha = clipperAlpha
+
+                clipperVertex = clipperSegmentStart
+
+            }
+
+            else if (clipperAlpha === 1) {
+
+                clipperSegmentEnd.intersect = false
+                clipperSegmentEnd.degenerate = true
+                clipperSegmentEnd.alpha = clipperAlpha
+
+                clipperVertex = clipperSegmentEnd
+
+                if (clipperSegmentStart.next !== clipperRing.first)
+                    clipperSegmentStart = clipperSegmentStart.next
+
+            }
+
         }
 
-        for (let path of paths) {
+        if (!subjectVertex.intersect) clipperVertex.intersect = false
+        if (!clipperVertex.intersect) subjectVertex.intersect = false
 
-            let resultPath: number[] = []
 
-            for (let point of path) {
 
-                let success = false
+        if (subjectVertex && clipperVertex) {
 
-                for (let index in result.points) {
-                    let resultPoint = result.points[index]
+            subjectVertex.neighbor = clipperVertex
+            clipperVertex.neighbor = subjectVertex
 
-                    if (resultPoint.equal(point)) {
+            subjectVertex.type = clipperVertex.type = 'on'
 
-                        resultPath.push(Number(index))
-                        success = true
+        }
 
+        return clipperSegmentStart
+
+    }
+
+    static #markDegeneratesAsIntersections(ring: Ring) {
+
+        let currentVertex = ring.first
+
+        do {
+
+            if (currentVertex.degenerate)
+                currentVertex.intersect = true
+
+            currentVertex = currentVertex.next
+
+        } while (currentVertex !== ring.first)
+
+    }
+
+    static #checkQuitCases(subjectRing: Ring, clipperRing: Ring, subject: Polygon, clipper: Polygon, mode: string): Polygon[][] {
+
+        let subjectVertexCount = subjectRing.count()
+        let clipperVertexCount = clipperRing.count()
+
+        // If no intersection
+        if (subjectRing.count(v => v.intersect) === 0) {
+
+            console.log('There is no intersection')
+
+            if (mode === 'union') {
+
+                if (subjectRing.count(v => v.type === 'in') === subjectVertexCount)
+                    return [[clipper]]
+
+                else if (clipperRing.count(v => v.type === 'in') === clipperVertexCount)
+                    return [[subject]]
+
+                return [[subject], [clipper]]
+
+            }
+
+            else if (mode === 'intersect') return []
+
+            else if (mode === 'subtractB') {
+
+                if (clipperRing.first.type === 'in')
+                    return [[subject, clipper]]
+                else if (subjectRing.count(v => v.type === 'in'))
+                    return []
+
+                return [[subject]]
+
+            }
+
+            else if (mode === 'subtractA') {
+
+                if (subjectRing.first.type === 'in')
+                    return [[clipper, subject]]
+                else if (clipperRing.count(v => v.type === 'in'))
+                    return []
+
+                return [[clipper]]
+
+            }
+
+        }
+
+        if (subjectRing.count(v => v.degenerate) === subjectVertexCount && subjectRing.count(v => v.intersect) === 1) {
+
+            if (mode === 'subtractA') {
+
+                if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
+                    return []
+
+                return [[clipper]]
+
+            }
+
+            else if (mode === 'substractB') {
+
+                if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
+                    return []
+
+                return [[subject]]
+
+            }
+
+            return [[subject]]
+
+        }
+
+    }
+
+    static #setEntryVertexAndExitVertex(ring: Ring) {
+
+        let currentVertex = ring.first
+
+        do {
+
+            if (currentVertex.intersect && currentVertex.neighbor) {
+
+                this.#handleEntryExitVertex(currentVertex)
+                this.#handleEntryExitVertex(currentVertex.neighbor)
+
+                switch (currentVertex.entryPairing()) {
+                    case 'en/en':
+                        currentVertex.remove = true
+                        currentVertex.type = 'in'
+                        currentVertex.neighbor.type = 'in'
+                        currentVertex.intersect = false
+                        currentVertex.neighbor.intersect = false
                         break
 
-                    }
+                    case 'ex/ex':
+                        currentVertex.remove = true
+                        currentVertex.type = 'out'
+                        currentVertex.neighbor.type = 'out'
+                        currentVertex.intersect = false
+                        currentVertex.neighbor.intersect = false
+                        break
+                }
+
+            }
+
+            currentVertex = currentVertex.next
+
+        } while (currentVertex !== ring.first)
+
+    }
+
+    static #handleEntryExitVertex(vertex: Vertex) {
+
+        let pairing = vertex.pairing()
+
+        switch (pairing) {
+            case 'in/out':
+            case 'on/out':
+            case 'in/on':
+                vertex.entry = false
+                break
+
+            case 'out/in':
+            case 'on/in':
+            case 'out/on':
+                vertex.entry = true
+                break
+
+            case 'out/out':
+            case 'in/in':
+            case 'on/on':
+
+                let neighborPairing = vertex.neighbor.pairing()
+
+                if (neighborPairing === 'out/out' || neighborPairing === 'in/in' || neighborPairing === 'on/on' || (pairing === 'on/on' && neighborPairing === 'on/out' && vertex.degenerate)) {
+
+                    vertex.remove = true
+                    vertex.neighbor.remove = true
+                    vertex.neighbor.intersect = false
+                    vertex.intersect = false
+
+                } else {
+
+                    this.#handleEntryExitVertex(vertex.neighbor)
+                    vertex.entry = !vertex.neighbor.entry
+
+                }
+                break
+
+            default:
+                console.error('UNKNOWN TYPE', vertex.pairing())
+
+        }
+
+    }
+
+    static #buildPolygons(ring: Ring, subjectForward: boolean, clipperForward: boolean): Polygon[][] {
+
+        let currentVertex: Vertex = ring.first
+
+        type Poly = { poly: Polygon, isHole: Boolean }
+        let polygonList: Poly[] = []
+        let onClip = false
+        let entryDir = 'next'
+        let exitDir = 'prev'
+
+        while ((currentVertex = ring.firstIntersect())) {
+
+            let poly = [new Vector(currentVertex.x, currentVertex.y)]
+
+            do {
+
+                if (onClip) {
+
+                    entryDir = clipperForward ? 'next' : 'prev'
+                    exitDir = clipperForward ? 'prev' : 'next'
+
+                } else {
+
+                    entryDir = subjectForward ? 'next' : 'prev'
+                    exitDir = subjectForward ? 'prev' : 'next'
 
                 }
 
-                if (!success) {
+                currentVertex.checked = true
 
-                    resultPath.push(result.points.length)
-                    result.points.push(point.clone())
+                if (currentVertex.neighbor)
+                    currentVertex.neighbor.checked = true
+
+                if (currentVertex.entry) do {
+
+                    currentVertex = currentVertex[entryDir]
+
+                    poly.push(new Vector(currentVertex.x, currentVertex.y))
+
+                } while (!currentVertex.intersect)
+
+                else do {
+
+                    currentVertex = currentVertex[exitDir]
+
+                    poly.push(new Vector(currentVertex.x, currentVertex.y))
+
+                } while (!currentVertex.intersect)
+
+                currentVertex = currentVertex.neighbor
+                onClip = !onClip
+
+            } while (!currentVertex.checked)
+
+            let polygon = new Polygon(poly)
+
+            polygonList.push({ poly: polygon, isHole: false })
+
+        }
+
+        let graph: Map<Poly, Poly[]> = new Map()
+
+        for (let polygon of polygonList) {
+
+            if (!graph.has(polygon)) graph.set(polygon, [])
+
+            for (let subPolygon of polygonList) {
+
+                if (polygon === subPolygon) continue
+
+                if (polygon.poly.containsVector(subPolygon.poly.outer[0])) {
+
+                    graph.get(polygon).push(subPolygon)
+                    subPolygon.isHole = true
 
                 }
 
             }
 
-            result.paths.push(resultPath)
+        }
+
+        let result: Polygon[][] = []
+
+        for (let entry of graph.entries()) {
+
+            if (entry[0].isHole) continue
+
+            let polygons: Polygon[] = [entry[0].poly]
+
+            for (let subPolygon of entry[1])
+                polygons.push(subPolygon.poly)
+
+            result.push(polygons)
 
         }
 
@@ -285,30 +814,10 @@ export class Polygon extends GameObject {
 
     }
 
-    static clipPolygons(...polygons: Polygon[]) {
-
-        let paths = this.#extractHolesFromPolygon(...polygons)
-
-        let noIntersectionPaths = this.#mapPathToVectorList(...this.#treatIntersectionInPath(...paths))
 
 
-
-        console.log(noIntersectionPaths)
-
-    }
-
-    static union(...polygons: Polygon[]) {
-
-    }
-
-    static intersection() {
-
-
-
-    }
 
 }
-
 /**
  * 
  */
@@ -586,6 +1095,12 @@ export class Segment extends GameObject {
         if (t < 0 || t > 1 || u < 0 || u > 1) return null
 
         return new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1))
+
+    }
+
+    length(): number {
+
+        return this.a.distanceTo(this.b)
 
     }
 

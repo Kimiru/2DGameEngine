@@ -15,6 +15,11 @@ export declare class Polygon extends GameObject {
      * @param points
      */
     constructor(outer?: Vector[], ...inners: Vector[][]);
+    static isClockwise(vectors: Vector[]): boolean;
+    getOuter(index: number): Vector;
+    hasInners(): boolean;
+    popInners(): Polygon[];
+    clone(): Polygon;
     /**
      * Returns a list of points, such that it represents the polygon with theorically no holes. Duplicates the first Vector at the end of the list for practical purposes
      *
@@ -39,9 +44,7 @@ export declare class Polygon extends GameObject {
     draw(ctx: CanvasRenderingContext2D): void;
     containsVector(vector: Vector): boolean;
     containsWorldVector(vector: Vector): boolean;
-    static clipPolygons(...polygons: Polygon[]): void;
-    static union(...polygons: Polygon[]): void;
-    static intersection(): void;
+    static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[][];
 }
 /**
  *
@@ -110,6 +113,7 @@ export declare class Segment extends GameObject {
     lineWidth: number;
     constructor(a: Vector, b: Vector, display?: boolean);
     intersect(segment: Segment): Vector;
+    length(): number;
     draw(ctx: CanvasRenderingContext2D): boolean;
 }
 export declare class Ray extends GameObject {
