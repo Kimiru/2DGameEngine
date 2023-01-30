@@ -157,6 +157,24 @@ class Ring {
 
     }
 
+    toArray(): Vertex[] {
+
+        let currentVertex = this.first
+
+        let array = []
+
+        do {
+
+            array.push(currentVertex)
+
+            currentVertex = currentVertex.next
+
+        } while (currentVertex !== this.first)
+
+        return array
+
+    }
+
 }
 
 /**
@@ -366,7 +384,35 @@ export class Polygon extends GameObject {
 
 
 
-    static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[][] {
+    static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[] {
+
+        if (subject.hasInners() || clipper.hasInners()) {
+
+            subject = subject.clone()
+            let subjectInners = subject.popInners()
+
+            clipper = clipper.clone()
+            let clipperInners = clipper.popInners()
+
+            let resultingPolygons = this.GreinerHormann(subject, clipper, subjectForward, clipperForward)
+
+            let subjectInnersClipped = subjectInners.map(polygon => this.GreinerHormann(polygon, clipper,
+                subjectForward, clipperForward)).flat()
+
+            let clipperInnersClipped = clipperInners.map(polygon => this.GreinerHormann(polygon, subject,
+                subjectForward, clipperForward)).flat()
+
+            if (resultingPolygons.length === 1) {
+
+                resultingPolygons[0].inners.push(
+                    ...subjectInnersClipped.map(poly => [...poly.outer]),
+                    ...clipperInnersClipped.map(poly => [...poly.outer]))
+
+            }
+
+            return resultingPolygons
+        }
+
 
         let subjectRing: Ring = new Ring(subject.outer)
         let clipperRing: Ring = new Ring(clipper.outer)
@@ -378,6 +424,7 @@ export class Polygon extends GameObject {
         if (result) return result
 
         this.#setEntryVertexAndExitVertex(subjectRing)
+
 
         return this.#buildPolygons(subjectRing, subjectForward, clipperForward)
 
@@ -438,9 +485,6 @@ export class Polygon extends GameObject {
 
         } while (subjectCurrentVertex !== subjectRing.first)
 
-        console.log(subjectRing, clipperRing)
-
-
     }
 
     static #handleIntersection(subjectRing: Ring, clipperRing: Ring, subjectSegmentStart: Vertex, subjectSegmentEnd: Vertex, clipperSegmentStart: Vertex, clipperSegmentEnd: Vertex, intersectionVector: Vector, subjectAlpha: number, clipperAlpha: number): Vertex {
@@ -456,7 +500,7 @@ export class Polygon extends GameObject {
             // Insert vertex into rings
 
             subjectVertex = new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true)
-            subjectRing.insert(new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true), subjectSegmentStart, subjectSegmentEnd)
+            subjectRing.insert(subjectVertex, subjectSegmentStart, subjectSegmentEnd)
 
             clipperVertex = new Vertex(intersectionVector.x, intersectionVector.y, clipperAlpha, true)
             clipperRing.insert(clipperVertex, clipperSegmentStart, clipperSegmentEnd)
@@ -530,6 +574,7 @@ export class Polygon extends GameObject {
 
 
 
+
         if (subjectVertex && clipperVertex) {
 
             subjectVertex.neighbor = clipperVertex
@@ -558,7 +603,7 @@ export class Polygon extends GameObject {
 
     }
 
-    static #checkQuitCases(subjectRing: Ring, clipperRing: Ring, subject: Polygon, clipper: Polygon, mode: string): Polygon[][] {
+    static #checkQuitCases(subjectRing: Ring, clipperRing: Ring, subject: Polygon, clipper: Polygon, mode: string): Polygon[] {
 
         let subjectVertexCount = subjectRing.count()
         let clipperVertexCount = clipperRing.count()
@@ -566,17 +611,18 @@ export class Polygon extends GameObject {
         // If no intersection
         if (subjectRing.count(v => v.intersect) === 0) {
 
-            console.log('There is no intersection')
-
             if (mode === 'union') {
 
                 if (subjectRing.count(v => v.type === 'in') === subjectVertexCount)
-                    return [[clipper]]
+                    return [clipper.clone()]
 
                 else if (clipperRing.count(v => v.type === 'in') === clipperVertexCount)
-                    return [[subject]]
+                    return [subject.clone()]
 
-                return [[subject], [clipper]]
+                let polygone = subject.clone()
+                polygone.inners.push([...clipper.outer].reverse())
+
+                return [polygone]
 
             }
 
@@ -584,23 +630,33 @@ export class Polygon extends GameObject {
 
             else if (mode === 'subtractB') {
 
-                if (clipperRing.first.type === 'in')
-                    return [[subject, clipper]]
+                if (clipperRing.first.type === 'in') {
+
+                    let polygone = subject.clone()
+                    polygone.inners.push([...clipper.outer].reverse())
+
+                    return [polygone]
+
+                }
                 else if (subjectRing.count(v => v.type === 'in'))
                     return []
 
-                return [[subject]]
+                return [subject.clone()]
 
             }
 
             else if (mode === 'subtractA') {
 
-                if (subjectRing.first.type === 'in')
-                    return [[clipper, subject]]
+                if (subjectRing.first.type === 'in') {
+                    let polygone = clipper.clone()
+                    polygone.inners.push([...subject.outer].reverse())
+
+                    return [polygone]
+                }
                 else if (clipperRing.count(v => v.type === 'in'))
                     return []
 
-                return [[clipper]]
+                return [clipper.clone()]
 
             }
 
@@ -613,7 +669,7 @@ export class Polygon extends GameObject {
                 if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
                     return []
 
-                return [[clipper]]
+                return [clipper.clone()]
 
             }
 
@@ -622,11 +678,11 @@ export class Polygon extends GameObject {
                 if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
                     return []
 
-                return [[subject]]
+                return [subject.clone()]
 
             }
 
-            return [[subject]]
+            return [subject.clone()]
 
         }
 
@@ -714,7 +770,7 @@ export class Polygon extends GameObject {
 
     }
 
-    static #buildPolygons(ring: Ring, subjectForward: boolean, clipperForward: boolean): Polygon[][] {
+    static #buildPolygons(ring: Ring, subjectForward: boolean, clipperForward: boolean): Polygon[] {
 
         let currentVertex: Vertex = ring.first
 
@@ -795,18 +851,18 @@ export class Polygon extends GameObject {
 
         }
 
-        let result: Polygon[][] = []
+        let result: Polygon[] = []
 
         for (let entry of graph.entries()) {
 
             if (entry[0].isHole) continue
 
-            let polygons: Polygon[] = [entry[0].poly]
+            let polygon: Polygon = entry[0].poly
 
             for (let subPolygon of entry[1])
-                polygons.push(subPolygon.poly)
+                polygon.inners.push([...subPolygon.poly.outer].reverse())
 
-            result.push(polygons)
+            result.push(polygon)
 
         }
 

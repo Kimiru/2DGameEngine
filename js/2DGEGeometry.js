@@ -100,6 +100,15 @@ class Ring {
         } while (currentVertex !== this.first);
         return count;
     }
+    toArray() {
+        let currentVertex = this.first;
+        let array = [];
+        do {
+            array.push(currentVertex);
+            currentVertex = currentVertex.next;
+        } while (currentVertex !== this.first);
+        return array;
+    }
 }
 /**
  * The Polygon represent a N point polygon
@@ -235,6 +244,19 @@ export class Polygon extends GameObject {
     }
     // clipping operation
     static GreinerHormann(subject, clipper, subjectForward, clipperForward) {
+        if (subject.hasInners() || clipper.hasInners()) {
+            subject = subject.clone();
+            let subjectInners = subject.popInners();
+            clipper = clipper.clone();
+            let clipperInners = clipper.popInners();
+            let resultingPolygons = this.GreinerHormann(subject, clipper, subjectForward, clipperForward);
+            let subjectInnersClipped = subjectInners.map(polygon => this.GreinerHormann(polygon, clipper, subjectForward, clipperForward)).flat();
+            let clipperInnersClipped = clipperInners.map(polygon => this.GreinerHormann(polygon, subject, subjectForward, clipperForward)).flat();
+            if (resultingPolygons.length === 1) {
+                resultingPolygons[0].inners.push(...subjectInnersClipped.map(poly => [...poly.outer]), ...clipperInnersClipped.map(poly => [...poly.outer]));
+            }
+            return resultingPolygons;
+        }
         let subjectRing = new Ring(subject.outer);
         let clipperRing = new Ring(clipper.outer);
         this.#computeInterections(subjectRing, clipperRing, subject, clipper);
@@ -280,7 +302,6 @@ export class Polygon extends GameObject {
                 } while (clipperCurrentVertex !== clipperRing.first);
             subjectCurrentVertex = subjectCurrentVertex.next;
         } while (subjectCurrentVertex !== subjectRing.first);
-        console.log(subjectRing, clipperRing);
     }
     static #handleIntersection(subjectRing, clipperRing, subjectSegmentStart, subjectSegmentEnd, clipperSegmentStart, clipperSegmentEnd, intersectionVector, subjectAlpha, clipperAlpha) {
         let subjectBetween = 0 < subjectAlpha && subjectAlpha < 1;
@@ -290,7 +311,7 @@ export class Polygon extends GameObject {
         if (subjectBetween && clipperBetween) {
             // Insert vertex into rings
             subjectVertex = new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true);
-            subjectRing.insert(new Vertex(intersectionVector.x, intersectionVector.y, subjectAlpha, true), subjectSegmentStart, subjectSegmentEnd);
+            subjectRing.insert(subjectVertex, subjectSegmentStart, subjectSegmentEnd);
             clipperVertex = new Vertex(intersectionVector.x, intersectionVector.y, clipperAlpha, true);
             clipperRing.insert(clipperVertex, clipperSegmentStart, clipperSegmentEnd);
         }
@@ -355,43 +376,50 @@ export class Polygon extends GameObject {
         let clipperVertexCount = clipperRing.count();
         // If no intersection
         if (subjectRing.count(v => v.intersect) === 0) {
-            console.log('There is no intersection');
             if (mode === 'union') {
                 if (subjectRing.count(v => v.type === 'in') === subjectVertexCount)
-                    return [[clipper]];
+                    return [clipper.clone()];
                 else if (clipperRing.count(v => v.type === 'in') === clipperVertexCount)
-                    return [[subject]];
-                return [[subject], [clipper]];
+                    return [subject.clone()];
+                let polygone = subject.clone();
+                polygone.inners.push([...clipper.outer].reverse());
+                return [polygone];
             }
             else if (mode === 'intersect')
                 return [];
             else if (mode === 'subtractB') {
-                if (clipperRing.first.type === 'in')
-                    return [[subject, clipper]];
+                if (clipperRing.first.type === 'in') {
+                    let polygone = subject.clone();
+                    polygone.inners.push([...clipper.outer].reverse());
+                    return [polygone];
+                }
                 else if (subjectRing.count(v => v.type === 'in'))
                     return [];
-                return [[subject]];
+                return [subject.clone()];
             }
             else if (mode === 'subtractA') {
-                if (subjectRing.first.type === 'in')
-                    return [[clipper, subject]];
+                if (subjectRing.first.type === 'in') {
+                    let polygone = clipper.clone();
+                    polygone.inners.push([...subject.outer].reverse());
+                    return [polygone];
+                }
                 else if (clipperRing.count(v => v.type === 'in'))
                     return [];
-                return [[clipper]];
+                return [clipper.clone()];
             }
         }
         if (subjectRing.count(v => v.degenerate) === subjectVertexCount && subjectRing.count(v => v.intersect) === 1) {
             if (mode === 'subtractA') {
                 if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
                     return [];
-                return [[clipper]];
+                return [clipper.clone()];
             }
             else if (mode === 'substractB') {
                 if (clipperRing.count(v => v.degenerate) === clipperVertexCount)
                     return [];
-                return [[subject]];
+                return [subject.clone()];
             }
-            return [[subject]];
+            return [subject.clone()];
         }
     }
     static #setEntryVertexAndExitVertex(ring) {
@@ -505,10 +533,10 @@ export class Polygon extends GameObject {
         for (let entry of graph.entries()) {
             if (entry[0].isHole)
                 continue;
-            let polygons = [entry[0].poly];
+            let polygon = entry[0].poly;
             for (let subPolygon of entry[1])
-                polygons.push(subPolygon.poly);
-            result.push(polygons);
+                polygon.inners.push([...subPolygon.poly.outer].reverse());
+            result.push(polygon);
         }
         return result;
     }
