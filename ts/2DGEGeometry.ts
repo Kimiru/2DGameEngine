@@ -247,6 +247,22 @@ export class Polygon extends GameObject {
 
     }
 
+    transferInnersToOuter(): void {
+
+        let lastVector: Vector = this.outer[this.outer.length - 1]
+
+        for (let inner of this.inners) {
+
+            this.outer.push(...inner)
+            this.outer.push(inner[0].clone())
+            this.outer.push(lastVector.clone())
+
+        }
+
+        this.inners = []
+
+    }
+
     clone() {
 
         return new Polygon([...this.outer], ...this.inners.map(inner => inner.map(vec => vec.clone())))
@@ -614,10 +630,10 @@ export class Polygon extends GameObject {
             if (mode === 'union') {
 
                 if (subjectRing.count(v => v.type === 'in') === subjectVertexCount)
-                    return [clipper.clone()]
+                    return [clipper]
 
                 else if (clipperRing.count(v => v.type === 'in') === clipperVertexCount)
-                    return [subject.clone()]
+                    return [subject]
 
                 let polygone = subject.clone()
                 polygone.inners.push([...clipper.outer].reverse())

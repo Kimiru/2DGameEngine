@@ -19,6 +19,7 @@ export declare class Polygon extends GameObject {
     getOuter(index: number): Vector;
     hasInners(): boolean;
     popInners(): Polygon[];
+    transferInnersToOuter(): void;
     clone(): Polygon;
     /**
      * Returns a list of points, such that it represents the polygon with theorically no holes. Duplicates the first Vector at the end of the list for practical purposes
