@@ -48,7 +48,8 @@ export class StateMachine extends GameComponent {
     unique = true;
     boundObject;
     state = [];
-    states = new Map();
+    updates = new Map();
+    draws = new Map();
     constructor(boundObject, startState = [0]) {
         super();
         this.boundObject = boundObject;
@@ -74,11 +75,18 @@ export class StateMachine extends GameComponent {
      * @param callback
      * @param postState
      */
-    addStateCallback(state, callback, postState = false) {
+    addStateCallback(state, update = null, draw = null, postState = false) {
         let stateString = this.#computeStateString(state, postState);
-        if (!this.states.has(stateString))
-            this.states.set(stateString, []);
-        this.states.get(stateString).push(callback);
+        if (update) {
+            if (!this.updates.has(stateString))
+                this.updates.set(stateString, []);
+            this.updates.get(stateString).push(update);
+        }
+        if (draw) {
+            if (!this.draws.has(stateString))
+                this.draws.set(stateString, []);
+            this.draws.get(stateString).push(draw);
+        }
     }
     /**
      * Execute the current state callback
@@ -92,7 +100,7 @@ export class StateMachine extends GameComponent {
         let nextState = null;
         stateLoop: while (state.length < this.state.length + 1) {
             let stateString = this.#computeStateString(state);
-            for (let callback of this.states.get(stateString) ?? []) {
+            for (let callback of this.updates.get(stateString) ?? []) {
                 nextState = callback(this.boundObject, dt);
                 if (!nextState)
                     continue;
@@ -102,13 +110,30 @@ export class StateMachine extends GameComponent {
         }
         while (state.length != 0) {
             let stateString = this.#computeStateString(state, true);
-            for (let callback of this.states.get(stateString) ?? [])
+            for (let callback of this.updates.get(stateString) ?? [])
                 callback(this.boundObject, dt);
             state.pop();
         }
-        for (let callback of this.states.get(this.#computeStateString([], true)) ?? [])
+        for (let callback of this.updates.get(this.#computeStateString([], true)) ?? [])
             callback(this.boundObject, dt);
         if (nextState)
             this.state = nextState;
+    }
+    draw(ctx) {
+        let state = [];
+        while (state.length < this.state.length + 1) {
+            let stateString = this.#computeStateString(state);
+            for (let draw of this.draws.get(stateString) ?? [])
+                draw(this.boundObject, ctx);
+            state.push(this.state[state.length]);
+        }
+        while (state.length != 0) {
+            let stateString = this.#computeStateString(state, true);
+            for (let draw of this.draws.get(stateString) ?? [])
+                draw(this.boundObject, ctx);
+            state.pop();
+        }
+        for (let draw of this.draws.get(this.#computeStateString([], true)) ?? [])
+            draw(this.boundObject, ctx);
     }
 }

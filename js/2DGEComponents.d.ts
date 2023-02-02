@@ -12,14 +12,16 @@ export declare class CameraDragComponent extends GameComponent {
     onAdd(): void;
     update(dt: number): void;
 }
-type State<T> = (object: T, dt: number) => number[] | null;
+type UpdateCallback<T> = (object: T, dt: number) => number[] | null;
+type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void;
 export declare class StateMachine<T> extends GameComponent {
     #private;
     componentTag: string;
     unique: boolean;
     boundObject: T;
     state: number[];
-    states: Map<string, State<T>[]>;
+    updates: Map<string, UpdateCallback<T>[]>;
+    draws: Map<string, DrawCallback<T>[]>;
     constructor(boundObject: T, startState?: number[]);
     setState(state: number[]): void;
     isState(state: number[]): boolean;
@@ -33,7 +35,7 @@ export declare class StateMachine<T> extends GameComponent {
      * @param callback
      * @param postState
      */
-    addStateCallback(state: number[], callback: State<T>, postState?: boolean): void;
+    addStateCallback(state: number[], update?: UpdateCallback<T>, draw?: DrawCallback<T>, postState?: boolean): void;
     /**
      * Execute the current state callback
      * If a callback in the chain, returns a non null value, the other callback in the chain will not be executed and the current state will change
@@ -42,5 +44,6 @@ export declare class StateMachine<T> extends GameComponent {
      * @param dt
      */
     update(dt: number): void;
+    draw(ctx: CanvasRenderingContext2D): void;
 }
 export {};

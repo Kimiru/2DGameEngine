@@ -1,5 +1,5 @@
-import { Vector } from "./2DGEMath.js"
 import { Camera, GameComponent } from "./2DGameEngine.js"
+import { Vector } from "./2DGEMath.js"
 
 
 export class CameraDragComponent extends GameComponent {
@@ -63,7 +63,8 @@ export class CameraDragComponent extends GameComponent {
 
 }
 
-type State<T> = (object: T, dt: number) => number[] | null
+type UpdateCallback<T> = (object: T, dt: number) => number[] | null
+type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
 
 export class StateMachine<T> extends GameComponent {
 
@@ -73,7 +74,8 @@ export class StateMachine<T> extends GameComponent {
     boundObject: T
     state: number[] = []
 
-    states: Map<string, State<T>[]> = new Map()
+    updates: Map<string, UpdateCallback<T>[]> = new Map()
+    draws: Map<string, DrawCallback<T>[]> = new Map()
 
     constructor(boundObject: T, startState: number[] = [0]) {
 
@@ -113,13 +115,25 @@ export class StateMachine<T> extends GameComponent {
      * @param callback 
      * @param postState 
      */
-    addStateCallback(state: number[], callback: State<T>, postState: boolean = false) {
+    addStateCallback(state: number[], update: UpdateCallback<T> = null, draw: DrawCallback<T> = null, postState: boolean = false) {
 
         let stateString = this.#computeStateString(state, postState)
 
-        if (!this.states.has(stateString)) this.states.set(stateString, [])
+        if (update) {
 
-        this.states.get(stateString).push(callback)
+            if (!this.updates.has(stateString)) this.updates.set(stateString, [])
+
+            this.updates.get(stateString).push(update)
+
+        }
+
+        if (draw) {
+
+            if (!this.draws.has(stateString)) this.draws.set(stateString, [])
+
+            this.draws.get(stateString).push(draw)
+
+        }
 
     }
 
@@ -139,7 +153,7 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state)
 
-            for (let callback of this.states.get(stateString) ?? []) {
+            for (let callback of this.updates.get(stateString) ?? []) {
 
                 nextState = callback(this.boundObject, dt)
 
@@ -157,17 +171,48 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let callback of this.states.get(stateString) ?? [])
+            for (let callback of this.updates.get(stateString) ?? [])
                 callback(this.boundObject, dt)
 
             state.pop()
 
         }
 
-        for (let callback of this.states.get(this.#computeStateString([], true)) ?? [])
+        for (let callback of this.updates.get(this.#computeStateString([], true)) ?? [])
             callback(this.boundObject, dt)
 
         if (nextState) this.state = nextState
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        let state = []
+
+        while (state.length < this.state.length + 1) {
+
+            let stateString = this.#computeStateString(state)
+
+            for (let draw of this.draws.get(stateString) ?? [])
+                draw(this.boundObject, ctx)
+
+            state.push(this.state[state.length])
+
+        }
+
+        while (state.length != 0) {
+
+            let stateString = this.#computeStateString(state, true)
+
+            for (let draw of this.draws.get(stateString) ?? [])
+                draw(this.boundObject, ctx)
+
+            state.pop()
+
+        }
+
+        for (let draw of this.draws.get(this.#computeStateString([], true)) ?? [])
+            draw(this.boundObject, ctx)
 
     }
 
