@@ -2190,17 +2190,19 @@ export function loadSounds(sounds: { name: string, srcs: string[] }[], increment
 
 export class Drawable extends GameObject {
 
-    image: HTMLImageElement = null
+    images: HTMLImageElement[] = []
     size: Vector = new Vector()
     halfSize: Vector = new Vector()
 
-    constructor(image: HTMLImageElement) {
+    constructor(...images: HTMLImageElement[]) {
 
         super()
 
-        this.image = image
+        if (images.length === 0) throw 'There is no image!'
 
-        this.size.set(this.image.width, this.image.height)
+        this.images = images
+
+        this.size.set(this.images[0].width, this.images[0].height)
         this.halfSize.copy(this.size).divS(2)
 
     }
@@ -2210,7 +2212,9 @@ export class Drawable extends GameObject {
         ctx.save()
 
         ctx.scale(1 / this.size.x, -1 / this.size.y)
-        ctx.drawImage(this.image, -this.halfSize.x, -this.halfSize.y)
+
+        for (let image of this.images)
+            ctx.drawImage(image, -this.halfSize.x, -this.halfSize.y)
 
         ctx.restore()
 
@@ -2244,7 +2248,7 @@ export class SpriteSheet extends Drawable {
 
         this.options = { ...SpriteSheetOptions, ...options }
 
-        this.horizontalCount = this.image.width / this.options.cellWidth
+        this.horizontalCount = this.images[0].width / this.options.cellWidth
         this.size.set(this.options.cellWidth, this.options.cellHeight)
         this.halfSize.copy(this.size).divS(2)
 
@@ -2294,7 +2298,7 @@ export class SpriteSheet extends Drawable {
         y *= this.size.y
 
         ctx.scale(1 / this.size.x, -1 / this.size.y)
-        ctx.drawImage(this.image, x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y)
+        ctx.drawImage(this.images[0], x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y)
 
         ctx.restore()
 
@@ -2381,13 +2385,18 @@ export class ImageManipulator extends GameObject {
 
     }
 
-    getImage(): HTMLImageElement {
+    getImage(): Promise<HTMLImageElement> {
 
-        let image = document.createElement('img')
+        return new Promise((ok, ko) => {
 
-        image.src = this.print()
+            let image = document.createElement('img')
 
-        return image
+            image.onload = () => ok(image)
+            image.onerror = () => ko(null)
+
+            image.src = this.print()
+
+        })
 
     }
 

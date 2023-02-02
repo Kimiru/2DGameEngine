@@ -645,10 +645,10 @@ export declare function loadSounds(sounds: {
     srcs: string[];
 }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound>;
 export declare class Drawable extends GameObject {
-    image: HTMLImageElement;
+    images: HTMLImageElement[];
     size: Vector;
     halfSize: Vector;
-    constructor(image: HTMLImageElement);
+    constructor(...images: HTMLImageElement[]);
     draw(ctx: CanvasRenderingContext2D): void;
 }
 declare const SpriteSheetOptions: {
@@ -685,7 +685,7 @@ export declare class ImageManipulator extends GameObject {
     getPixel(x: number, y: number): [number, number, number, number];
     print(): string;
     download(name: string, addSize?: boolean): void;
-    getImage(): HTMLImageElement;
+    getImage(): Promise<HTMLImageElement>;
     toString(): string;
     clone(): ImageManipulator;
     static fromImage(image: HTMLImageElement): ImageManipulator;

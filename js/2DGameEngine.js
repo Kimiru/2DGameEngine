@@ -1483,19 +1483,22 @@ export function loadSounds(sounds, incrementCallback, finishedCallback) {
     return bank;
 }
 export class Drawable extends GameObject {
-    image = null;
+    images = [];
     size = new Vector();
     halfSize = new Vector();
-    constructor(image) {
+    constructor(...images) {
         super();
-        this.image = image;
-        this.size.set(this.image.width, this.image.height);
+        if (images.length === 0)
+            throw 'There is no image!';
+        this.images = images;
+        this.size.set(this.images[0].width, this.images[0].height);
         this.halfSize.copy(this.size).divS(2);
     }
     draw(ctx) {
         ctx.save();
         ctx.scale(1 / this.size.x, -1 / this.size.y);
-        ctx.drawImage(this.image, -this.halfSize.x, -this.halfSize.y);
+        for (let image of this.images)
+            ctx.drawImage(image, -this.halfSize.x, -this.halfSize.y);
         ctx.restore();
     }
 }
@@ -1513,7 +1516,7 @@ export class SpriteSheet extends Drawable {
     constructor(image, options = SpriteSheetOptions) {
         super(image);
         this.options = { ...SpriteSheetOptions, ...options };
-        this.horizontalCount = this.image.width / this.options.cellWidth;
+        this.horizontalCount = this.images[0].width / this.options.cellWidth;
         this.size.set(this.options.cellWidth, this.options.cellHeight);
         this.halfSize.copy(this.size).divS(2);
     }
@@ -1542,7 +1545,7 @@ export class SpriteSheet extends Drawable {
         x *= this.size.x;
         y *= this.size.y;
         ctx.scale(1 / this.size.x, -1 / this.size.y);
-        ctx.drawImage(this.image, x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y);
+        ctx.drawImage(this.images[0], x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y);
         ctx.restore();
     }
 }
@@ -1594,9 +1597,12 @@ export class ImageManipulator extends GameObject {
         a.remove();
     }
     getImage() {
-        let image = document.createElement('img');
-        image.src = this.print();
-        return image;
+        return new Promise((ok, ko) => {
+            let image = document.createElement('img');
+            image.onload = () => ok(image);
+            image.onerror = () => ko(null);
+            image.src = this.print();
+        });
     }
     toString() { return this.print(); }
     clone() {
