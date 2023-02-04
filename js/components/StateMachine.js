@@ -1,4 +1,4 @@
-import { GameComponent } from "./GameComponent.js";
+import { GameComponent } from "../basics/GameObject.js";
 export class StateMachine extends GameComponent {
     componentTag = 'camera-drag';
     unique = true;

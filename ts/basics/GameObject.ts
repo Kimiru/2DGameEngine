@@ -1,4 +1,3 @@
-import { GameComponent } from "../components/GameComponent.js"
 import { Transform } from "../math/Transform.js"
 import { matrix, TransformMatrix } from "../math/TransformMatrix.js"
 import { Vector } from "../math/Vector.js"
@@ -385,6 +384,22 @@ export class GameObject {
         }
 
         return matrix
+
+    }
+
+}
+
+export class GameComponent extends GameObject {
+
+    unique: boolean = false
+    componentTag: string = 'basic-component'
+
+    constructor() {
+
+        super()
+
+        this.addTag('component')
+        this.addTag(this.componentTag)
 
     }
 

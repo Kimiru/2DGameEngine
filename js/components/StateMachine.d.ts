@@ -1,4 +1,4 @@
-import { GameComponent } from "./GameComponent.js";
+import { GameComponent } from "../basics/GameObject.js";
 type UpdateCallback<T> = (object: T, dt: number) => number[] | null;
 type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void;
 export declare class StateMachine<T> extends GameComponent {

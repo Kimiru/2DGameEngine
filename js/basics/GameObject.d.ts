@@ -1,4 +1,3 @@
-import { GameComponent } from "../components/GameComponent.js";
 import { Transform } from "../math/Transform.js";
 import { matrix } from "../math/TransformMatrix.js";
 import { Vector } from "../math/Vector.js";
@@ -162,4 +161,9 @@ export declare class GameObject {
      */
     getWorldRotation(): number;
     getWorldTransformMatrix(): matrix;
+}
+export declare class GameComponent extends GameObject {
+    unique: boolean;
+    componentTag: string;
+    constructor();
 }

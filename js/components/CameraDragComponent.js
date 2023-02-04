@@ -1,5 +1,5 @@
+import { GameComponent } from "../basics/GameObject.js";
 import { Camera } from "../camera/Camera.js";
-import { GameComponent } from "./GameComponent.js";
 export class CameraDragComponent extends GameComponent {
     componentTag = 'camera-drag';
     unique = true;

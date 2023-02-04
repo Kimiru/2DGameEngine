@@ -1,4 +1,4 @@
-import { GameComponent } from "./GameComponent.js";
+import { GameComponent } from "../basics/GameObject.js";
 export declare class CameraDragComponent extends GameComponent {
     #private;
     componentTag: string;
