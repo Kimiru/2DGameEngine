@@ -1,3 +1,4 @@
+import { GameObject } from "../2DGameEngine.js";
 import { HexVector } from "./HexVector.js";
 import { Vector } from "./Vector.js";
 export declare class Graph<T> {
@@ -72,4 +73,7 @@ export interface HexagonGraphInterface {
 }
 export declare class HexagonGraph {
     static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<T>;
+}
+export declare class SquareGraph {
+    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals?: boolean): Graph<T>;
 }

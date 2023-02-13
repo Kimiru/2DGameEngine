@@ -378,4 +378,37 @@ export class Vector {
 
     }
 
+    neighbors(_8: boolean = false): Vector[] {
+        return (_8 ? this.units8() : this.units()).map((vector: Vector) => vector.add(this))
+    }
+
+    units(): Vector[] { return Vector.units() }
+
+    static units(): Vector[] {
+
+        return [
+
+            new Vector(1, 0),
+            new Vector(-1, 0),
+            new Vector(0, 1),
+            new Vector(0, -1)
+
+        ]
+
+    }
+
+    units8(): Vector[] { return Vector.units8() }
+
+    static units8(): Vector[] {
+
+        return [
+            ...this.units(),
+            new Vector(1, 1),
+            new Vector(-1, -1),
+            new Vector(1, -1),
+            new Vector(-1, 1)
+        ]
+
+    }
+
 }

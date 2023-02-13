@@ -282,3 +282,17 @@ export class HexagonGraph {
         return graph;
     }
 }
+export class SquareGraph {
+    static buildGraph(gameObjects, includeDiagonals = false) {
+        let graph = new Graph(false, object => object.transform.translation.clone());
+        for (let object of gameObjects)
+            graph.addNode([object.id, object]);
+        for (let object of gameObjects)
+            for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
+                let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor));
+                if (neighborObject)
+                    graph.addLink({ source: object.id, target: neighborObject.id });
+            }
+        return graph;
+    }
+}

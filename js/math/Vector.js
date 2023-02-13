@@ -289,4 +289,26 @@ export class Vector {
         this.z = Math.abs(this.z);
         return this;
     }
+    neighbors(_8 = false) {
+        return (_8 ? this.units8() : this.units()).map((vector) => vector.add(this));
+    }
+    units() { return Vector.units(); }
+    static units() {
+        return [
+            new Vector(1, 0),
+            new Vector(-1, 0),
+            new Vector(0, 1),
+            new Vector(0, -1)
+        ];
+    }
+    units8() { return Vector.units8(); }
+    static units8() {
+        return [
+            ...this.units(),
+            new Vector(1, 1),
+            new Vector(-1, -1),
+            new Vector(1, -1),
+            new Vector(-1, 1)
+        ];
+    }
 }

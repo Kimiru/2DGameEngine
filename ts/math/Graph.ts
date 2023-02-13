@@ -1,3 +1,4 @@
+import { GameObject } from "../2DGameEngine.js"
 import { HexVector } from "./HexVector.js"
 import { Vector } from "./Vector.js"
 
@@ -436,6 +437,27 @@ export class HexagonGraph {
                 let neighborGridHexagon = HexagonGraphObjects.find(hex => hex.hexVector.equal(neighbor))
                 if (neighborGridHexagon)
                     graph.addLink({ source: object.id, target: neighborGridHexagon.id })
+            }
+
+        return graph
+
+    }
+
+}
+
+export class SquareGraph {
+
+    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals: boolean = false): Graph<T> {
+        let graph = new Graph<T>(false, object => object.transform.translation.clone())
+
+        for (let object of gameObjects)
+            graph.addNode([object.id, object])
+
+        for (let object of gameObjects)
+            for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
+                let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor))
+                if (neighborObject)
+                    graph.addLink({ source: object.id, target: neighborObject.id })
             }
 
         return graph

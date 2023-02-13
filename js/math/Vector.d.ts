@@ -197,4 +197,9 @@ export declare class Vector {
      */
     floor(): this;
     abs(): this;
+    neighbors(_8?: boolean): Vector[];
+    units(): Vector[];
+    static units(): Vector[];
+    units8(): Vector[];
+    static units8(): Vector[];
 }
