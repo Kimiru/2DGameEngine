@@ -48,6 +48,7 @@ export declare class Graph<T> {
     getFlood(source: number, maxDistance: number, estimateDistance: (nodeA: T, nodeB: T) => number): Map<number, number[]>;
     populate(nodes: number[]): T[];
     draw(ctx: CanvasRenderingContext2D): boolean;
+    clone(): Graph<T>;
 }
 export declare class Node {
     cost: number;
@@ -61,6 +62,7 @@ export declare class Path {
     currentPosition: Vector;
     currentSegment: number;
     constructor(vectors: Vector[]);
+    get endPosition(): Vector;
     length(): number;
     reset(): void;
     end(): boolean;

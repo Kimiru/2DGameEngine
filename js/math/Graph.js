@@ -215,6 +215,12 @@ export class Graph {
         }
         return true;
     }
+    clone() {
+        let graph = new Graph(this.display, this.positionGetter);
+        graph.addNode(...this.nodesObjects.entries());
+        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat());
+        return graph;
+    }
 }
 export class Node {
     cost = 0;
@@ -230,6 +236,9 @@ export class Path {
     constructor(vectors) {
         this.points = vectors;
         this.currentPosition.copy(this.points[0]);
+    }
+    get endPosition() {
+        return this.points[this.points.length - 1].clone();
     }
     length() {
         let length = 0;

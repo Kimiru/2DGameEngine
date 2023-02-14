@@ -330,6 +330,17 @@ export class Graph<T> {
 
     }
 
+    clone(): Graph<T> {
+
+        let graph = new Graph(this.display, this.positionGetter)
+
+        graph.addNode(...this.nodesObjects.entries())
+        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat())
+
+        return graph
+
+    }
+
 }
 
 export class Node {
@@ -353,6 +364,12 @@ export class Path {
 
         this.points = vectors
         this.currentPosition.copy(this.points[0])
+
+    }
+
+    get endPosition(): Vector {
+
+        return this.points[this.points.length - 1].clone()
 
     }
 
