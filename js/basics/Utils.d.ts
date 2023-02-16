@@ -18,16 +18,18 @@ export declare function loadSVGs(svgs: {
     image: HTMLImageElement;
 }>;
 export declare class Sound {
-    sounds: HTMLAudioElement[];
     volume: number;
-    currentSound: HTMLAudioElement;
-    constructor(sounds: HTMLAudioElement[]);
+    soundsFifo: HTMLAudioElement[][];
+    currentSound: number;
+    constructor(soundsFifo: HTMLAudioElement[][]);
     play(): void;
+    pause(): void;
     setVolume(volume: number): void;
 }
 export declare function loadSounds(sounds: {
     name: string;
     srcs: string[];
+    backup?: number;
 }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound>;
 export declare function id(): number;
 export declare function range(min: number, max?: number, step?: number): Generator<number, void, unknown>;

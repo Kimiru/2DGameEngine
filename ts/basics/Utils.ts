@@ -118,27 +118,40 @@ export function loadSVGs(svgs: { name: string, src: string }[], incrementCallbac
 
 export class Sound {
 
-    sounds: HTMLAudioElement[] = []
     volume: number = 1
-    currentSound: HTMLAudioElement = null
 
-    constructor(sounds: HTMLAudioElement[]) {
+    soundsFifo: HTMLAudioElement[][] = []
+    currentSound: number = 0
 
-        this.sounds = sounds
+    constructor(soundsFifo: HTMLAudioElement[][]) {
+
+        this.soundsFifo = soundsFifo
 
     }
 
     play(): void {
 
-        let sound = this.sounds[Math.floor(Math.random() * this.sounds.length)]
+        let sounds = this.soundsFifo[this.currentSound]
+
+        for (let sound of sounds)
+            sound.pause()
+
+        let sound = sounds[Math.floor(Math.random() * sounds.length)]
+
         sound.volume = this.volume
+        sound.currentTime = 0
+        sound.play()
 
-        if (this.currentSound)
-            this.currentSound.pause()
+        this.currentSound += 1
+        this.currentSound %= this.soundsFifo.length
 
-        this.currentSound = sound
-        this.currentSound.currentTime = 0
-        this.currentSound.play()
+    }
+
+    pause(): void {
+
+        for (let sounds of this.soundsFifo)
+            for (let sound of sounds)
+                sound.pause()
 
     }
 
@@ -146,7 +159,7 @@ export class Sound {
 
 }
 
-export function loadSounds(sounds: { name: string, srcs: string[] }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound> {
+export function loadSounds(sounds: { name: string, srcs: string[], backup?: number }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound> {
 
     let bank: Map<string, Sound> = new Map()
     let completed: { n: number } = { n: 0 }
@@ -154,46 +167,54 @@ export function loadSounds(sounds: { name: string, srcs: string[] }[], increment
 
     for (let sound of sounds) {
 
-        let snds = []
+        let backups = []
 
-        for (let src of sound.srcs) {
+        for (let index = 0; index < (sound.backup ?? 1); index++) {
 
-            toComplete.n++
+            let snds = []
 
-            let snd = document.createElement('audio')
-            snd.src = src
+            for (let src of sound.srcs) {
 
-            snd.oncanplay = function () {
+                toComplete.n++
 
-                completed.n++
+                let snd = document.createElement('audio')
+                snd.src = src
 
-                incrementCallback(completed.n)
+                snd.oncanplay = function () {
 
-                if (completed.n == toComplete.n)
-                    finishedCallback()
+                    completed.n++
+
+                    incrementCallback(completed.n)
+
+                    if (completed.n == toComplete.n)
+                        finishedCallback()
+
+                }
+
+                snd.onerror = function (err) {
+
+                    console.error(`Could not load sound "${sound.name}" for source "${src}"`)
+
+                    console.error(err)
+
+                    completed.n++
+
+                    incrementCallback(completed.n)
+
+                    if (completed.n == toComplete.n)
+                        finishedCallback()
+
+                }
+
+                snds.push(snd)
 
             }
 
-            snd.onerror = function (err) {
-
-                console.error(`Could not load sound "${sound.name}" for source "${src}"`)
-
-                console.error(err)
-
-                completed.n++
-
-                incrementCallback(completed.n)
-
-                if (completed.n == toComplete.n)
-                    finishedCallback()
-
-            }
-
-            snds.push(snd)
+            backups.push(snds)
 
         }
 
-        bank.set(sound.name, new Sound(snds))
+        bank.set(sound.name, new Sound(backups))
 
     }
 

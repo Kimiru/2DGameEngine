@@ -71,20 +71,27 @@ export function loadSVGs(svgs, incrementCallback, finishedCallback) {
     return bank;
 }
 export class Sound {
-    sounds = [];
     volume = 1;
-    currentSound = null;
-    constructor(sounds) {
-        this.sounds = sounds;
+    soundsFifo = [];
+    currentSound = 0;
+    constructor(soundsFifo) {
+        this.soundsFifo = soundsFifo;
     }
     play() {
-        let sound = this.sounds[Math.floor(Math.random() * this.sounds.length)];
+        let sounds = this.soundsFifo[this.currentSound];
+        for (let sound of sounds)
+            sound.pause();
+        let sound = sounds[Math.floor(Math.random() * sounds.length)];
         sound.volume = this.volume;
-        if (this.currentSound)
-            this.currentSound.pause();
-        this.currentSound = sound;
-        this.currentSound.currentTime = 0;
-        this.currentSound.play();
+        sound.currentTime = 0;
+        sound.play();
+        this.currentSound += 1;
+        this.currentSound %= this.soundsFifo.length;
+    }
+    pause() {
+        for (let sounds of this.soundsFifo)
+            for (let sound of sounds)
+                sound.pause();
     }
     setVolume(volume) { this.volume = volume; }
 }
@@ -93,28 +100,32 @@ export function loadSounds(sounds, incrementCallback, finishedCallback) {
     let completed = { n: 0 };
     let toComplete = { n: 0 };
     for (let sound of sounds) {
-        let snds = [];
-        for (let src of sound.srcs) {
-            toComplete.n++;
-            let snd = document.createElement('audio');
-            snd.src = src;
-            snd.oncanplay = function () {
-                completed.n++;
-                incrementCallback(completed.n);
-                if (completed.n == toComplete.n)
-                    finishedCallback();
-            };
-            snd.onerror = function (err) {
-                console.error(`Could not load sound "${sound.name}" for source "${src}"`);
-                console.error(err);
-                completed.n++;
-                incrementCallback(completed.n);
-                if (completed.n == toComplete.n)
-                    finishedCallback();
-            };
-            snds.push(snd);
+        let backups = [];
+        for (let index = 0; index < (sound.backup ?? 1); index++) {
+            let snds = [];
+            for (let src of sound.srcs) {
+                toComplete.n++;
+                let snd = document.createElement('audio');
+                snd.src = src;
+                snd.oncanplay = function () {
+                    completed.n++;
+                    incrementCallback(completed.n);
+                    if (completed.n == toComplete.n)
+                        finishedCallback();
+                };
+                snd.onerror = function (err) {
+                    console.error(`Could not load sound "${sound.name}" for source "${src}"`);
+                    console.error(err);
+                    completed.n++;
+                    incrementCallback(completed.n);
+                    if (completed.n == toComplete.n)
+                        finishedCallback();
+                };
+                snds.push(snd);
+            }
+            backups.push(snds);
         }
-        bank.set(sound.name, new Sound(snds));
+        bank.set(sound.name, new Sound(backups));
     }
     if (completed.n == toComplete.n)
         finishedCallback();

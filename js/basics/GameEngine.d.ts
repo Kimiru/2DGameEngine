@@ -46,19 +46,20 @@ export declare class GameEngine {
         width: number;
         height: number;
         verticalPixels: number;
-        scaling: number;
-        canvas: HTMLCanvasElement;
-        images: {
+        scaling?: number;
+        canvas?: HTMLCanvasElement;
+        images?: {
             name: string;
             src: string;
         }[];
-        svgs: {
+        svgs?: {
             name: string;
             src: string;
         }[];
-        sounds: {
+        sounds?: {
             name: string;
             srcs: string[];
+            backup?: number;
         }[];
     });
     get trueWidth(): number;

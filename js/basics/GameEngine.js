@@ -7,7 +7,7 @@ const gameEngineConstructorArguments = {
     width: innerWidth,
     height: innerHeight,
     verticalPixels: 100,
-    scaling: 2,
+    scaling: devicePixelRatio,
     canvas: null,
     images: [],
     svgs: [],
@@ -89,19 +89,19 @@ export class GameEngine {
         });
         this.canvas.style.position = 'relative';
         this.canvas.style.backgroundColor = 'black';
-        this.resize(args.width, args.height, args.scaling, args.verticalPixels);
+        this.resize(args.width, args.height, args.scaling ?? devicePixelRatio, args.verticalPixels);
         this.#imageToLoadCount = args.images.length;
         this.#svgToLoadCount = args.svgs.length;
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0);
-        this.imageBank = loadImages(args.images, (n) => { this.#loadedImagesCount = n; }, () => {
+        this.imageBank = loadImages(args.images ?? [], (n) => { this.#loadedImagesCount = n; }, () => {
             this.#locks[0] = false;
             this.#checkLocks();
         });
-        this.soundBank = loadSounds(args.sounds, (n) => { this.#loadedSoundCount = n; }, () => {
+        this.soundBank = loadSounds(args.sounds ?? [], (n) => { this.#loadedSoundCount = n; }, () => {
             this.#locks[1] = false;
             this.#checkLocks();
         });
-        this.svgBank = loadSVGs(args.svgs, (n) => { this.#loadedSVGCount = n; }, () => {
+        this.svgBank = loadSVGs(args.svgs ?? [], (n) => { this.#loadedSVGCount = n; }, () => {
             this.#locks[2] = false;
             this.#checkLocks();
         });

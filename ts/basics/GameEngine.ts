@@ -9,16 +9,16 @@ const gameEngineConstructorArguments: {
     width: number,
     height: number,
     verticalPixels: number,
-    scaling: number,
-    canvas: HTMLCanvasElement,
-    images: { name: string, src: string }[],
-    svgs: { name: string, src: string }[],
-    sounds: { name: string, srcs: string[] }[],
+    scaling?: number,
+    canvas?: HTMLCanvasElement,
+    images?: { name: string, src: string }[],
+    svgs?: { name: string, src: string }[],
+    sounds?: { name: string, srcs: string[], backup?: number }[],
 } = {
     width: innerWidth,
     height: innerHeight,
     verticalPixels: 100,
-    scaling: 2,
+    scaling: devicePixelRatio,
     canvas: null,
     images: [],
     svgs: [],
@@ -120,12 +120,12 @@ export class GameEngine {
         this.canvas.style.position = 'relative'
         this.canvas.style.backgroundColor = 'black'
 
-        this.resize(args.width, args.height, args.scaling, args.verticalPixels)
+        this.resize(args.width, args.height, args.scaling ?? devicePixelRatio, args.verticalPixels)
         this.#imageToLoadCount = args.images.length
         this.#svgToLoadCount = args.svgs.length
         this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0)
         this.imageBank = loadImages(
-            args.images,
+            args.images ?? [],
             (n: number) => { this.#loadedImagesCount = n },
             () => {
 
@@ -137,7 +137,7 @@ export class GameEngine {
         )
 
         this.soundBank = loadSounds(
-            args.sounds,
+            args.sounds ?? [],
             (n: number) => { this.#loadedSoundCount = n },
             () => {
 
@@ -149,7 +149,7 @@ export class GameEngine {
         )
 
         this.svgBank = loadSVGs(
-            args.svgs,
+            args.svgs ?? [],
             (n: number) => { this.#loadedSVGCount = n },
             () => {
 
