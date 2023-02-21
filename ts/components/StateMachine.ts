@@ -1,6 +1,6 @@
 import { GameComponent } from "../basics/GameObject.js"
 
-type UpdateCallback<T> = (object: T, dt: number) => number[] | null
+type UpdateCallback<T> = (object: T, dt: number) => (number[] | null)
 type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
 
 export class StateMachine<T> extends GameComponent {
