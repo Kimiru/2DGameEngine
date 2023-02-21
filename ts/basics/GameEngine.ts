@@ -3,7 +3,7 @@ import { Vector } from "../math/Vector.js"
 import { NetworkGameObject } from "../network/NetworkGameObject.js"
 import { GameScene } from "./GameScene.js"
 import { Input } from "./Input.js"
-import { loadImages, loadSounds, loadSVGs, Sound } from "./Utils.js"
+import { imageBank, loadImages, loadSounds, loadSVGs, soundBank, svgBank } from "./Utils.js"
 
 const gameEngineConstructorArguments: {
     width: number,
@@ -67,17 +67,17 @@ export class GameEngine {
     /**
      * Contains all the images loaded at the engine contruction.
      */
-    imageBank: Map<string, HTMLImageElement> = new Map()
+    imageBank: imageBank = new Map()
 
     /**
      * Contains all the svg loaded at the engine construction.
      */
-    svgBank: Map<string, { raw: string, image: HTMLImageElement }> = new Map()
+    svgBank: svgBank = new Map()
 
     /**
      * Contains all the sounds loaded at the engine construction.
      */
-    soundBank: Map<string, Sound> = new Map()
+    soundBank: soundBank = new Map()
     #lock0: boolean = true
     #locks: [boolean, boolean, boolean] = [true, true, true]
     #loadedImagesCount: number = 0

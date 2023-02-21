@@ -1,7 +1,7 @@
 import { Vector } from "../math/Vector.js";
 import { GameScene } from "./GameScene.js";
 import { Input } from "./Input.js";
-import { Sound } from "./Utils.js";
+import { imageBank, soundBank, svgBank } from "./Utils.js";
 /**
  * GameEngine is the class responsible for the execution of the game loop, the canvas and resize change, and the scene management
  */
@@ -25,18 +25,15 @@ export declare class GameEngine {
     /**
      * Contains all the images loaded at the engine contruction.
      */
-    imageBank: Map<string, HTMLImageElement>;
+    imageBank: imageBank;
     /**
      * Contains all the svg loaded at the engine construction.
      */
-    svgBank: Map<string, {
-        raw: string;
-        image: HTMLImageElement;
-    }>;
+    svgBank: svgBank;
     /**
      * Contains all the sounds loaded at the engine construction.
      */
-    soundBank: Map<string, Sound>;
+    soundBank: soundBank;
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
      *

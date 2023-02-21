@@ -1,5 +1,7 @@
 import { SVGStringToImage } from "../images/Utils.js"
 
+export type imageBank = Map<string, HTMLImageElement>
+
 /**
  * loads multiple images and use callbacks for progression checks and at the end
  * 
@@ -8,7 +10,7 @@ import { SVGStringToImage } from "../images/Utils.js"
  * @param {() => void}finishedCallback 
  * @returns 
  */
-export function loadImages(images: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, HTMLImageElement> {
+export function loadImages(images: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): imageBank {
 
     let bank: Map<string, HTMLImageElement> = new Map()
     let completed: { n: number } = { n: 0 }
@@ -54,7 +56,9 @@ export function loadImages(images: { name: string, src: string }[], incrementCal
     return bank
 }
 
-export function loadSVGs(svgs: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, { raw: string, image: HTMLImageElement }> {
+export type svgBank = Map<string, { raw: string, image: HTMLImageElement }>
+
+export function loadSVGs(svgs: { name: string, src: string }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): svgBank {
 
     let bank: Map<string, { raw: string, image: HTMLImageElement }> = new Map()
     let completed: { n: number } = { n: 0 }
@@ -159,7 +163,9 @@ export class Sound {
 
 }
 
-export function loadSounds(sounds: { name: string, srcs: string[], backup?: number }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): Map<string, Sound> {
+export type soundBank = Map<string, Sound>
+
+export function loadSounds(sounds: { name: string, srcs: string[], backup?: number }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): soundBank {
 
     let bank: Map<string, Sound> = new Map()
     let completed: { n: number } = { n: 0 }
