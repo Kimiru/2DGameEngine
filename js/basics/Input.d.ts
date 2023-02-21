@@ -37,34 +37,36 @@ export declare enum GamepadControl {
 export declare class Input {
     #private;
     constructor();
+    lock(lock?: string): void;
+    unlock(lock?: string): void;
     /**
      * Return true if the given char is down
      *
      * @param {string} char
      * @returns {boolean}
      */
-    isCharDown(char: string): boolean;
+    isCharDown(char: string, lock?: string): boolean;
     /**
      * return true once if the given char is down, must be repressed to return true again
      *
      * @param {string} code
      * @returns {boolean}
      */
-    isCharPressed(char: string): boolean;
+    isCharPressed(char: string, lock?: string): boolean;
     /**
      * Return true if the given key is down
      *
      * @param {string} code
      * @returns {boolean}
      */
-    isDown(code: string): boolean;
+    isDown(code: string, lock?: string): boolean;
     /**
      * return true once if the given key is down, must be repressed to return true again
      *
      * @param {string} code
      * @returns {boolean}
      */
-    isPressed(code: string): boolean;
+    isPressed(code: string, lock?: string): boolean;
     positionAdapter: (vector: Vector) => Vector;
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only

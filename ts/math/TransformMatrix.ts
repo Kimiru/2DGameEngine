@@ -4,6 +4,8 @@ export type matrix = [number, number, number, number, number, number]
 
 export class TransformMatrix {
 
+    static default(): matrix { return [1, 0, 0, 1, 0, 0] }
+
     static multMat(m1: matrix, m2: matrix): matrix {
 
         return [

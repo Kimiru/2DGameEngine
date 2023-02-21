@@ -1,5 +1,6 @@
 import { Vector } from "./Vector.js";
 export class TransformMatrix {
+    static default() { return [1, 0, 0, 1, 0, 0]; }
     static multMat(m1, m2) {
         return [
             m1[0] * m2[0] + m1[2] * m2[1],

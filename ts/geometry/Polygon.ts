@@ -282,9 +282,6 @@ export class Polygon extends GameObject {
 
         let points: Vector[] = [...this.outer, this.outer[0]]
 
-        for (let inner of this.inners)
-            points.push(...inner, points[0])
-
         return points
 
     }

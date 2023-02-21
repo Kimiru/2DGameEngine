@@ -1,3 +1,4 @@
+import { TransformMatrix } from "../2DGameEngine.js"
 import { Vector } from "../math/Vector.js"
 import { Polygon } from "./Polygon.js"
 
@@ -32,14 +33,22 @@ export class Rectangle extends Polygon {
 
         if (this.outer.length === 0 || !this.#ptmem[0].equal(this.transform.translation) || !this.#ptmem[1].equal(this.transform.scale)) {
 
-            this.outer = [this.topleft, this.bottomleft, this.bottomright, this.topright]
+            this.outer = [this.bottomleft, this.topleft, this.topright, this.bottomright]
             this.#ptmem[0].copy(this.transform.translation)
-            this.#ptmem[1].copy(this.transform.translation)
+            this.#ptmem[1].copy(this.transform.scale)
 
         }
 
         return super.getLinear()
 
+    }
+
+    getWorldLinear(): Vector[] {
+        let matrix = this.parent?.getWorldTransformMatrix() ?? TransformMatrix.default()
+
+        let points = this.getLinear()
+
+        return points.map(point => TransformMatrix.multVec(matrix, point))
     }
 
     get x(): number { return this.transform.translation.x }
@@ -90,7 +99,7 @@ export class Rectangle extends Polygon {
         if (this.display) {
 
             ctx.save()
-            ctx.scale(1 / this.w, 1 / this.h)
+            // ctx.scale(1 / this.w, 1 / this.h)
 
             ctx.fillStyle = this.displayColor
             ctx.fillRect(-.5, -.5, 1, 1)

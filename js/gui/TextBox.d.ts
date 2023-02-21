@@ -10,8 +10,13 @@ export declare class TextBox extends GameObject {
     color: string;
     onSound: string;
     offSound: string;
+    align: CanvasTextAlign;
+    baseline: CanvasTextBaseline;
     placeholder: string;
     constructor(fontSize: number, width: number, font?: string, color?: string, onSound?: string, offSound?: string);
+    toggleOn(): void;
+    toggleOff(): void;
+    toggle(): void;
     update(dt: number): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }

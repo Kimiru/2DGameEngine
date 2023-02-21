@@ -9,6 +9,7 @@ export declare class Rectangle extends Polygon {
     displayColor: string;
     constructor(x?: number, y?: number, w?: number, h?: number, display?: boolean, displayColor?: string);
     getLinear(): Vector[];
+    getWorldLinear(): Vector[];
     get x(): number;
     set x(n: number);
     get y(): number;

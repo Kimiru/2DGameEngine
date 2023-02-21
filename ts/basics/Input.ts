@@ -50,6 +50,8 @@ export enum GamepadControl {
  */
 export class Input {
 
+    #keylock: string = null
+
     #charDown: Set<string> = new Set()
     #charOnce: Set<string> = new Set()
     #keysDown: Set<string> = new Set()
@@ -77,13 +79,35 @@ export class Input {
 
     }
 
+    lock(lock: string = '') {
+
+        if (this.#keylock) return
+
+        this.#keylock = lock
+
+    }
+
+    unlock(lock: string = '') {
+
+        if (this.#keylock !== lock) return
+
+        this.#keylock = null
+
+    }
+
     /**
      * Return true if the given char is down
      * 
      * @param {string} char 
      * @returns {boolean}
      */
-    isCharDown(char: string): boolean { return this.#charDown.has(char) }
+    isCharDown(char: string, lock?: string): boolean {
+
+        if (this.#keylock && this.#keylock !== lock) return false
+
+        return this.#charDown.has(char)
+
+    }
 
     /**
      * return true once if the given char is down, must be repressed to return true again
@@ -91,7 +115,9 @@ export class Input {
      * @param {string} code 
      * @returns {boolean}
      */
-    isCharPressed(char: string): boolean {
+    isCharPressed(char: string, lock?: string): boolean {
+
+        if (this.#keylock && this.#keylock !== lock) return false
 
         if (this.#charOnce.has(char)) {
 
@@ -110,7 +136,13 @@ export class Input {
      * @param {string} code 
      * @returns {boolean}
      */
-    isDown(code: string): boolean { return this.#keysDown.has(code) }
+    isDown(code: string, lock?: string): boolean {
+
+        if (this.#keylock && this.#keylock !== lock) return false
+
+        return this.#keysDown.has(code)
+
+    }
 
     /**
      * return true once if the given key is down, must be repressed to return true again
@@ -118,7 +150,9 @@ export class Input {
      * @param {string} code 
      * @returns {boolean}
      */
-    isPressed(code: string): boolean {
+    isPressed(code: string, lock?: string): boolean {
+
+        if (this.#keylock && this.#keylock !== lock) return false
 
         if (this.#keysOnce.has(code)) {
 

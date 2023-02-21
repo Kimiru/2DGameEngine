@@ -34,6 +34,7 @@ export var GamepadControl;
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */
 export class Input {
+    #keylock = null;
     #charDown = new Set();
     #charOnce = new Set();
     #keysDown = new Set();
@@ -52,20 +53,36 @@ export class Input {
             this.#keysOnce.delete(evt.code);
         });
     }
+    lock(lock = '') {
+        if (this.#keylock)
+            return;
+        this.#keylock = lock;
+    }
+    unlock(lock = '') {
+        if (this.#keylock !== lock)
+            return;
+        this.#keylock = null;
+    }
     /**
      * Return true if the given char is down
      *
      * @param {string} char
      * @returns {boolean}
      */
-    isCharDown(char) { return this.#charDown.has(char); }
+    isCharDown(char, lock) {
+        if (this.#keylock && this.#keylock !== lock)
+            return false;
+        return this.#charDown.has(char);
+    }
     /**
      * return true once if the given char is down, must be repressed to return true again
      *
      * @param {string} code
      * @returns {boolean}
      */
-    isCharPressed(char) {
+    isCharPressed(char, lock) {
+        if (this.#keylock && this.#keylock !== lock)
+            return false;
         if (this.#charOnce.has(char)) {
             this.#charOnce.delete(char);
             return true;
@@ -78,14 +95,20 @@ export class Input {
      * @param {string} code
      * @returns {boolean}
      */
-    isDown(code) { return this.#keysDown.has(code); }
+    isDown(code, lock) {
+        if (this.#keylock && this.#keylock !== lock)
+            return false;
+        return this.#keysDown.has(code);
+    }
     /**
      * return true once if the given key is down, must be repressed to return true again
      *
      * @param {string} code
      * @returns {boolean}
      */
-    isPressed(code) {
+    isPressed(code, lock) {
+        if (this.#keylock && this.#keylock !== lock)
+            return false;
         if (this.#keysOnce.has(code)) {
             this.#keysOnce.delete(code);
             return true;

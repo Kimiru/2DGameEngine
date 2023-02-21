@@ -13,6 +13,8 @@ export class TextBox extends GameObject {
     color: string = 'white'
     onSound: string
     offSound: string
+    align: CanvasTextAlign = 'left'
+    baseline: CanvasTextBaseline = 'middle'
 
     placeholder: string = ''
 
@@ -28,7 +30,7 @@ export class TextBox extends GameObject {
         this.offSound = offSound
 
 
-        this.rect.transform.scale.set(width + 4, fontSize + 4)
+        this.rect.transform.scale.set(width * 1.1, fontSize * 1.1)
 
         this.add(this.rect)
 
@@ -42,18 +44,47 @@ export class TextBox extends GameObject {
                     this.text += event.key
                 else if (event.key === 'Backspace')
                     this.text = this.text.slice(0, -1)
-                else if (event.key === 'Enter') {
-                    this.rect.displayColor = 'red'
-                    this.active = false
+                else if (event.key === 'Enter')
+                    this.toggleOff()
 
-                    if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
-
-                }
             }
-
         })
 
         this.drawAfterChildren()
+
+    }
+
+    toggleOn() {
+
+        if (this.active) return
+
+        this.rect.displayColor = 'blue'
+        this.active = true
+        this.input.lock('TextBox')
+
+        if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
+
+    }
+
+    toggleOff() {
+
+        if (!this.active) return
+
+        this.rect.displayColor = 'red'
+        this.active = false
+        this.input.unlock('TextBox')
+
+        if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
+
+    }
+
+    toggle() {
+
+        if (!this.active)
+            this.toggleOn()
+
+        else
+            this.toggleOff()
 
     }
 
@@ -64,29 +95,11 @@ export class TextBox extends GameObject {
         if (mouse.leftClick) {
 
             if (this.rect.containsWorldVector(mouse.position)) {
+                if (!this.active) this.toggleOn()
 
-                if (!this.active) {
-
-                    this.rect.displayColor = 'blue'
-                    this.active = true
-
-                    if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
-                }
-
-            }
-
-            else {
-
-                if (this.active) {
-
-                    this.rect.displayColor = 'red'
-                    this.active = false
-
-                    if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
-
-                }
-
-            }
+            } else
+                if (this.active)
+                    this.toggleOff()
 
         }
 
@@ -96,10 +109,15 @@ export class TextBox extends GameObject {
 
         ctx.save()
 
-        ctx.translate(-this.width / 2, 0)
+        if (this.align === 'left')
+            ctx.translate(-this.width / 2, 0)
+
+        if (this.align === 'right')
+            ctx.translate(this.width / 2, 0)
+
         ctx.scale(1, -1)
-        ctx.textAlign = 'left'
-        ctx.textBaseline = 'middle'
+        ctx.textAlign = this.align
+        ctx.textBaseline = this.baseline
         ctx.font = `${this.fontSize}px ${this.font}`
         ctx.fillStyle = this.color
 
