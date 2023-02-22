@@ -1,4 +1,4 @@
-import { GameObject, HSLToRGB, HexColorToRGB, RBGToHexColor, RGBToHSL, Rectangle, TextBox, map, minmax } from '../2DGameEngine.js'
+import { GameObject, HexColorToRGB, HSLToRGB, map, minmax, RBGToHexColor, Rectangle, RGBToHSL, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js'
 
 const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')
 
@@ -15,9 +15,9 @@ export class ColorPicker extends GameObject {
 
 
 
-    htb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
-    stb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
-    ltb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
+    htb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
+    stb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
+    ltb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
 
     h: number = 0
     s: number = 100
@@ -116,19 +116,54 @@ export class ColorPicker extends GameObject {
 
         let mouse = this.input.mouse
 
-        if (mouse.leftClick) {
+        if (mouse.left) {
 
-            let hueRect = new Rectangle()
+            let wtm = this.getWorldTransformMatrix()
 
-            hueRect.parent = this
-            hueRect.w = 1.5
-            hueRect.h = .125
-            hueRect.left = -1
-            hueRect.bottom = 0.3125
+            let rect = new Rectangle()
+            rect.parent = this
+            rect.w = 1.5
+            rect.h = .125
+            rect.left = -1
+            rect.bottom = 0.3125
 
-            if (hueRect.containsWorldVector(mouse.position)) {
+            let left = TransformMatrix.multVec(wtm, new Vector(rect.left, rect.y))
+            let right = TransformMatrix.multVec(wtm, new Vector(rect.right, rect.y))
 
-                console.log('hue')
+            let [t, p] = new Segment(left, right).project(mouse.position)
+
+            if (rect.containsWorldVector(mouse.position)) {
+
+                this.h = Math.round(360 * t)
+                this.htb.text = this.h.toString()
+
+                this.onChange(this.h, this.s, this.l)
+
+                return
+
+            }
+
+            rect.bottom = 0.0625
+
+            if (rect.containsWorldVector(mouse.position)) {
+
+                this.s = Math.round(100 * t)
+                this.stb.text = this.s.toString()
+
+                this.onChange(this.h, this.s, this.l)
+
+                return
+
+            }
+
+            rect.bottom = -0.1875
+
+            if (rect.containsWorldVector(mouse.position)) {
+
+                this.l = Math.round(100 * t)
+                this.ltb.text = this.l.toString()
+
+                this.onChange(this.h, this.s, this.l)
 
                 return
 

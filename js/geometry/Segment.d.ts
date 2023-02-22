@@ -7,6 +7,7 @@ export declare class Segment extends GameObject {
     lineWidth: number;
     constructor(a: Vector, b: Vector, display?: boolean);
     intersect(segment: Segment): Vector;
+    project(point: Vector): [number, Vector];
     length(): number;
     draw(ctx: CanvasRenderingContext2D): boolean;
 }

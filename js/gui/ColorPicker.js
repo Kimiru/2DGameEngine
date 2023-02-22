@@ -1,4 +1,4 @@
-import { GameObject, HSLToRGB, HexColorToRGB, RBGToHexColor, RGBToHSL, Rectangle, TextBox, map, minmax } from '../2DGameEngine.js';
+import { GameObject, HexColorToRGB, HSLToRGB, map, minmax, RBGToHexColor, Rectangle, RGBToHSL, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js';
 const ctx = document.createElement('canvas').getContext('2d');
 const rainbow = ctx.createLinearGradient(-1, 0, .5, 0);
 rainbow.addColorStop(0, 'hsl(0, 100%, 50%');
@@ -9,9 +9,9 @@ rainbow.addColorStop(2 / 3, 'hsl(240, 100%, 50%');
 rainbow.addColorStop(5 / 6, 'hsl(300, 100%, 50%');
 rainbow.addColorStop(1, 'hsl(360, 100%, 50%');
 export class ColorPicker extends GameObject {
-    htb = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black');
-    stb = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black');
-    ltb = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black');
+    htb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
+    stb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
+    ltb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
     h = 0;
     s = 100;
     l = 50;
@@ -73,15 +73,35 @@ export class ColorPicker extends GameObject {
     onChange(h, s, l) { }
     update(dt) {
         let mouse = this.input.mouse;
-        if (mouse.leftClick) {
-            let hueRect = new Rectangle();
-            hueRect.parent = this;
-            hueRect.w = 1.5;
-            hueRect.h = .125;
-            hueRect.left = -1;
-            hueRect.bottom = 0.3125;
-            if (hueRect.containsWorldVector(mouse.position)) {
-                console.log('hue');
+        if (mouse.left) {
+            let wtm = this.getWorldTransformMatrix();
+            let rect = new Rectangle();
+            rect.parent = this;
+            rect.w = 1.5;
+            rect.h = .125;
+            rect.left = -1;
+            rect.bottom = 0.3125;
+            let left = TransformMatrix.multVec(wtm, new Vector(rect.left, rect.y));
+            let right = TransformMatrix.multVec(wtm, new Vector(rect.right, rect.y));
+            let [t, p] = new Segment(left, right).project(mouse.position);
+            if (rect.containsWorldVector(mouse.position)) {
+                this.h = Math.round(360 * t);
+                this.htb.text = this.h.toString();
+                this.onChange(this.h, this.s, this.l);
+                return;
+            }
+            rect.bottom = 0.0625;
+            if (rect.containsWorldVector(mouse.position)) {
+                this.s = Math.round(100 * t);
+                this.stb.text = this.s.toString();
+                this.onChange(this.h, this.s, this.l);
+                return;
+            }
+            rect.bottom = -0.1875;
+            if (rect.containsWorldVector(mouse.position)) {
+                this.l = Math.round(100 * t);
+                this.ltb.text = this.l.toString();
+                this.onChange(this.h, this.s, this.l);
                 return;
             }
         }

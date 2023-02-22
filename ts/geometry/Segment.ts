@@ -48,6 +48,17 @@ export class Segment extends GameObject {
 
     }
 
+    project(point: Vector): [number, Vector] {
+
+        let dir = this.b.clone().sub(this.a)
+        let vec = point.clone().sub(this.a)
+
+        let t = ((vec.x * dir.x + vec.y * dir.y) / (dir.x * dir.x + dir.y * dir.y)) * dir.x
+
+        return [t / dir.length(), this.a.clone().addS(t, t * (dir.y / dir.x))]
+
+    }
+
     length(): number {
 
         return this.a.distanceTo(this.b)

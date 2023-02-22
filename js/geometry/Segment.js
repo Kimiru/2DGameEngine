@@ -33,6 +33,12 @@ export class Segment extends GameObject {
             return null;
         return new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1));
     }
+    project(point) {
+        let dir = this.b.clone().sub(this.a);
+        let vec = point.clone().sub(this.a);
+        let t = ((vec.x * dir.x + vec.y * dir.y) / (dir.x * dir.x + dir.y * dir.y)) * dir.x;
+        return [t / dir.length(), this.a.clone().addS(t, t * (dir.y / dir.x))];
+    }
     length() {
         return this.a.distanceTo(this.b);
     }
