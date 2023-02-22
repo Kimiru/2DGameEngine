@@ -1,6 +1,7 @@
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export declare class TextBox extends GameObject {
+    static lock: boolean;
     text: string;
     active: boolean;
     rect: Rectangle;
@@ -17,6 +18,7 @@ export declare class TextBox extends GameObject {
     toggleOn(): void;
     toggleOff(): void;
     toggle(): void;
+    onFinish(text: string): void;
     update(dt: number): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }

@@ -3,6 +3,8 @@ import { Rectangle } from "../geometry/Rectangle.js"
 
 export class TextBox extends GameObject {
 
+    static lock: boolean = false
+
     text: string = ''
     active: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
@@ -56,11 +58,12 @@ export class TextBox extends GameObject {
 
     toggleOn() {
 
-        if (this.active) return
+        if (this.active || TextBox.lock) return
 
         this.rect.displayColor = 'blue'
         this.active = true
         this.input.lock('TextBox')
+        TextBox.lock = true
 
         if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
 
@@ -73,8 +76,11 @@ export class TextBox extends GameObject {
         this.rect.displayColor = 'red'
         this.active = false
         this.input.unlock('TextBox')
+        TextBox.lock = false
 
         if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
+
+        this.onFinish(this.text)
 
     }
 
@@ -87,6 +93,8 @@ export class TextBox extends GameObject {
             this.toggleOff()
 
     }
+
+    onFinish(text: string) { }
 
     update(dt: number): void {
 

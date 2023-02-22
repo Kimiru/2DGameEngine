@@ -1,6 +1,7 @@
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export class TextBox extends GameObject {
+    static lock = false;
     text = '';
     active = false;
     rect = new Rectangle(0, 0, 1, 1);
@@ -38,11 +39,12 @@ export class TextBox extends GameObject {
         this.drawAfterChildren();
     }
     toggleOn() {
-        if (this.active)
+        if (this.active || TextBox.lock)
             return;
         this.rect.displayColor = 'blue';
         this.active = true;
         this.input.lock('TextBox');
+        TextBox.lock = true;
         if (this.onSound)
             this.engine.soundBank.get(this.onSound)?.play();
     }
@@ -52,8 +54,10 @@ export class TextBox extends GameObject {
         this.rect.displayColor = 'red';
         this.active = false;
         this.input.unlock('TextBox');
+        TextBox.lock = false;
         if (this.offSound)
             this.engine.soundBank.get(this.offSound)?.play();
+        this.onFinish(this.text);
     }
     toggle() {
         if (!this.active)
@@ -61,6 +65,7 @@ export class TextBox extends GameObject {
         else
             this.toggleOff();
     }
+    onFinish(text) { }
     update(dt) {
         let mouse = this.input.mouse;
         if (mouse.leftClick) {

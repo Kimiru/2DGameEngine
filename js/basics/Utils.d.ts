@@ -38,3 +38,7 @@ export declare function id(): number;
 export declare function range(min: number, max?: number, step?: number): Generator<number, void, unknown>;
 export declare function getCircularReplacer(): (key: any, value: any) => any;
 export declare function badclone(o: any): any;
+export declare function HSLToRGB(h: number, s: number, l: number): [number, number, number];
+export declare function RGBToHSL(r: number, g: number, b: number): [number, number, number];
+export declare function HexColorToRGB(hexColor: string): [number, number, number];
+export declare function RBGToHexColor(r: number, g: number, b: number): string;

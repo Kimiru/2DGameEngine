@@ -1,5 +1,4 @@
-import { map } from '../2DGameEngine.js'
-import { GameObject } from '../basics/GameObject.js'
+import { GameObject, HSLToRGB, HexColorToRGB, RBGToHexColor, RGBToHSL, Rectangle, TextBox, map, minmax } from '../2DGameEngine.js'
 
 const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')
 
@@ -14,16 +13,135 @@ rainbow.addColorStop(1, 'hsl(360, 100%, 50%')
 
 export class ColorPicker extends GameObject {
 
+
+
+    htb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
+    stb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
+    ltb: TextBox = new TextBox(.15, .5 / 1.1, 'sans-serif', 'black')
+
     h: number = 0
     s: number = 100
     l: number = 50
+
+    constructor() {
+
+        super()
+
+        this.htb.text = '0'
+        this.htb.align = 'center'
+        this.htb.baseline = 'middle'
+        this.htb.transform.translation.set(.75, 0.375)
+        this.htb.onFinish = (str: string) => {
+
+            if (!isNaN(parseInt(str)))
+                this.h = minmax(0, parseInt(str), 360)
+
+
+            this.htb.text = this.h.toString()
+            this.onChange(this.h, this.s, this.l)
+
+        }
+        this.add(this.htb)
+
+        this.stb.text = '100'
+        this.stb.align = 'center'
+        this.stb.baseline = 'middle'
+        this.stb.transform.translation.set(.75, 0.125)
+        this.stb.onFinish = (str: string) => {
+
+            if (!isNaN(parseInt(str)))
+                this.s = minmax(0, parseInt(str), 100)
+
+            this.stb.text = this.s.toString()
+            this.onChange(this.h, this.s, this.l)
+
+        }
+        this.add(this.stb)
+
+        this.ltb.text = '50'
+        this.ltb.align = 'center'
+        this.ltb.baseline = 'middle'
+        this.ltb.transform.translation.set(.75, -0.125)
+        this.ltb.onFinish = (str: string) => {
+
+            if (!isNaN(parseInt(str)))
+                this.l = minmax(0, parseInt(str), 100)
+
+            this.ltb.text = this.l.toString()
+            this.onChange(this.h, this.s, this.l)
+
+        }
+
+        this.add(this.ltb)
+
+    }
+
+    getHSLColor(): string { return `hsl(${this.h},${this.s}%,${this.l}%)` }
+
+    getHSL(): [number, number, number] { return [this.h, this.s, this.l] }
+
+    importHSL(h: number, s: number, l: number) {
+
+        this.h = h
+        this.s = s
+        this.l = l
+
+        this.htb.text = h.toString()
+        this.stb.text = s.toString()
+        this.ltb.text = l.toString()
+
+    }
+
+    getRGBColor(): string { return `rgb(${this.getRGB().join(',')})` }
+
+    getRGB(): [number, number, number] { return HSLToRGB(this.h, this.s, this.l) }
+
+    importRGB(r: number, g: number, b: number) { this.importHSL(...RGBToHSL(r, g, b)) }
+
+    getHexColor(): string {
+
+        return RBGToHexColor(...this.getRGB())
+
+    }
+
+    importHexColor(hexColor: string) {
+
+        this.importRGB(...HexColorToRGB(hexColor))
+
+    }
+
+    onChange(h: number, s: number, l: number): void { }
+
+    update(dt: number): void {
+
+        let mouse = this.input.mouse
+
+        if (mouse.leftClick) {
+
+            let hueRect = new Rectangle()
+
+            hueRect.parent = this
+            hueRect.w = 1.5
+            hueRect.h = .125
+            hueRect.left = -1
+            hueRect.bottom = 0.3125
+
+            if (hueRect.containsWorldVector(mouse.position)) {
+
+                console.log('hue')
+
+                return
+
+            }
+
+        }
+
+    }
 
     draw(ctx: CanvasRenderingContext2D): void {
 
         ctx.strokeStyle = 'black'
         ctx.lineWidth = .01
-        ctx.fillStyle = 'white'
-        ctx.fillRect(-1, -.5, 2, 1)
 
         ctx.fillStyle = rainbow
         ctx.fillRect(-1, 0.3125, 1.5, .125)
@@ -43,12 +161,12 @@ export class ColorPicker extends GameObject {
         ctx.fillStyle = lightness
         ctx.fillRect(-1, -0.1875, 1.5, .125)
 
-        ctx.fillStyle = `hsl(${this.h}, ${this.s}%, ${this.l}%)`
+        ctx.fillStyle = this.getHSLColor()
         ctx.fillRect(-1, -0.4375, 1.5, .125)
 
-        let h = map(this.h, 0, 360, -1, .5)
-        let s = map(this.s, 0, 100, -1, .5)
-        let l = map(this.l, 0, 100, -1, .5)
+        let h = map(Number(this.h), 0, 360, -1, .5)
+        let s = map(Number(this.s), 0, 100, -1, .5)
+        let l = map(Number(this.l), 0, 100, -1, .5)
 
         ctx.beginPath()
 
