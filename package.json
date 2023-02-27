@@ -9,7 +9,7 @@
         "clean": "rm -r js/*",
         "dev": "tsc -w"
     },
-    "author": "Kimiru_Laeli",
+    "author": "Kimiru",
     "license": "ISC",
     "devDependencies": {
         "@kimiru/peerjs-network": "^1.1.2",
