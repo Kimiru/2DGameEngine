@@ -1,4 +1,4 @@
-import { Network, NetworkEvents } from "../../node_modules/@kimiru/peerjs-network/js/Network.js";
+import { Network, NetworkEvents } from "../../PeerJS-Network/js/Network.js";
 import { GameObject } from "../basics/GameObject.js";
 import { GameScene } from "../basics/GameScene.js";
 import { badclone } from '../basics/Utils.js';

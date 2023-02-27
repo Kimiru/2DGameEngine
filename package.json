@@ -11,9 +11,6 @@
     },
     "author": "Kimiru",
     "license": "ISC",
-    "dependencies": {
-        "@kimiru/peerjs-network": "^1.1.2"
-    },
     "devDependencies": {
         "@types/node": "^18.11.10",
         "typescript": "^4.6.4"
