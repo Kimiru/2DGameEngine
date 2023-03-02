@@ -2,6 +2,7 @@ import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export class TextBox extends GameObject {
     static lock = false;
+    enabled = true;
     text = '';
     active = false;
     rect = new Rectangle(0, 0, 1, 1);
@@ -39,7 +40,7 @@ export class TextBox extends GameObject {
         this.drawAfterChildren();
     }
     toggleOn() {
-        if (this.active || TextBox.lock)
+        if (this.active || TextBox.lock || !this.enabled)
             return;
         this.rect.displayColor = 'blue';
         this.active = true;

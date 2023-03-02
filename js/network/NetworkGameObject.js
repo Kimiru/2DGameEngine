@@ -1,4 +1,4 @@
-import { Network, NetworkEvents } from "../../PeerJS-Network/js/Network.js";
+import { Network, NetworkEvent } from "../../PeerJS-Network/js/Network.js";
 import { GameObject } from "../basics/GameObject.js";
 import { GameScene } from "../basics/GameScene.js";
 import { badclone } from '../basics/Utils.js';
@@ -180,7 +180,7 @@ export class NetworkGameObject extends GameObject {
             }
         }
     }
-    Network.on(NetworkEvents.PEER_OPENED, function (id) {
+    Network.on(NetworkEvent.PEER_OPENED, function (id) {
         let nulls = NetworkGameObject.list.get(null) ?? [];
         for (let [key, object] of nulls) {
             object.synced = false;
@@ -190,14 +190,14 @@ export class NetworkGameObject extends GameObject {
         }
         NetworkGameObject.list.delete(null);
     });
-    Network.on(NetworkEvents.CLIENT_P2P_OPENED, function () {
+    Network.on(NetworkEvent.CLIENT_P2P_OPENED, function () {
         executeSync();
     });
-    Network.on(NetworkEvents.HOST_P2P_OPENED, function () {
+    Network.on(NetworkEvent.HOST_P2P_OPENED, function () {
         executeSync();
         Network.sendToAllExcept(this.id, { event: 'Network$newuser', data: this.id });
     });
-    Network.on(NetworkEvents.CLIENT_P2P_CLOSED, function () {
+    Network.on(NetworkEvent.CLIENT_P2P_CLOSED, function () {
         for (let [owner, objects] of NetworkGameObject.list) {
             if (owner === Network.id)
                 continue;
@@ -206,21 +206,21 @@ export class NetworkGameObject extends GameObject {
             NetworkGameObject.list.delete(owner);
         }
     });
-    Network.on(NetworkEvents.HOST_P2P_CLOSED, function () {
+    Network.on(NetworkEvent.HOST_P2P_CLOSED, function () {
         Network.sendToAll({ event: 'Network$killuser', data: this.id });
         let objects = NetworkGameObject.getRegistered(this.id);
         for (let object of objects)
             object.kill();
         NetworkGameObject.list.delete(this.id);
     });
-    Network.on(NetworkEvents.CLIENT_P2P_RECEIVED_DATA, function (message) {
+    Network.on(NetworkEvent.CLIENT_P2P_RECEIVED_DATA, function (message) {
         if (typeof message !== 'object')
             return;
         createObject(message);
         newuser(message);
         updates(message);
     });
-    Network.on(NetworkEvents.HOST_P2P_RECEIVED_DATA, function (message) {
+    Network.on(NetworkEvent.HOST_P2P_RECEIVED_DATA, function (message) {
         if (typeof message !== 'object')
             return;
         Network.sendToAllExcept(this.id, message);

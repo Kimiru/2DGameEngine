@@ -2,6 +2,7 @@ import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export declare class TextBox extends GameObject {
     static lock: boolean;
+    enabled: boolean;
     text: string;
     active: boolean;
     rect: Rectangle;

@@ -5,6 +5,8 @@ export class TextBox extends GameObject {
 
     static lock: boolean = false
 
+    enabled: boolean = true
+
     text: string = ''
     active: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
@@ -58,7 +60,7 @@ export class TextBox extends GameObject {
 
     toggleOn() {
 
-        if (this.active || TextBox.lock) return
+        if (this.active || TextBox.lock || !this.enabled) return
 
         this.rect.displayColor = 'blue'
         this.active = true
