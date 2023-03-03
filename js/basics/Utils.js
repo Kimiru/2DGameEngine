@@ -205,3 +205,6 @@ export function RBGToHexColor(r, g, b) {
         bStr = '0' + bStr;
     return `#${rStr}${gStr}${bStr}`;
 }
+export function resolveStringable(value) {
+    return typeof value === 'string' ? value : value();
+}

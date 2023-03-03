@@ -1,3 +1,4 @@
+import { resolveStringable, stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Rectangle } from "../geometry/Rectangle.js"
 import { Timer } from "../math/Timer.js"
@@ -5,7 +6,7 @@ import { Timer } from "../math/Timer.js"
 export class Button extends GameObject {
 
 
-    text: string = ''
+    text: stringable = ''
     #active: Timer = new Timer(0)
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
 
@@ -18,17 +19,18 @@ export class Button extends GameObject {
     activeColor: string = 'gray'
     onSound: string
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, margin = 4) {
+    constructor(text: stringable, fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, margin = 0) {
 
         super()
 
+        this.text = text
         this.fontSize = fontSize
         this.font = font
         this.width = width
         this.color = color
         this.onSound = onSound
 
-        this.rect.transform.scale.set(width + margin, fontSize + margin)
+        this.rect.transform.scale.set(width * 1.1 + margin, fontSize * 1.1 + margin)
 
         this.add(this.rect)
 
@@ -72,7 +74,7 @@ export class Button extends GameObject {
         ctx.font = `${this.fontSize}px ${this.font}`
         ctx.fillStyle = this.currentColor
 
-        ctx.fillText(this.text, 0, 0, this.width)
+        ctx.fillText(resolveStringable(this.text), 0, 0, this.width)
 
         ctx.restore()
 

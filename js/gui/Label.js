@@ -34,8 +34,9 @@ export class Label extends GameObject {
         ctx.font = `${this.fontSize}px ${this.font}`;
         ctx.textBaseline = this.baseline;
         ctx.fillStyle = this.color;
+        let text = typeof this.text === 'string' ? this.text : this.text();
         ctx.scale(1, -1);
-        ctx.fillText(this.text, 0, 0, this.maxWidth);
+        ctx.fillText(text, 0, 0, this.maxWidth);
         ctx.restore();
     }
 }

@@ -2,7 +2,7 @@ import { GameObject } from "../basics/GameObject.js"
 
 export class Label extends GameObject {
 
-    text: string = ''
+    text: string | (() => string) = ''
     align: CanvasTextAlign = 'left'
     fontSize: number = 12
     font: string = 'sans-serif'
@@ -20,7 +20,7 @@ export class Label extends GameObject {
      * @param {CanvasTextBaseline} baseline 
      * @param {number} maxWidth 
      */
-    constructor(text: string, align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number,) {
+    constructor(text: string | (() => string), align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number,) {
 
         super()
 
@@ -45,8 +45,10 @@ export class Label extends GameObject {
         ctx.textBaseline = this.baseline
         ctx.fillStyle = this.color
 
+        let text = typeof this.text === 'string' ? this.text : this.text()
+
         ctx.scale(1, -1)
-        ctx.fillText(this.text, 0, 0, this.maxWidth)
+        ctx.fillText(text, 0, 0, this.maxWidth)
 
         ctx.restore()
 

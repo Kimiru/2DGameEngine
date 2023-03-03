@@ -1,3 +1,4 @@
+import { resolveStringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 import { Timer } from "../math/Timer.js";
@@ -12,14 +13,15 @@ export class Button extends GameObject {
     color = 'white';
     activeColor = 'gray';
     onSound;
-    constructor(fontSize, width, font = 'sans-serif', color = 'black', onSound = null, margin = 4) {
+    constructor(text, fontSize, width, font = 'sans-serif', color = 'black', onSound = null, margin = 0) {
         super();
+        this.text = text;
         this.fontSize = fontSize;
         this.font = font;
         this.width = width;
         this.color = color;
         this.onSound = onSound;
-        this.rect.transform.scale.set(width + margin, fontSize + margin);
+        this.rect.transform.scale.set(width * 1.1 + margin, fontSize * 1.1 + margin);
         this.add(this.rect);
         this.drawAfterChildren();
     }
@@ -47,7 +49,7 @@ export class Button extends GameObject {
         ctx.textBaseline = 'middle';
         ctx.font = `${this.fontSize}px ${this.font}`;
         ctx.fillStyle = this.currentColor;
-        ctx.fillText(this.text, 0, 0, this.width);
+        ctx.fillText(resolveStringable(this.text), 0, 0, this.width);
         ctx.restore();
     }
 }

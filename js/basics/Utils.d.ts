@@ -42,3 +42,5 @@ export declare function HSLToRGB(h: number, s: number, l: number): [number, numb
 export declare function RGBToHSL(r: number, g: number, b: number): [number, number, number];
 export declare function HexColorToRGB(hexColor: string): [number, number, number];
 export declare function RBGToHexColor(r: number, g: number, b: number): string;
+export type stringable = string | (() => string);
+export declare function resolveStringable(value: stringable): string;

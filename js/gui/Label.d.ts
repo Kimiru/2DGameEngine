@@ -1,6 +1,6 @@
 import { GameObject } from "../basics/GameObject.js";
 export declare class Label extends GameObject {
-    text: string;
+    text: string | (() => string);
     align: CanvasTextAlign;
     fontSize: number;
     font: string;
@@ -17,6 +17,6 @@ export declare class Label extends GameObject {
      * @param {CanvasTextBaseline} baseline
      * @param {number} maxWidth
      */
-    constructor(text: string, align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number);
+    constructor(text: string | (() => string), align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number);
     draw(ctx: CanvasRenderingContext2D): void;
 }

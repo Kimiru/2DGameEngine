@@ -33,7 +33,6 @@ export class TextBox extends GameObject {
         this.onSound = onSound
         this.offSound = offSound
 
-
         this.rect.transform.scale.set(width * 1.1, fontSize * 1.1)
 
         this.add(this.rect)
