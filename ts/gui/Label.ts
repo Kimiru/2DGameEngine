@@ -39,16 +39,16 @@ export class Label extends GameObject {
     draw(ctx: CanvasRenderingContext2D): void {
 
         ctx.save()
+        ctx.scale(this.fontSize, -this.fontSize)
 
         ctx.textAlign = this.align
-        ctx.font = `${this.fontSize}px ${this.font}`
+        ctx.font = `1px ${this.font}`
         ctx.textBaseline = this.baseline
         ctx.fillStyle = this.color
 
         let text = typeof this.text === 'string' ? this.text : this.text()
 
-        ctx.scale(1, -1)
-        ctx.fillText(text, 0, 0, this.maxWidth)
+        ctx.fillText(text, 0, 0, this.maxWidth / this.fontSize)
 
         ctx.restore()
 

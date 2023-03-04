@@ -44,12 +44,12 @@ export class Button extends GameObject {
     onActive() { }
     draw(ctx) {
         ctx.save();
-        ctx.scale(1, -1);
+        ctx.scale(this.fontSize, -this.fontSize);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.font = `${this.fontSize}px ${this.font}`;
+        ctx.font = `1px ${this.font}`;
         ctx.fillStyle = this.currentColor;
-        ctx.fillText(resolveStringable(this.text), 0, 0, this.width);
+        ctx.fillText(resolveStringable(this.text), 0, 0, this.width / this.fontSize);
         ctx.restore();
     }
 }

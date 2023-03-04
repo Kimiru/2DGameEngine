@@ -1,3 +1,4 @@
+import { resolveStringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export class TextBox extends GameObject {
@@ -81,18 +82,19 @@ export class TextBox extends GameObject {
     draw(ctx) {
         ctx.save();
         if (this.align === 'left')
-            ctx.translate(-this.width / 2, 0);
-        if (this.align === 'right')
-            ctx.translate(this.width / 2, 0);
-        ctx.scale(1, -1);
+            ctx.transform(this.fontSize, 0, 0, -this.fontSize, -this.width / 2, 0);
+        else if (this.align === 'right')
+            ctx.transform(this.fontSize, 0, 0, -this.fontSize, this.width / 2, 0);
+        else
+            ctx.scale(this.fontSize, -this.fontSize);
         ctx.textAlign = this.align;
         ctx.textBaseline = this.baseline;
-        ctx.font = `${this.fontSize}px ${this.font}`;
+        ctx.font = `1px ${this.font}`;
         ctx.fillStyle = this.color;
         let txt = this.text + (this.active ? '_' : '');
         if (txt.length === 0)
-            txt = this.placeholder;
-        ctx.fillText(txt, 0, 0, this.width);
+            txt = resolveStringable(this.placeholder);
+        ctx.fillText(txt, 0, 0, this.width / this.fontSize);
         ctx.restore();
     }
 }
