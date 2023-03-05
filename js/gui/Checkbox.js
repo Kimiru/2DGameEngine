@@ -1,3 +1,4 @@
+import { resolveStringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 export class CheckBox extends GameObject {
@@ -30,7 +31,7 @@ export class CheckBox extends GameObject {
     draw(ctx) {
         let hs = this.size / 2;
         if (this.checked) {
-            ctx.strokeStyle = this.checkColor;
+            ctx.strokeStyle = resolveStringable(this.checkColor);
             ctx.beginPath();
             ctx.moveTo(-hs, -hs);
             ctx.lineTo(hs, hs);
@@ -38,7 +39,7 @@ export class CheckBox extends GameObject {
             ctx.lineTo(hs, -hs);
             ctx.stroke();
         }
-        ctx.strokeStyle = this.rectColor;
+        ctx.strokeStyle = resolveStringable(this.rectColor);
         ctx.strokeRect(-hs, -hs, this.size, this.size);
     }
 }

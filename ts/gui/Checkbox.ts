@@ -1,3 +1,4 @@
+import { resolveStringable, stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Rectangle } from "../geometry/Rectangle.js"
 
@@ -5,12 +6,12 @@ export class CheckBox extends GameObject {
 
     checked: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
-    rectColor: string
-    checkColor: string
+    rectColor: stringable
+    checkColor: stringable
     size: number
     sound: string
 
-    constructor(checked: boolean = false, size: number = 10, rectColor: string = 'white', checkColor: string = 'red', sound: string = null) {
+    constructor(checked: boolean = false, size: number = 10, rectColor: stringable = 'white', checkColor: stringable = 'red', sound: string = null) {
 
         super()
 
@@ -48,7 +49,7 @@ export class CheckBox extends GameObject {
 
         if (this.checked) {
 
-            ctx.strokeStyle = this.checkColor
+            ctx.strokeStyle = resolveStringable(this.checkColor)
             ctx.beginPath()
             ctx.moveTo(-hs, -hs)
             ctx.lineTo(hs, hs)
@@ -58,7 +59,7 @@ export class CheckBox extends GameObject {
 
         }
 
-        ctx.strokeStyle = this.rectColor
+        ctx.strokeStyle = resolveStringable(this.rectColor)
 
         ctx.strokeRect(-hs, -hs, this.size, this.size)
 

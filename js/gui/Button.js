@@ -25,7 +25,7 @@ export class Button extends GameObject {
         this.add(this.rect);
         this.drawAfterChildren();
     }
-    get currentColor() { return this.active ? this.activeColor : this.color; }
+    get currentColor() { return resolveStringable(this.active ? this.activeColor : this.color); }
     update(dt) {
         let mouse = this.input.mouse;
         if (mouse.leftClick) {

@@ -90,7 +90,7 @@ export class TextBox extends GameObject {
         ctx.textAlign = this.align;
         ctx.textBaseline = this.baseline;
         ctx.font = `1px ${this.font}`;
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = resolveStringable(this.color);
         let txt = this.text + (this.active ? '_' : '');
         if (txt.length === 0)
             txt = resolveStringable(this.placeholder);

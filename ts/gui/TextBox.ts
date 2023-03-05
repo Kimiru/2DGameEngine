@@ -15,7 +15,7 @@ export class TextBox extends GameObject {
     fontSize: number
     font: string
     width: number
-    color: string = 'white'
+    color: stringable = 'white'
     onSound: string
     offSound: string
     align: CanvasTextAlign = 'left'
@@ -23,7 +23,7 @@ export class TextBox extends GameObject {
 
     placeholder: stringable = ''
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, offSound: string = null) {
+    constructor(fontSize: number, width: number, font: string = 'sans-serif', color: stringable = 'black', onSound: string = null, offSound: string = null) {
 
         super()
 
@@ -130,7 +130,7 @@ export class TextBox extends GameObject {
         ctx.textAlign = this.align
         ctx.textBaseline = this.baseline
         ctx.font = `1px ${this.font}`
-        ctx.fillStyle = this.color
+        ctx.fillStyle = resolveStringable(this.color)
 
         let txt = this.text + (this.active ? '_' : '')
         if (txt.length === 0) txt = resolveStringable(this.placeholder)

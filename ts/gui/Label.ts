@@ -1,12 +1,13 @@
+import { resolveStringable, stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 
 export class Label extends GameObject {
 
-    text: string | (() => string) = ''
+    text: stringable = ''
     align: CanvasTextAlign = 'left'
     fontSize: number = 12
     font: string = 'sans-serif'
-    color: string = 'white'
+    color: stringable = 'white'
     baseline: CanvasTextBaseline = 'middle'
     maxWidth: number = 300
 
@@ -20,7 +21,7 @@ export class Label extends GameObject {
      * @param {CanvasTextBaseline} baseline 
      * @param {number} maxWidth 
      */
-    constructor(text: string | (() => string), align: CanvasTextAlign, fontSize: number, font: string, color: string, baseline: CanvasTextBaseline, maxWidth: number,) {
+    constructor(text: stringable, align: CanvasTextAlign, fontSize: number, font: string, color: stringable, baseline: CanvasTextBaseline, maxWidth: number,) {
 
         super()
 
@@ -44,11 +45,9 @@ export class Label extends GameObject {
         ctx.textAlign = this.align
         ctx.font = `1px ${this.font}`
         ctx.textBaseline = this.baseline
-        ctx.fillStyle = this.color
+        ctx.fillStyle = resolveStringable(this.color)
 
-        let text = typeof this.text === 'string' ? this.text : this.text()
-
-        ctx.fillText(text, 0, 0, this.maxWidth / this.fontSize)
+        ctx.fillText(resolveStringable(this.text), 0, 0, this.maxWidth / this.fontSize)
 
         ctx.restore()
 

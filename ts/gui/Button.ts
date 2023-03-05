@@ -15,11 +15,11 @@ export class Button extends GameObject {
     fontSize: number
     font: string
     width: number
-    color: string = 'white'
-    activeColor: string = 'gray'
+    color: stringable = 'white'
+    activeColor: stringable = 'gray'
     onSound: string
 
-    constructor(text: stringable, fontSize: number, width: number, font: string = 'sans-serif', color = 'black', onSound: string = null, margin = 0) {
+    constructor(text: stringable, fontSize: number, width: number, font: string = 'sans-serif', color: stringable = 'black', onSound: string = null, margin = 0) {
 
         super()
 
@@ -38,7 +38,7 @@ export class Button extends GameObject {
 
     }
 
-    get currentColor(): string { return this.active ? this.activeColor : this.color }
+    get currentColor(): string { return resolveStringable(this.active ? this.activeColor : this.color) }
 
     update(dt: number): void {
 

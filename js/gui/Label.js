@@ -1,3 +1,4 @@
+import { resolveStringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 export class Label extends GameObject {
     text = '';
@@ -34,9 +35,8 @@ export class Label extends GameObject {
         ctx.textAlign = this.align;
         ctx.font = `1px ${this.font}`;
         ctx.textBaseline = this.baseline;
-        ctx.fillStyle = this.color;
-        let text = typeof this.text === 'string' ? this.text : this.text();
-        ctx.fillText(text, 0, 0, this.maxWidth / this.fontSize);
+        ctx.fillStyle = resolveStringable(this.color);
+        ctx.fillText(resolveStringable(this.text), 0, 0, this.maxWidth / this.fontSize);
         ctx.restore();
     }
 }
