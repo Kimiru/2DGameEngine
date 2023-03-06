@@ -4,17 +4,14 @@ import { Rectangle } from "../geometry/Rectangle.js";
 export class CheckBox extends GameObject {
     checked = false;
     rect = new Rectangle(0, 0, 1, 1);
-    rectColor;
-    checkColor;
-    size;
+    options = {};
     sound;
-    constructor(checked = false, size = 10, rectColor = 'white', checkColor = 'red', sound = null) {
+    constructor(checked = false, options = {}, sound = null) {
         super();
         this.checked = checked;
-        this.rectColor = rectColor;
-        this.checkColor = checkColor;
-        this.size = size;
+        this.options = options;
         this.sound = sound;
+        let size = this.options.size ?? 1;
         this.rect.transform.scale.set(size, size);
         this.add(this.rect);
     }
@@ -29,9 +26,11 @@ export class CheckBox extends GameObject {
     }
     onChange() { }
     draw(ctx) {
-        let hs = this.size / 2;
+        let size = this.options.size ?? 1;
+        let hs = size / 2;
+        ctx.lineWidth = this.options.lineWidth ?? .1;
         if (this.checked) {
-            ctx.strokeStyle = resolveStringable(this.checkColor);
+            ctx.strokeStyle = resolveStringable(this.options.outlineColor ?? 'black');
             ctx.beginPath();
             ctx.moveTo(-hs, -hs);
             ctx.lineTo(hs, hs);
@@ -39,7 +38,7 @@ export class CheckBox extends GameObject {
             ctx.lineTo(hs, -hs);
             ctx.stroke();
         }
-        ctx.strokeStyle = resolveStringable(this.rectColor);
-        ctx.strokeRect(-hs, -hs, this.size, this.size);
+        ctx.strokeStyle = resolveStringable(this.options.color ?? 'black');
+        ctx.strokeRect(-hs, -hs, size, size);
     }
 }

@@ -27,7 +27,7 @@ export class Button extends GameObject {
         this.options = options
         this.onSound = onSound
 
-        this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.maxWidth * 1.1 + margin)
+        this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.size * 1.1 + margin)
 
         this.add(this.rect)
 

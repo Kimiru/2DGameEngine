@@ -1,4 +1,4 @@
-import { resolveStringable, stringable } from "../2DGameEngine.js"
+import { resolveStringable, textoptions } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Rectangle } from "../geometry/Rectangle.js"
 
@@ -6,20 +6,18 @@ export class CheckBox extends GameObject {
 
     checked: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
-    rectColor: stringable
-    checkColor: stringable
-    size: number
+    options: textoptions = {}
     sound: string
 
-    constructor(checked: boolean = false, size: number = 10, rectColor: stringable = 'white', checkColor: stringable = 'red', sound: string = null) {
+    constructor(checked: boolean = false, options: textoptions = {}, sound: string = null) {
 
         super()
 
         this.checked = checked
-        this.rectColor = rectColor
-        this.checkColor = checkColor
-        this.size = size
+        this.options = options
         this.sound = sound
+
+        let size = this.options.size ?? 1
 
         this.rect.transform.scale.set(size, size)
         this.add(this.rect)
@@ -45,11 +43,15 @@ export class CheckBox extends GameObject {
 
     draw(ctx: CanvasRenderingContext2D): void {
 
-        let hs = this.size / 2
+        let size = this.options.size ?? 1
+
+        let hs = size / 2
+
+        ctx.lineWidth = this.options.lineWidth ?? .1
 
         if (this.checked) {
 
-            ctx.strokeStyle = resolveStringable(this.checkColor)
+            ctx.strokeStyle = resolveStringable(this.options.outlineColor ?? 'black')
             ctx.beginPath()
             ctx.moveTo(-hs, -hs)
             ctx.lineTo(hs, hs)
@@ -59,9 +61,9 @@ export class CheckBox extends GameObject {
 
         }
 
-        ctx.strokeStyle = resolveStringable(this.rectColor)
+        ctx.strokeStyle = resolveStringable(this.options.color ?? 'black')
 
-        ctx.strokeRect(-hs, -hs, this.size, this.size)
+        ctx.strokeRect(-hs, -hs, size, size)
 
     }
 
