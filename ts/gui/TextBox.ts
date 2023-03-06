@@ -1,6 +1,7 @@
 import { resolveStringable, stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Rectangle } from "../geometry/Rectangle.js"
+import { drawText, textoptions } from "./Utils.js"
 
 export class TextBox extends GameObject {
 
@@ -12,29 +13,22 @@ export class TextBox extends GameObject {
     active: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
 
-    fontSize: number
-    font: string
-    width: number
-    color: stringable = 'white'
+    options: textoptions = {}
+
     onSound: string
     offSound: string
-    align: CanvasTextAlign = 'left'
-    baseline: CanvasTextBaseline = 'middle'
 
     placeholder: stringable = ''
 
-    constructor(fontSize: number, width: number, font: string = 'sans-serif', color: stringable = 'black', onSound: string = null, offSound: string = null) {
+    constructor(defaultText: string = '', options: textoptions = {}, onSound: string = null, offSound: string = null) {
 
         super()
 
-        this.fontSize = fontSize
-        this.font = font
-        this.width = width
-        this.color = color
+        this.options = options
         this.onSound = onSound
         this.offSound = offSound
 
-        this.rect.transform.scale.set(width * 1.1, fontSize * 1.1)
+        this.rect.transform.scale.set(options.maxWidth * 1.1, options.size * 1.1)
 
         this.add(this.rect)
 
@@ -119,23 +113,16 @@ export class TextBox extends GameObject {
 
         ctx.save()
 
-        if (this.align === 'left')
-            ctx.transform(this.fontSize, 0, 0, -this.fontSize, -this.width / 2, 0)
+        if (this.options.align === 'left')
+            ctx.translate(-this.options.maxWidth / 2, 0)
 
-        else if (this.align === 'right')
-            ctx.transform(this.fontSize, 0, 0, -this.fontSize, this.width / 2, 0)
-        else
-            ctx.scale(this.fontSize, -this.fontSize)
+        else if (this.options.align === 'right')
+            ctx.translate(this.options.maxWidth / 2, 0)
 
-        ctx.textAlign = this.align
-        ctx.textBaseline = this.baseline
-        ctx.font = `1px ${this.font}`
-        ctx.fillStyle = resolveStringable(this.color)
-
-        let txt = this.text + (this.active ? '_' : '')
+        let txt = resolveStringable(this.text) + (this.active ? '_' : '')
         if (txt.length === 0) txt = resolveStringable(this.placeholder)
 
-        ctx.fillText(txt, 0, 0, this.width / this.fontSize)
+        drawText(ctx, txt, this.options)
 
         ctx.restore()
 

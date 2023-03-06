@@ -346,5 +346,6 @@ export function RBGToHexColor(r: number, g: number, b: number): string {
 export type stringable = string | (() => string)
 
 export function resolveStringable(value: stringable) {
+    if (value === null) return ''
     return typeof value === 'string' ? value : value()
 }

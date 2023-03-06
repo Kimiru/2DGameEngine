@@ -1,13 +1,9 @@
 import { stringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
+import { textoptions } from "./Utils.js";
 export declare class Label extends GameObject {
     text: stringable;
-    align: CanvasTextAlign;
-    fontSize: number;
-    font: string;
-    color: stringable;
-    baseline: CanvasTextBaseline;
-    maxWidth: number;
+    options: textoptions;
     /**
      *
      * @param {string} text
@@ -18,6 +14,6 @@ export declare class Label extends GameObject {
      * @param {CanvasTextBaseline} baseline
      * @param {number} maxWidth
      */
-    constructor(text: stringable, align: CanvasTextAlign, fontSize: number, font: string, color: stringable, baseline: CanvasTextBaseline, maxWidth: number);
+    constructor(text: stringable, options?: textoptions);
     draw(ctx: CanvasRenderingContext2D): void;
 }

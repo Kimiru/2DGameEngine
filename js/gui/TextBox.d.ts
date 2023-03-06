@@ -1,22 +1,18 @@
 import { stringable } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
+import { textoptions } from "./Utils.js";
 export declare class TextBox extends GameObject {
     static lock: boolean;
     enabled: boolean;
     text: string;
     active: boolean;
     rect: Rectangle;
-    fontSize: number;
-    font: string;
-    width: number;
-    color: stringable;
+    options: textoptions;
     onSound: string;
     offSound: string;
-    align: CanvasTextAlign;
-    baseline: CanvasTextBaseline;
     placeholder: stringable;
-    constructor(fontSize: number, width: number, font?: string, color?: stringable, onSound?: string, offSound?: string);
+    constructor(defaultText?: string, options?: textoptions, onSound?: string, offSound?: string);
     toggleOn(): void;
     toggleOff(): void;
     toggle(): void;

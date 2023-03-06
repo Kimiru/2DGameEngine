@@ -2,6 +2,7 @@ import { resolveStringable, stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Rectangle } from "../geometry/Rectangle.js"
 import { Timer } from "../math/Timer.js"
+import { drawText, textoptions } from "./Utils.js"
 
 export class Button extends GameObject {
 
@@ -12,25 +13,21 @@ export class Button extends GameObject {
 
     get active(): boolean { return this.#active.lessThan(150) }
 
-    fontSize: number
-    font: string
-    width: number
+    options: textoptions = {}
+
     color: stringable = 'white'
     activeColor: stringable = 'gray'
     onSound: string
 
-    constructor(text: stringable, fontSize: number, width: number, font: string = 'sans-serif', color: stringable = 'black', onSound: string = null, margin = 0) {
+    constructor(text: stringable, options: textoptions = {}, onSound: string = null, margin = 0) {
 
         super()
 
         this.text = text
-        this.fontSize = fontSize
-        this.font = font
-        this.width = width
-        this.color = color
+        this.options = options
         this.onSound = onSound
 
-        this.rect.transform.scale.set(width * 1.1 + margin, fontSize * 1.1 + margin)
+        this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.maxWidth * 1.1 + margin)
 
         this.add(this.rect)
 
@@ -66,17 +63,7 @@ export class Button extends GameObject {
 
     draw(ctx: CanvasRenderingContext2D): void {
 
-        ctx.save()
-
-        ctx.scale(this.fontSize, -this.fontSize)
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.font = `1px ${this.font}`
-        ctx.fillStyle = this.currentColor
-
-        ctx.fillText(resolveStringable(this.text), 0, 0, this.width / this.fontSize)
-
-        ctx.restore()
+        drawText(ctx, this.text, this.options)
 
     }
 

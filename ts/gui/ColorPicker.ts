@@ -1,4 +1,5 @@
 import { GameObject, HexColorToRGB, HSLToRGB, map, minmax, RBGToHexColor, Rectangle, RGBToHSL, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js'
+import { textoptions } from './Utils.js'
 
 const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')
 
@@ -11,13 +12,22 @@ rainbow.addColorStop(2 / 3, 'hsl(240, 100%, 50%')
 rainbow.addColorStop(5 / 6, 'hsl(300, 100%, 50%')
 rainbow.addColorStop(1, 'hsl(360, 100%, 50%')
 
+let textboxOptions: textoptions = {
+    size: .15,
+    font: 'sans-serif',
+    color: 'black',
+    maxWidth: 4 / 1.1,
+    align: 'center',
+    baseline: 'middle'
+}
+
 export class ColorPicker extends GameObject {
 
 
 
-    htb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
-    stb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
-    ltb: TextBox = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black')
+    htb: TextBox = new TextBox('0', textboxOptions)
+    stb: TextBox = new TextBox('100', textboxOptions)
+    ltb: TextBox = new TextBox('50', textboxOptions)
 
     h: number = 0
     s: number = 100
@@ -27,9 +37,6 @@ export class ColorPicker extends GameObject {
 
         super()
 
-        this.htb.text = '0'
-        this.htb.align = 'center'
-        this.htb.baseline = 'middle'
         this.htb.transform.translation.set(.75, 0.375)
         this.htb.onFinish = (str: string) => {
 
@@ -43,9 +50,6 @@ export class ColorPicker extends GameObject {
         }
         this.add(this.htb)
 
-        this.stb.text = '100'
-        this.stb.align = 'center'
-        this.stb.baseline = 'middle'
         this.stb.transform.translation.set(.75, 0.125)
         this.stb.onFinish = (str: string) => {
 
@@ -58,9 +62,6 @@ export class ColorPicker extends GameObject {
         }
         this.add(this.stb)
 
-        this.ltb.text = '50'
-        this.ltb.align = 'center'
-        this.ltb.baseline = 'middle'
         this.ltb.transform.translation.set(.75, -0.125)
         this.ltb.onFinish = (str: string) => {
 

@@ -8,18 +8,23 @@ rainbow.addColorStop(1 / 2, 'hsl(180, 100%, 50%');
 rainbow.addColorStop(2 / 3, 'hsl(240, 100%, 50%');
 rainbow.addColorStop(5 / 6, 'hsl(300, 100%, 50%');
 rainbow.addColorStop(1, 'hsl(360, 100%, 50%');
+let textboxOptions = {
+    size: .15,
+    font: 'sans-serif',
+    color: 'black',
+    maxWidth: 4 / 1.1,
+    align: 'center',
+    baseline: 'middle'
+};
 export class ColorPicker extends GameObject {
-    htb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
-    stb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
-    ltb = new TextBox(.15, .4 / 1.1, 'sans-serif', 'black');
+    htb = new TextBox('0', textboxOptions);
+    stb = new TextBox('100', textboxOptions);
+    ltb = new TextBox('50', textboxOptions);
     h = 0;
     s = 100;
     l = 50;
     constructor() {
         super();
-        this.htb.text = '0';
-        this.htb.align = 'center';
-        this.htb.baseline = 'middle';
         this.htb.transform.translation.set(.75, 0.375);
         this.htb.onFinish = (str) => {
             if (!isNaN(parseInt(str)))
@@ -28,9 +33,6 @@ export class ColorPicker extends GameObject {
             this.onChange(this.h, this.s, this.l);
         };
         this.add(this.htb);
-        this.stb.text = '100';
-        this.stb.align = 'center';
-        this.stb.baseline = 'middle';
         this.stb.transform.translation.set(.75, 0.125);
         this.stb.onFinish = (str) => {
             if (!isNaN(parseInt(str)))
@@ -39,9 +41,6 @@ export class ColorPicker extends GameObject {
             this.onChange(this.h, this.s, this.l);
         };
         this.add(this.stb);
-        this.ltb.text = '50';
-        this.ltb.align = 'center';
-        this.ltb.baseline = 'middle';
         this.ltb.transform.translation.set(.75, -0.125);
         this.ltb.onFinish = (str) => {
             if (!isNaN(parseInt(str)))

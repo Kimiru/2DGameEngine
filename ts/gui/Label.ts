@@ -1,15 +1,11 @@
-import { resolveStringable, stringable } from "../2DGameEngine.js"
+import { stringable } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
+import { drawText, textoptions } from "./Utils.js"
 
 export class Label extends GameObject {
 
     text: stringable = ''
-    align: CanvasTextAlign = 'left'
-    fontSize: number = 12
-    font: string = 'sans-serif'
-    color: stringable = 'white'
-    baseline: CanvasTextBaseline = 'middle'
-    maxWidth: number = 300
+    options: textoptions = {}
 
     /**
      * 
@@ -21,17 +17,12 @@ export class Label extends GameObject {
      * @param {CanvasTextBaseline} baseline 
      * @param {number} maxWidth 
      */
-    constructor(text: stringable, align: CanvasTextAlign, fontSize: number, font: string, color: stringable, baseline: CanvasTextBaseline, maxWidth: number,) {
+    constructor(text: stringable, options: textoptions = {}) {
 
         super()
 
         this.text = text
-        this.align = align
-        this.fontSize = fontSize
-        this.font = font
-        this.color = color
-        this.baseline = baseline
-        this.maxWidth = maxWidth
+        this.options = options
 
         this.drawAfterChildren()
 
@@ -39,17 +30,7 @@ export class Label extends GameObject {
 
     draw(ctx: CanvasRenderingContext2D): void {
 
-        ctx.save()
-        ctx.scale(this.fontSize, -this.fontSize)
-
-        ctx.textAlign = this.align
-        ctx.font = `1px ${this.font}`
-        ctx.textBaseline = this.baseline
-        ctx.fillStyle = resolveStringable(this.color)
-
-        ctx.fillText(resolveStringable(this.text), 0, 0, this.maxWidth / this.fontSize)
-
-        ctx.restore()
+        drawText(ctx, this.text, this.options)
 
     }
 

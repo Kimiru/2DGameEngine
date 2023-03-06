@@ -22,6 +22,7 @@ export * from './gui/GamepadDisplay.js';
 export * from './gui/Label.js';
 export * from './gui/MouseCursor.js';
 export * from './gui/TextBox.js';
+export * from './gui/Utils.js';
 export * from './images/Drawable.js';
 export * from './images/ImageManipulator.js';
 export * from './images/SpriteSheet.js';
