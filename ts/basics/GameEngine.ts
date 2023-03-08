@@ -269,8 +269,8 @@ export class GameEngine {
 
             if (this.#currentScene) {
 
-                this.#currentScene.onSet()
                 this.#currentScene.engine = this
+                this.#currentScene.onSet()
 
             }
 

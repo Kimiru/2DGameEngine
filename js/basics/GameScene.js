@@ -20,6 +20,7 @@ export class GameScene {
     children = [];
     camera = null;
     engine = null;
+    parentScene = null;
     renderingType = RenderingType.INFINITY;
     /**
      * Create a new empty GameScene
@@ -27,6 +28,11 @@ export class GameScene {
     constructor() {
     }
     store() { GameScene.list.set(this.id, this); }
+    exit() {
+        if (!this.engine)
+            return;
+        this.engine.setScene(this.parentScene);
+    }
     /**
      * Update the scene and its child
      * Is called by the GameEngine to update the scene

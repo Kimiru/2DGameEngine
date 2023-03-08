@@ -33,7 +33,7 @@ export class RayCastView {
             points.push([angle2, pt2 ?? position.clone().add(ray2.direction.multS(infinity)), pt2?.clone().sub(position) ?? ray2.direction]);
         }
         points.sort((a, b) => b[0] - a[0]);
-        let polygon = new Polygon(points.map(e => e[2]));
+        let polygon = new Polygon(points.map(e => e[2].add(position)));
         return polygon;
     }
     static cropPolygon(ctx, polygon) {

@@ -44,6 +44,7 @@ export declare class Polygon extends GameObject {
      * @param {CanvasRenderingContext2D} ctx
      */
     draw(ctx: CanvasRenderingContext2D): void;
+    path(ctx: CanvasRenderingContext2D): void;
     containsVector(vector: Vector): boolean;
     containsWorldVector(vector: Vector): boolean;
     static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[];

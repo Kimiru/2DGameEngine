@@ -368,6 +368,17 @@ export class Polygon extends GameObject {
 
     }
 
+    path(ctx: CanvasRenderingContext2D) {
+
+        ctx.beginPath()
+        ctx.moveTo(this.outer[0].x, this.outer[0].y)
+        for (let index = 1; index <= this.outer.length; index++) {
+            ctx.lineTo(this.outer[index % this.outer.length].x, this.outer[index % this.outer.length].y)
+        }
+        ctx.closePath()
+
+    }
+
     containsVector(vector: Vector): boolean {
 
         let segments = this.getSegments()

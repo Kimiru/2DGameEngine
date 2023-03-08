@@ -177,8 +177,8 @@ export class GameEngine {
             this.#nextScene = undefined;
             this.resize(this.#width, this.#height, this.#scaling);
             if (this.#currentScene) {
-                this.#currentScene.onSet();
                 this.#currentScene.engine = this;
+                this.#currentScene.onSet();
             }
         }
     }

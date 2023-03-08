@@ -29,6 +29,7 @@ export class GameScene {
     children: GameObject[] = []
     camera: Camera = null
     engine: GameEngine = null
+    parentScene: GameScene = null
 
     renderingType: RenderingType = RenderingType.INFINITY
 
@@ -40,6 +41,14 @@ export class GameScene {
     }
 
     store(): void { GameScene.list.set(this.id, this) }
+
+    exit(): void {
+
+        if (!this.engine) return
+
+        this.engine.setScene(this.parentScene)
+
+    }
 
     /**
      * Update the scene and its child

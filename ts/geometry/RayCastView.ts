@@ -49,7 +49,7 @@ export class RayCastView {
 
         points.sort((a, b) => b[0] - a[0])
 
-        let polygon = new Polygon(points.map(e => e[2]))
+        let polygon = new Polygon(points.map(e => e[2].add(position)))
 
         return polygon
 

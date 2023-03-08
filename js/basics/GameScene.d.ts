@@ -20,12 +20,14 @@ export declare class GameScene {
     children: GameObject[];
     camera: Camera;
     engine: GameEngine;
+    parentScene: GameScene;
     renderingType: RenderingType;
     /**
      * Create a new empty GameScene
      */
     constructor();
     store(): void;
+    exit(): void;
     /**
      * Update the scene and its child
      * Is called by the GameEngine to update the scene
