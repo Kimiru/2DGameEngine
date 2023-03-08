@@ -28,6 +28,10 @@ export class RayCastView {
             let pt = ray.cast(segments);
             let pt1 = ray1.cast(segments);
             let pt2 = ray2.cast(segments);
+            if (pt && pt1)
+                console.log(pt?.distanceTo(pt1));
+            if (pt && pt2)
+                console.log(pt?.distanceTo(pt2));
             points.push([angle, pt ?? position.clone().add(ray.direction.multS(infinity)), pt?.clone().sub(position) ?? ray.direction]);
             points.push([angle1, pt1 ?? position.clone().add(ray1.direction.multS(infinity)), pt1?.clone().sub(position) ?? ray1.direction]);
             points.push([angle2, pt2 ?? position.clone().add(ray2.direction.multS(infinity)), pt2?.clone().sub(position) ?? ray2.direction]);

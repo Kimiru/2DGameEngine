@@ -1,6 +1,25 @@
 import { GameObject } from "../basics/GameObject.js";
 import { Vector } from "../math/Vector.js";
 import { Segment } from "./Segment.js";
+import '../../node_modules/polybooljs/dist/polybool.js';
+declare global {
+    interface Window {
+        PolyBool: {
+            union: polybooloperation;
+            intersect: polybooloperation;
+            difference: polybooloperation;
+            differenceRev: polybooloperation;
+            xor: polybooloperation;
+        };
+    }
+}
+export type polypoint = [number, number];
+export type polyregion = polypoint[];
+export type polybool = {
+    regions: polyregion[];
+    inverted: boolean;
+};
+export type polybooloperation = (p0: polybool, p1: polybool) => polybool;
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close
@@ -17,10 +36,6 @@ export declare class Polygon extends GameObject {
      */
     constructor(outer?: Vector[], ...inners: Vector[][]);
     static isClockwise(vectors: Vector[]): boolean;
-    getOuter(index: number): Vector;
-    hasInners(): boolean;
-    popInners(): Polygon[];
-    transferInnersToOuter(): void;
     clone(): Polygon;
     /**
      * Returns a list of points, such that it represents the polygon with theorically no holes. Duplicates the first Vector at the end of the list for practical purposes
@@ -47,5 +62,14 @@ export declare class Polygon extends GameObject {
     path(ctx: CanvasRenderingContext2D): void;
     containsVector(vector: Vector): boolean;
     containsWorldVector(vector: Vector): boolean;
-    static GreinerHormann(subject: Polygon, clipper: Polygon, subjectForward: boolean, clipperForward: boolean): Polygon[];
+    get polybool(): polybool;
+    set polybool(polybool: polybool);
+    static polygonToPolybool(polygons: Polygon[]): polybool;
+    static polyboolToPolygons(polybool: polybool): Polygon[];
+    static union(source: Polygon[], clipper: Polygon[]): Polygon[];
+    static intersect(source: Polygon[], clipper: Polygon[]): Polygon[];
+    static difference(source: Polygon[], clipper: Polygon[]): Polygon[];
+    static differenceRev(source: Polygon[], clipper: Polygon[]): Polygon[];
+    static xor(source: Polygon[], clipper: Polygon[]): Polygon[];
+    static polyboolPath(ctx: CanvasRenderingContext2D, polybool: polybool): void;
 }
