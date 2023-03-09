@@ -148,9 +148,9 @@ export class Polygon extends GameObject {
     static union(source, clipper) {
         return this.clip(source, clipper, window.ClipperLib.ClipType.ctUnion);
     }
-    // static intersect(source: Polygon[], clipper: Polygon[]): Polygon[] {
-    //     return this.#clip(source, clipper, window.PolyBool.intersect)
-    // }
+    static intersect(source, clipper) {
+        return this.clip(source, clipper, window.ClipperLib.ClipType.ctIntersection);
+    }
     static difference(source, clipper) {
         return this.clip(source, clipper, window.ClipperLib.ClipType.ctDifference);
     }

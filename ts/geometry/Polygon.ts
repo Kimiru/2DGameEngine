@@ -271,11 +271,11 @@ export class Polygon extends GameObject {
 
     }
 
-    // static intersect(source: Polygon[], clipper: Polygon[]): Polygon[] {
+    static intersect(source: clipperpaths, clipper: clipperpaths): clipperpaths {
 
-    //     return this.#clip(source, clipper, window.PolyBool.intersect)
+        return this.clip(source, clipper, window.ClipperLib.ClipType.ctIntersection)
 
-    // }
+    }
 
     static difference(source: clipperpaths, clipper: clipperpaths): clipperpaths {
 

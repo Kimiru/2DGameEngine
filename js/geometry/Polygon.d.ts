@@ -99,6 +99,7 @@ export declare class Polygon extends GameObject {
     get clipperpaths(): clipperpaths;
     static clip(sourcePaths: clipperpaths, clippingPaths: clipperpaths, clipType: cliptype, subjectPolyFillType?: polyfilltype, clipperPolyFillType?: polyfilltype): clipperpaths;
     static union(source: clipperpaths, clipper: clipperpaths): clipperpaths;
+    static intersect(source: clipperpaths, clipper: clipperpaths): clipperpaths;
     static difference(source: clipperpaths, clipper: clipperpaths): clipperpaths;
     static deFloat(paths: clipperpaths, precision?: number): clipperpaths;
     static inFloat(paths: clipperpaths, precision?: number): clipperpaths;
