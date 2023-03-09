@@ -4,6 +4,7 @@ import { Vector } from "../math/Vector.js"
 import { Ray } from "./Ray.js"
 import { Segment } from "./Segment.js"
 
+import '../../node_modules/clipper-lib/clipper.js'
 import '../../node_modules/polybooljs/dist/polybool.js'
 
 declare global {
@@ -16,8 +17,27 @@ declare global {
             xor: polybooloperation,
             epsilon: (number) => number
         }
+        ClipperLib: {
+            Clipper: new () => Clipper,
+            PolyType: { ptSubject: 0, ptClip: 1 },
+            ClipType: { ctIntersection: 0, ctUnion: 1, ctDifference: 2, ctXor: 3 },
+            PolyFillType: { pftEvenOdd: 0, pftNonZero: 1, pftPositive: 2, pftNegative: 3 }
+        }
     }
 }
+
+
+export type Clipper = {
+    AddPaths: (paths: clipperpaths, polytype: polytype, closed: boolean) => void,
+    Execute: (cliptype: cliptype, solution: clipperpaths, subjFillType: polyfilltype, clipFillType: polyfilltype) => void
+}
+export type cliptype = number
+export type polytype = number
+export type polyfilltype = number
+
+export type clipperpoint = { X: number, Y: number }
+export type clipperpath = clipperpoint[]
+export type clipperpaths = clipperpath[]
 
 export type polypoint = [number, number]
 export type polyregion = polypoint[]
@@ -211,141 +231,112 @@ export class Polygon extends GameObject {
 
     }
 
-    get polybool(): polybool {
+    get clipperpaths(): clipperpaths {
 
-        return {
-            regions: [
-                this.outer.map(v => [v.x, v.y]),
-                ...this.inners.map(vs => vs.map(v => [v.x, v.y] as polypoint))
-            ],
-            inverted: false
-        }
+        return [
+            this.outer.map(v => ({ X: v.x, Y: v.y })),
+            ...this.inners.map(vs => vs.map(v => ({ X: v.x, Y: v.y })))
+        ]
 
     }
 
-    set polybool(polybool: polybool) {
+    // set polybool(polybool: polybool) {
 
-        this.outer = polybool.regions[0].map(point => new Vector(...point))
-        this.inners = polybool.regions.slice(1).map(region => region.map(point => new Vector(...point)))
+    //     this.outer = polybool.regions[0].map(point => new Vector(...point))
+    //     this.inners = polybool.regions.slice(1).map(region => region.map(point => new Vector(...point)))
 
-    }
-
-    static polygonToPolybool(polygons: Polygon[]): polybool {
-
-        let polybool = {
-            regions: [],
-            inverted: false
-        }
-
-        for (let polygon of polygons)
-            polybool.regions.push(...polygon.polybool.regions)
-
-        return polybool
-
-    }
-
-    static polyboolToPolygons(polybool: polybool): Polygon[] {
+    // }
 
 
-        let parentMap: Map<polyregion, polyregion[]> = new Map()
-        let root: Set<polyregion> = new Set()
-        let hasParent: Set<polyregion> = new Set()
-        for (let region of polybool.regions)
-            root.add(region)
+    static clip(sourcePaths: clipperpaths, clippingPaths: clipperpaths, clipType: cliptype,
+        subjectPolyFillType: polyfilltype = window.ClipperLib.PolyFillType.pftEvenOdd, clipperPolyFillType: polyfilltype = window.ClipperLib.PolyFillType.pftEvenOdd): clipperpaths {
 
-        for (let region of polybool.regions) {
+        let clipper = new window.ClipperLib.Clipper()
 
-            let points = region.map(point => new Vector(...point))
-            let polygon = new Polygon(points)
+        clipper.AddPaths(sourcePaths, window.ClipperLib.PolyType.ptSubject, true)
+        clipper.AddPaths(clippingPaths, window.ClipperLib.PolyType.ptClip, true)
 
-            for (let subregion of polybool.regions) {
+        let solution = []
 
-                if (region === subregion) continue
+        let success = clipper.Execute(clipType, solution, subjectPolyFillType, clipperPolyFillType)
 
-                let subpoints = region.map(point => new Vector(...point))
+        return solution
 
-                if (subpoints.some(point => polygon.containsVector(point))) {
-
-                    if (!parentMap.has(region))
-                        parentMap.set(region, [])
-
-                    parentMap.get(region).push(subregion)
-                    hasParent.add(region)
-                    root.delete(region)
-
-                }
-
-            }
-
-        }
-
-        let polygons: Polygon[] = []
-
-        return polygons
 
     }
 
-    static #clip(source: Polygon[], clipper: Polygon[], clippingFunction: polybooloperation): Polygon[] {
+    static union(source: clipperpaths, clipper: clipperpaths): clipperpaths {
 
-        return Polygon.polyboolToPolygons(
-            clippingFunction(
-                Polygon.polygonToPolybool(source),
-                Polygon.polygonToPolybool(clipper)
+        return this.clip(source, clipper, window.ClipperLib.ClipType.ctUnion)
+
+    }
+
+    // static intersect(source: Polygon[], clipper: Polygon[]): Polygon[] {
+
+    //     return this.#clip(source, clipper, window.PolyBool.intersect)
+
+    // }
+
+    static difference(source: clipperpaths, clipper: clipperpaths): clipperpaths {
+
+        return this.clip(source, clipper, window.ClipperLib.ClipType.ctDifference)
+
+    }
+
+    // static differenceRev(source: Polygon[], clipper: Polygon[]): Polygon[] {
+
+    //     return this.#clip(source, clipper, window.PolyBool.differenceRev)
+
+    // }
+
+    // static xor(source: Polygon[], clipper: Polygon[]): Polygon[] {
+
+    //     return this.#clip(source, clipper, window.PolyBool.xor)
+
+    // }
+
+
+    // Scale float to reduce precision loss
+
+    static deFloat(paths: clipperpaths, precision: number = 6): clipperpaths {
+
+        let ratio = 10 ** precision
+
+        return paths.map(
+            region => region.map(
+                point => ({
+                    X: Math.round(point.X * ratio),
+                    Y: Math.round(point.Y * ratio)
+                })
             )
         )
 
     }
 
-    static getDefaultPolybool(): polybool {
+    static inFloat(paths: clipperpaths, precision: number = 6): clipperpaths {
 
-        return {
-            regions: [],
-            inverted: false
-        }
+        let ratio = 10 ** precision
 
-    }
-
-    static union(source: Polygon[], clipper: Polygon[]): Polygon[] {
-
-        return this.#clip(source, clipper, window.PolyBool.union)
-
-    }
-
-    static intersect(source: Polygon[], clipper: Polygon[]): Polygon[] {
-
-        return this.#clip(source, clipper, window.PolyBool.intersect)
+        return paths.map(
+            region => region.map(
+                point => ({
+                    X: point.X / ratio,
+                    Y: point.Y / ratio
+                })
+            )
+        )
 
     }
 
-    static difference(source: Polygon[], clipper: Polygon[]): Polygon[] {
+    static pathClipperPaths(ctx: CanvasRenderingContext2D, clipperpaths: clipperpaths) {
 
-        return this.#clip(source, clipper, window.PolyBool.difference)
-
-    }
-
-    static differenceRev(source: Polygon[], clipper: Polygon[]): Polygon[] {
-
-        return this.#clip(source, clipper, window.PolyBool.differenceRev)
-
-    }
-
-    static xor(source: Polygon[], clipper: Polygon[]): Polygon[] {
-
-        return this.#clip(source, clipper, window.PolyBool.xor)
-
-    }
-
-    static polyboolPath(ctx: CanvasRenderingContext2D, polybool: polybool) {
-
-        for (let region of polybool.regions) {
-
-            ctx.moveTo(region[0][0], region[0][1])
-
-            for (let [x, y] of region.slice(1))
-                ctx.lineTo(x, y)
-
+        ctx.beginPath()
+        for (let clipperpath of clipperpaths) {
+            for (let [index, { X, Y }] of clipperpath.entries()) {
+                if (!index) ctx.moveTo(X, Y)
+                else ctx.lineTo(X, Y)
+            }
             ctx.closePath()
-
         }
 
     }

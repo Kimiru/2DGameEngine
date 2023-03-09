@@ -1,6 +1,7 @@
 import { GameObject } from "../basics/GameObject.js";
 import { Vector } from "../math/Vector.js";
 import { Segment } from "./Segment.js";
+import '../../node_modules/clipper-lib/clipper.js';
 import '../../node_modules/polybooljs/dist/polybool.js';
 declare global {
     interface Window {
@@ -12,8 +13,40 @@ declare global {
             xor: polybooloperation;
             epsilon: (number: any) => number;
         };
+        ClipperLib: {
+            Clipper: new () => Clipper;
+            PolyType: {
+                ptSubject: 0;
+                ptClip: 1;
+            };
+            ClipType: {
+                ctIntersection: 0;
+                ctUnion: 1;
+                ctDifference: 2;
+                ctXor: 3;
+            };
+            PolyFillType: {
+                pftEvenOdd: 0;
+                pftNonZero: 1;
+                pftPositive: 2;
+                pftNegative: 3;
+            };
+        };
     }
 }
+export type Clipper = {
+    AddPaths: (paths: clipperpaths, polytype: polytype, closed: boolean) => void;
+    Execute: (cliptype: cliptype, solution: clipperpaths, subjFillType: polyfilltype, clipFillType: polyfilltype) => void;
+};
+export type cliptype = number;
+export type polytype = number;
+export type polyfilltype = number;
+export type clipperpoint = {
+    X: number;
+    Y: number;
+};
+export type clipperpath = clipperpoint[];
+export type clipperpaths = clipperpath[];
 export type polypoint = [number, number];
 export type polyregion = polypoint[];
 export type polybool = {
@@ -63,15 +96,11 @@ export declare class Polygon extends GameObject {
     path(ctx: CanvasRenderingContext2D): void;
     containsVector(vector: Vector): boolean;
     containsWorldVector(vector: Vector): boolean;
-    get polybool(): polybool;
-    set polybool(polybool: polybool);
-    static polygonToPolybool(polygons: Polygon[]): polybool;
-    static polyboolToPolygons(polybool: polybool): Polygon[];
-    static getDefaultPolybool(): polybool;
-    static union(source: Polygon[], clipper: Polygon[]): Polygon[];
-    static intersect(source: Polygon[], clipper: Polygon[]): Polygon[];
-    static difference(source: Polygon[], clipper: Polygon[]): Polygon[];
-    static differenceRev(source: Polygon[], clipper: Polygon[]): Polygon[];
-    static xor(source: Polygon[], clipper: Polygon[]): Polygon[];
-    static polyboolPath(ctx: CanvasRenderingContext2D, polybool: polybool): void;
+    get clipperpaths(): clipperpaths;
+    static clip(sourcePaths: clipperpaths, clippingPaths: clipperpaths, clipType: cliptype, subjectPolyFillType?: polyfilltype, clipperPolyFillType?: polyfilltype): clipperpaths;
+    static union(source: clipperpaths, clipper: clipperpaths): clipperpaths;
+    static difference(source: clipperpaths, clipper: clipperpaths): clipperpaths;
+    static deFloat(paths: clipperpaths, precision?: number): clipperpaths;
+    static inFloat(paths: clipperpaths, precision?: number): clipperpaths;
+    static pathClipperPaths(ctx: CanvasRenderingContext2D, clipperpaths: clipperpaths): void;
 }
