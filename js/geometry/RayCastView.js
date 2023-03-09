@@ -2,13 +2,11 @@ import { Vector } from "../math/Vector.js";
 import { Polygon } from "./Polygon.js";
 import { Ray } from "./Ray.js";
 export class RayCastView {
-    static compute(position, segments, infinity = 1000) {
-        let uniques = [
-            Vector.fromAngle(Math.PI / 4).multS(infinity),
-            Vector.fromAngle(Math.PI * 3 / 4).multS(infinity),
-            Vector.fromAngle(-Math.PI * 3 / 4).multS(infinity),
-            Vector.fromAngle(-Math.PI / 4).multS(infinity)
-        ];
+    static compute(position, segments, infinity = 1000, infinityPoints = 4, centeredOnPosition = true) {
+        let uniques = [];
+        infinityPoints = Math.max(infinityPoints, 4);
+        for (let index = 0; index < infinityPoints; index++)
+            uniques.push(Vector.fromAngle(Math.PI * 2 / infinityPoints * index + Math.PI / 4).multS(infinity).add(centeredOnPosition ? position : new Vector()));
         for (let segment of segments) {
             let sega = segment.getWorldPosition(segment.a.clone());
             let segb = segment.getWorldPosition(segment.b.clone());

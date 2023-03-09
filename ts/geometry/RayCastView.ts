@@ -5,14 +5,15 @@ import { Segment } from "./Segment.js"
 
 export class RayCastView {
 
-    static compute(position: Vector, segments: Segment[], infinity = 1000): Polygon {
+    static compute(position: Vector, segments: Segment[], infinity: number = 1000, infinityPoints: number = 4, centeredOnPosition: boolean = true): Polygon {
 
-        let uniques: Vector[] = [
-            Vector.fromAngle(Math.PI / 4).multS(infinity),
-            Vector.fromAngle(Math.PI * 3 / 4).multS(infinity),
-            Vector.fromAngle(-Math.PI * 3 / 4).multS(infinity),
-            Vector.fromAngle(-Math.PI / 4).multS(infinity)
-        ]
+        let uniques: Vector[] = []
+        infinityPoints = Math.max(infinityPoints, 4)
+
+        for (let index = 0; index < infinityPoints; index++)
+            uniques.push(Vector.fromAngle(Math.PI * 2 / infinityPoints * index + Math.PI / 4).multS(infinity).add(centeredOnPosition ? position : new Vector()))
+
+
 
         for (let segment of segments) {
 
@@ -23,6 +24,7 @@ export class RayCastView {
             if (!uniques.some(pt => pt.equal(segb))) uniques.push(segb)
 
         }
+
 
         let points: [number, Vector, Vector][] = []
 
