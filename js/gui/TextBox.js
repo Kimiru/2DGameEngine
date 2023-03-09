@@ -12,8 +12,9 @@ export class TextBox extends GameObject {
     onSound;
     offSound;
     placeholder = '';
-    constructor(defaultText = '', options = {}, onSound = null, offSound = null) {
+    constructor(placeholder = '', options = {}, onSound = null, offSound = null) {
         super();
+        this.placeholder = placeholder;
         this.options = options;
         this.onSound = onSound;
         this.offSound = offSound;

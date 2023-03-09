@@ -7,13 +7,18 @@ export class RayCastView {
 
     static compute(position: Vector, segments: Segment[], infinity: number = 1000, infinityPoints: number = 4, centeredOnPosition: boolean = true): Polygon {
 
-        let uniques: Vector[] = []
+        let border: Vector[] = []
+
         infinityPoints = Math.max(infinityPoints, 4)
 
         for (let index = 0; index < infinityPoints; index++)
-            uniques.push(Vector.fromAngle(Math.PI * 2 / infinityPoints * index + Math.PI / 4).multS(infinity).add(centeredOnPosition ? position : new Vector()))
+            border.push(Vector.fromAngle(Math.PI * 2 / infinityPoints * index + Math.PI / 4).multS(infinity).add(centeredOnPosition ? position : new Vector()))
 
+        segments = [...segments]
+        for (let index = 0; index < infinityPoints; index++)
+            segments.push(new Segment(border[index], border[(index + 1) % infinityPoints]))
 
+        let uniques: Vector[] = []
 
         for (let segment of segments) {
 

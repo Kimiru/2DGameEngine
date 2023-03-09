@@ -20,10 +20,11 @@ export class TextBox extends GameObject {
 
     placeholder: stringable = ''
 
-    constructor(defaultText: string = '', options: textoptions = {}, onSound: string = null, offSound: string = null) {
+    constructor(placeholder: stringable = '', options: textoptions = {}, onSound: string = null, offSound: string = null) {
 
         super()
 
+        this.placeholder = placeholder
         this.options = options
         this.onSound = onSound
         this.offSound = offSound

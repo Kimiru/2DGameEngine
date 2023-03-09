@@ -12,7 +12,7 @@ export declare class TextBox extends GameObject {
     onSound: string;
     offSound: string;
     placeholder: stringable;
-    constructor(defaultText?: string, options?: textoptions, onSound?: string, offSound?: string);
+    constructor(placeholder?: stringable, options?: textoptions, onSound?: string, offSound?: string);
     toggleOn(): void;
     toggleOff(): void;
     toggle(): void;
