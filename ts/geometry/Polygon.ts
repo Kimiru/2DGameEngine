@@ -13,7 +13,8 @@ declare global {
             intersect: polybooloperation,
             difference: polybooloperation,
             differenceRev: polybooloperation,
-            xor: polybooloperation
+            xor: polybooloperation,
+            epsilon: (number) => number
         }
     }
 }
@@ -292,6 +293,15 @@ export class Polygon extends GameObject {
                 Polygon.polygonToPolybool(clipper)
             )
         )
+
+    }
+
+    static getDefaultPolybool(): polybool {
+
+        return {
+            regions: [],
+            inverted: false
+        }
 
     }
 

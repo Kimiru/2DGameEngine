@@ -10,6 +10,7 @@ declare global {
             difference: polybooloperation;
             differenceRev: polybooloperation;
             xor: polybooloperation;
+            epsilon: (number: any) => number;
         };
     }
 }
@@ -66,6 +67,7 @@ export declare class Polygon extends GameObject {
     set polybool(polybool: polybool);
     static polygonToPolybool(polygons: Polygon[]): polybool;
     static polyboolToPolygons(polybool: polybool): Polygon[];
+    static getDefaultPolybool(): polybool;
     static union(source: Polygon[], clipper: Polygon[]): Polygon[];
     static intersect(source: Polygon[], clipper: Polygon[]): Polygon[];
     static difference(source: Polygon[], clipper: Polygon[]): Polygon[];

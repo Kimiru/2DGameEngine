@@ -176,6 +176,12 @@ export class Polygon extends GameObject {
     static #clip(source, clipper, clippingFunction) {
         return Polygon.polyboolToPolygons(clippingFunction(Polygon.polygonToPolybool(source), Polygon.polygonToPolybool(clipper)));
     }
+    static getDefaultPolybool() {
+        return {
+            regions: [],
+            inverted: false
+        };
+    }
     static union(source, clipper) {
         return this.#clip(source, clipper, window.PolyBool.union);
     }
