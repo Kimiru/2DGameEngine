@@ -4,7 +4,6 @@ import { Vector } from "../math/Vector.js";
 import { Ray } from "./Ray.js";
 import { Segment } from "./Segment.js";
 import '../../node_modules/clipper-lib/clipper.js';
-import '../../node_modules/polybooljs/dist/polybool.js';
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close

@@ -2,17 +2,8 @@ import { GameObject } from "../basics/GameObject.js";
 import { Vector } from "../math/Vector.js";
 import { Segment } from "./Segment.js";
 import '../../node_modules/clipper-lib/clipper.js';
-import '../../node_modules/polybooljs/dist/polybool.js';
 declare global {
     interface Window {
-        PolyBool: {
-            union: polybooloperation;
-            intersect: polybooloperation;
-            difference: polybooloperation;
-            differenceRev: polybooloperation;
-            xor: polybooloperation;
-            epsilon: (number: any) => number;
-        };
         ClipperLib: {
             Clipper: new () => Clipper;
             PolyType: {
@@ -47,13 +38,6 @@ export type clipperpoint = {
 };
 export type clipperpath = clipperpoint[];
 export type clipperpaths = clipperpath[];
-export type polypoint = [number, number];
-export type polyregion = polypoint[];
-export type polybool = {
-    regions: polyregion[];
-    inverted: boolean;
-};
-export type polybooloperation = (p0: polybool, p1: polybool) => polybool;
 /**
  * The Polygon represent a N point polygon
  * To work properly, it needs at least 3 point to close

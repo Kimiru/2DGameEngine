@@ -5,18 +5,9 @@ import { Ray } from "./Ray.js"
 import { Segment } from "./Segment.js"
 
 import '../../node_modules/clipper-lib/clipper.js'
-import '../../node_modules/polybooljs/dist/polybool.js'
 
 declare global {
     interface Window {
-        PolyBool: {
-            union: polybooloperation,
-            intersect: polybooloperation,
-            difference: polybooloperation,
-            differenceRev: polybooloperation,
-            xor: polybooloperation,
-            epsilon: (number) => number
-        }
         ClipperLib: {
             Clipper: new () => Clipper,
             PolyType: { ptSubject: 0, ptClip: 1 },
@@ -38,14 +29,6 @@ export type polyfilltype = number
 export type clipperpoint = { X: number, Y: number }
 export type clipperpath = clipperpoint[]
 export type clipperpaths = clipperpath[]
-
-export type polypoint = [number, number]
-export type polyregion = polypoint[]
-export type polybool = {
-    regions: polyregion[],
-    inverted: boolean
-}
-export type polybooloperation = (p0: polybool, p1: polybool) => polybool
 
 /**
  * The Polygon represent a N point polygon

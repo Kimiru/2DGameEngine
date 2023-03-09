@@ -16,7 +16,6 @@
         "typescript": "^4.6.4"
     },
     "dependencies": {
-        "clipper-lib": "^6.4.2",
-        "polybooljs": "^1.2.0"
+        "clipper-lib": "^6.4.2"
     }
 }
