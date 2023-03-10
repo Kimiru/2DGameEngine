@@ -9,10 +9,6 @@ export class Graph {
         this.display = display;
         this.positionGetter = positionGetter;
     }
-    /**
-     *
-     * @param {...number} nodes
-     */
     addNode(...nodes) {
         for (let [node, object] of nodes) {
             if (!this.nodes.has(node)) {
@@ -22,10 +18,6 @@ export class Graph {
             }
         }
     }
-    /**
-     *
-     * @param {...number} nodes
-     */
     removeNode(...nodes) {
         for (let node of nodes)
             if (this.hasNode(node)) {
@@ -38,13 +30,13 @@ export class Graph {
     }
     /**
      *
-     * @param {number} node
+     * @param {I} node
      * @returns {boolean}
      */
     hasNode(node) { return this.nodes.has(node); }
     /**
      *
-     * @param {...{source:number, target:number, data:any}} links
+     * @param {...{source:I, target:I, data:any}} links
      */
     addLink(...links) {
         for (let link of links) {
@@ -55,7 +47,7 @@ export class Graph {
     }
     /**
      *
-     * @param {...{source:number, target:number}} links
+     * @param {...{source:I, target:I}} links
      */
     removeLink(...links) {
         for (let link of links)
@@ -221,6 +213,13 @@ export class Graph {
         graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat());
         return graph;
     }
+    static generate(data, dataToId, dataToObj, getIdNeighbors, objectToPosition) {
+        let graph = new Graph(false, objectToPosition);
+        let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]);
+        graph.addNode(...dataEntries);
+        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => ({ source: entry[0], target: id }))));
+        return graph;
+    }
 }
 export class Node {
     cost = 0;
@@ -279,16 +278,7 @@ export class Path {
 }
 export class HexagonGraph {
     static buildGraph(HexagonGraphObjects) {
-        let graph = new Graph(false, object => object.hexVector.clone().vector);
-        for (let object of HexagonGraphObjects)
-            graph.addNode([object.id, object]);
-        for (let object of HexagonGraphObjects)
-            for (let neighbor of object.hexVector.neighbors()) {
-                let neighborGridHexagon = HexagonGraphObjects.find(hex => hex.hexVector.equal(neighbor));
-                if (neighborGridHexagon)
-                    graph.addLink({ source: object.id, target: neighborGridHexagon.id });
-            }
-        return graph;
+        return Graph.generate(HexagonGraphObjects, data => data.id, data => data, (id, object) => object.hexVector.neighbors().map(neighbor => HexagonGraphObjects.find(object => object.hexVector.equal(neighbor))).filter(value => value).map(neighbor => neighbor.id), object => object.hexVector.clone().vector);
     }
 }
 export class SquareGraph {

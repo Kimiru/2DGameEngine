@@ -2,11 +2,11 @@ import { GameObject } from "../2DGameEngine.js"
 import { HexVector } from "./HexVector.js"
 import { Vector } from "./Vector.js"
 
-export class Graph<T> {
+export class Graph<I, T> {
 
-    nodes: Set<number> = new Set()
-    nodesObjects: Map<number, T> = new Map()
-    links: Map<number, Set<number>> = new Map()
+    nodes: Set<I> = new Set()
+    nodesObjects: Map<I, T> = new Map()
+    links: Map<I, Set<I>> = new Map()
     display: boolean = false
     positionGetter: (object: T) => Vector = null
 
@@ -17,11 +17,7 @@ export class Graph<T> {
 
     }
 
-    /**
-     * 
-     * @param {...number} nodes 
-     */
-    addNode(...nodes: [number, T][]) {
+    addNode(...nodes: [I, T][]) {
 
         for (let [node, object] of nodes) {
 
@@ -37,11 +33,7 @@ export class Graph<T> {
 
     }
 
-    /**
-     * 
-     * @param {...number} nodes 
-     */
-    removeNode(...nodes: number[]) {
+    removeNode(...nodes: I[]) {
 
         for (let node of nodes)
             if (this.hasNode(node)) {
@@ -59,16 +51,16 @@ export class Graph<T> {
 
     /**
      * 
-     * @param {number} node 
+     * @param {I} node 
      * @returns {boolean}
      */
-    hasNode(node: number) { return this.nodes.has(node) }
+    hasNode(node: I) { return this.nodes.has(node) }
 
     /**
      * 
-     * @param {...{source:number, target:number, data:any}} links 
+     * @param {...{source:I, target:I, data:any}} links 
      */
-    addLink(...links: { source: number, target: number }[]) {
+    addLink(...links: { source: I, target: I }[]) {
 
         for (let link of links) {
 
@@ -82,9 +74,9 @@ export class Graph<T> {
 
     /**
      * 
-     * @param {...{source:number, target:number}} links 
+     * @param {...{source:I, target:I}} links 
      */
-    removeLink(...links: { source: number, target: number }[]) {
+    removeLink(...links: { source: I, target: I }[]) {
 
         for (let link of links)
             if (this.hasLink(link.source, link.target)) {
@@ -95,15 +87,15 @@ export class Graph<T> {
 
     }
 
-    hasLink(source: number, target: number) { return this.links.has(source) && this.links.get(source).has(target) }
+    hasLink(source: I, target: I) { return this.links.has(source) && this.links.get(source).has(target) }
 
-    isConnectedTo(source: number, target: number): boolean {
+    isConnectedTo(source: I, target: I): boolean {
 
         if (!this.hasNode(source)) return false
         if (!this.hasNode(target)) return false
 
-        let nodeSet: Set<number>
-        let currentSet: Set<number> = new Set([source])
+        let nodeSet: Set<I>
+        let currentSet: Set<I> = new Set([source])
 
         do {
 
@@ -119,12 +111,12 @@ export class Graph<T> {
         return nodeSet.has(target)
     }
 
-    isConnected(node: number): boolean {
+    isConnected(node: I): boolean {
 
         if (!this.hasNode(node)) return true
 
-        let nodeSet: Set<number>
-        let currentSet: Set<number> = new Set([node])
+        let nodeSet: Set<I>
+        let currentSet: Set<I> = new Set([node])
 
         do {
 
@@ -150,11 +142,11 @@ export class Graph<T> {
 
     }
 
-    getShortestPathBetween(source: number, target: number, estimateDistance: (nodeA: T, nodeB: T) => number): number[] {
+    getShortestPathBetween(source: I, target: I, estimateDistance: (nodeA: T, nodeB: T) => number): I[] {
 
         if (!this.hasNode(source) || !this.hasNode(target)) return null
 
-        let nodes: Map<number, Node> = new Map()
+        let nodes: Map<I, Node<I>> = new Map()
         this.nodes.forEach(id => nodes.set(id, new Node(id)))
 
         let start = nodes.get(source)
@@ -208,17 +200,17 @@ export class Graph<T> {
 
     }
 
-    getFlood(source: number, maxDistance: number = Number.MAX_SAFE_INTEGER, estimateDistance: (nodeA: T, nodeB: T) => number): Map<number, number[]> {
+    getFlood(source: I, maxDistance: number = Number.MAX_SAFE_INTEGER, estimateDistance: (nodeA: T, nodeB: T) => number): Map<I, I[]> {
 
         if (!this.hasNode(source)) return null
 
-        let nodes: Map<number, Node> = new Map()
+        let nodes: Map<I, Node<I>> = new Map()
         this.nodes.forEach(id => nodes.set(id, new Node(id)))
 
         let start = nodes.get(source)
 
-        let closed: Node[] = []
-        let opened: Node[] = [start]
+        let closed: Node<I>[] = []
+        let opened: Node<I>[] = [start]
 
         while (opened.length) {
 
@@ -267,7 +259,7 @@ export class Graph<T> {
 
         }
 
-        let paths: Map<number, number[]> = new Map()
+        let paths: Map<I, I[]> = new Map()
 
         for (let closedNode of closed) {
 
@@ -290,7 +282,7 @@ export class Graph<T> {
         return paths
     }
 
-    populate(nodes: number[]): T[] { return nodes.map(id => this.nodesObjects.get(id)) }
+    populate(nodes: I[]): T[] { return nodes.map(id => this.nodesObjects.get(id)) }
 
     draw(ctx: CanvasRenderingContext2D): boolean {
 
@@ -299,7 +291,7 @@ export class Graph<T> {
             ctx.save()
             ctx.restore()
 
-            let positions: Map<number, Vector> = new Map()
+            let positions: Map<I, Vector> = new Map()
 
             for (let [node, object] of this.nodesObjects) {
                 positions.set(node, this.positionGetter(object))
@@ -330,9 +322,9 @@ export class Graph<T> {
 
     }
 
-    clone(): Graph<T> {
+    clone(): Graph<I, T> {
 
-        let graph = new Graph(this.display, this.positionGetter)
+        let graph = new Graph<I, T>(this.display, this.positionGetter)
 
         graph.addNode(...this.nodesObjects.entries())
         graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat())
@@ -341,16 +333,36 @@ export class Graph<T> {
 
     }
 
+    static generate<DATA, ID, OBJ>(
+        data: DATA[],
+        dataToId: (DATA: DATA) => ID,
+        dataToObj: (DATA: DATA) => OBJ,
+        getIdNeighbors: (ID: ID, OBJ: OBJ) => ID[],
+        objectToPosition?: (OBJ: OBJ) => Vector
+    ): Graph<ID, OBJ> {
+
+        let graph: Graph<ID, OBJ> = new Graph(false, objectToPosition)
+
+        let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]) as [ID, OBJ][]
+
+        graph.addNode(...dataEntries)
+
+        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => ({ source: entry[0], target: id }))))
+
+        return graph
+
+    }
+
 }
 
-export class Node {
+export class Node<I> {
 
     cost: number = 0
     heuristic: number = 0
-    previous: Node = null
-    id: number
+    previous: Node<I> = null
+    id: I
 
-    constructor(id: number) { this.id = id }
+    constructor(id: I) { this.id = id }
 
 }
 
@@ -442,21 +454,15 @@ export interface HexagonGraphInterface {
 
 export class HexagonGraph {
 
-    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<T> {
+    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<number, T> {
 
-        let graph = new Graph<T>(false, object => object.hexVector.clone().vector)
-
-        for (let object of HexagonGraphObjects)
-            graph.addNode([object.id, object])
-
-        for (let object of HexagonGraphObjects)
-            for (let neighbor of object.hexVector.neighbors()) {
-                let neighborGridHexagon = HexagonGraphObjects.find(hex => hex.hexVector.equal(neighbor))
-                if (neighborGridHexagon)
-                    graph.addLink({ source: object.id, target: neighborGridHexagon.id })
-            }
-
-        return graph
+        return Graph.generate<T, number, T>(
+            HexagonGraphObjects,
+            data => data.id,
+            data => data,
+            (id, object) => object.hexVector.neighbors().map(neighbor => HexagonGraphObjects.find(object => object.hexVector.equal(neighbor))).filter(value => value).map(neighbor => neighbor.id),
+            object => object.hexVector.clone().vector
+        )
 
     }
 
@@ -464,8 +470,8 @@ export class HexagonGraph {
 
 export class SquareGraph {
 
-    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals: boolean = false): Graph<T> {
-        let graph = new Graph<T>(false, object => object.transform.translation.clone())
+    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals: boolean = false): Graph<number, T> {
+        let graph = new Graph<number, T>(false, object => object.transform.translation.clone())
 
         for (let object of gameObjects)
             graph.addNode([object.id, object])
