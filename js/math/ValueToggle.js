@@ -23,6 +23,7 @@ export class ValueToggle extends GameComponent {
     }
     on() { this.active = true; }
     off() { this.active = false; }
+    set(active) { this.active = active; }
     toggle() { this.active = !this.active; }
     update(dt) {
         if (this.active)

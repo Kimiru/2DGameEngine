@@ -8,6 +8,7 @@ export declare class ValueToggle extends GameComponent {
     get value(): number;
     on(): void;
     off(): void;
+    set(active: boolean): void;
     toggle(): void;
     update(dt: any): void;
 }

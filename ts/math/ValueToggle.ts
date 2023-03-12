@@ -36,6 +36,8 @@ export class ValueToggle extends GameComponent {
 
     off() { this.active = false }
 
+    set(active: boolean) { this.active = active }
+
     toggle() { this.active = !this.active }
 
     update(dt) {
