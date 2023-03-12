@@ -12,7 +12,7 @@ let textboxOptions = {
     size: .15,
     font: 'sans-serif',
     color: 'black',
-    maxWidth: 4 / 1.1,
+    maxWidth: .4,
     align: 'center',
     baseline: 'middle'
 };
@@ -72,10 +72,10 @@ export class ColorPicker extends GameObject {
     onChange(h, s, l) { }
     update(dt) {
         let mouse = this.input.mouse;
-        if (mouse.left) {
+        let rect = new Rectangle(0, 0, 2.5, 1);
+        rect.parent = this;
+        if ((mouse.left || mouse.leftClick) && rect.containsWorldVector(mouse.position)) {
             let wtm = this.getWorldTransformMatrix();
-            let rect = new Rectangle();
-            rect.parent = this;
             rect.w = 1.5;
             rect.h = .125;
             rect.left = -1;
@@ -83,26 +83,25 @@ export class ColorPicker extends GameObject {
             let left = TransformMatrix.multVec(wtm, new Vector(rect.left, rect.y));
             let right = TransformMatrix.multVec(wtm, new Vector(rect.right, rect.y));
             let [t, p] = new Segment(left, right).project(mouse.position);
-            if (rect.containsWorldVector(mouse.position)) {
+            if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
                 this.h = Math.round(360 * t);
                 this.htb.text = this.h.toString();
-                this.onChange(this.h, this.s, this.l);
                 return;
             }
             rect.bottom = 0.0625;
-            if (rect.containsWorldVector(mouse.position)) {
+            if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
                 this.s = Math.round(100 * t);
                 this.stb.text = this.s.toString();
-                this.onChange(this.h, this.s, this.l);
                 return;
             }
             rect.bottom = -0.1875;
-            if (rect.containsWorldVector(mouse.position)) {
+            if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
                 this.l = Math.round(100 * t);
                 this.ltb.text = this.l.toString();
-                this.onChange(this.h, this.s, this.l);
                 return;
             }
+            if (mouse.leftClick)
+                this.onChange(this.h, this.s, this.l);
         }
     }
     draw(ctx) {

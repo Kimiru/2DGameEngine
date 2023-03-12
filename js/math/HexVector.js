@@ -11,11 +11,17 @@ export class HexVector {
     #s = 0;
     vector;
     unit;
-    constructor(orientation = HexOrientation.pointy, unit = 1, vector = new Vector(), q = 0, r = 0, s = 0) {
+    constructor(orientation = HexOrientation.pointy, unit = 1, q = 0, r = 0, s = 0, vector = new Vector()) {
         this.orientation = orientation;
         this.unit = unit;
         this.vector = vector;
         this.setS(q, r, s);
+    }
+    static fromVector(orientation = HexOrientation.pointy, unit = 1, vector) {
+        let hex = new HexVector(orientation, unit);
+        hex.vector.copy(vector);
+        hex.updateFromVector();
+        return hex;
     }
     get q() { return this.#q; }
     get r() { return this.#r; }
@@ -85,19 +91,19 @@ export class HexVector {
     }
     equal(hexVector) { return this.#q === hexVector.q && this.#r === hexVector.r && this.#s === hexVector.s; }
     equalS(q, r, s) { return this.#q === q && this.#r === r && this.#s === s; }
-    clone() { return new HexVector(this.orientation, this.unit, undefined, this.#q, this.#r, this.#s); }
+    clone() { return new HexVector(this.orientation, this.unit, this.#q, this.#r, this.#s); }
     neighbors() {
         return this.units().map((hexVector) => hexVector.add(this));
     }
     units() { return HexVector.units(this.orientation, this.unit); }
     static units(orientation, unit) {
         return [
-            new HexVector(orientation, unit, undefined, 1, -1, 0),
-            new HexVector(orientation, unit, undefined, -1, 1, 0),
-            new HexVector(orientation, unit, undefined, 0, 1, -1),
-            new HexVector(orientation, unit, undefined, 0, -1, 1),
-            new HexVector(orientation, unit, undefined, 1, 0, -1),
-            new HexVector(orientation, unit, undefined, -1, 0, 1),
+            new HexVector(orientation, unit, 1, -1, 0),
+            new HexVector(orientation, unit, -1, 1, 0),
+            new HexVector(orientation, unit, 0, 1, -1),
+            new HexVector(orientation, unit, 0, -1, 1),
+            new HexVector(orientation, unit, 1, 0, -1),
+            new HexVector(orientation, unit, -1, 0, 1),
         ];
     }
 }

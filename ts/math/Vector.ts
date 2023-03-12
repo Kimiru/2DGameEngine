@@ -378,6 +378,10 @@ export class Vector {
 
     }
 
+    arrayXY(): [number, number] { return [this.x, this.y] }
+
+    arrayXYZ(): [number, number, number] { return [this.x, this.y, this.z] }
+
     neighbors(_8: boolean = false): Vector[] {
         return (_8 ? this.units8() : this.units()).map((vector: Vector) => vector.add(this))
     }

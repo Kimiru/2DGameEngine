@@ -2,6 +2,32 @@ export function lerp(a: number, b: number, t: number): number { return (1 - t) *
 
 export function invLerp(a: number, b: number, v: number): number { return (v - a) / (b - a) }
 
+export function lerpArray(a: number[], b: number[], t: number): number[] {
+
+    let min = Math.min(a.length, b.length)
+
+    let result: number[] = []
+
+    for (let index = 0; index < min; index++)
+        result.push(lerp(a[index], b[index], t))
+
+    return result
+
+}
+
+export function invLerpArray(a: number[], b: number[], t: number): number[] {
+
+    let min = Math.min(a.length, b.length)
+
+    let result: number[] = []
+
+    for (let index = 0; index < min; index++)
+        result.push(invLerp(a[index], b[index], t))
+
+    return result
+
+}
+
 export function coserp(a: number, b: number, t: number): number {
 
     let t2 = (1 - Math.cos(t * Math.PI)) / 2

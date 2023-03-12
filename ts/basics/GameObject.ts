@@ -69,6 +69,11 @@ export class GameObject {
      */
     get used() { return this.scene !== null || this.parent !== null }
 
+    get position(): Vector { return this.transform.translation }
+    get rotation(): number { return this.transform.rotation }
+    set rotation(rotation: number) { this.transform.rotation = rotation }
+    get size(): Vector { return this.transform.scale }
+
     /**
      * Adds one or more tag to the object
      * 
@@ -167,22 +172,23 @@ export class GameObject {
      */
     onRemove(): void { }
 
-    getComponent(componentTag: string): GameComponent | null {
+    getComponent<T extends GameComponent>(componentTag: string): T | null {
 
         return this.children.find(
             child =>
                 child.tags.includes('component') &&
                 child.tags.includes(componentTag)
-        ) as GameComponent ?? null
+        ) as T ?? null
+
     }
 
-    getComponents(componentTag: string): GameComponent[] {
+    getComponents<T extends GameComponent>(componentTag: string): T[] {
 
         return this.children.filter(
             child =>
                 child.tags.includes('component') &&
                 child.tags.includes(componentTag)
-        ) as GameComponent[]
+        ) as T[]
 
     }
 
@@ -392,14 +398,16 @@ export class GameObject {
 export class GameComponent extends GameObject {
 
     unique: boolean = false
-    componentTag: string = 'basic-component'
+    componentTag: string = null
 
-    constructor() {
+    constructor(componentTag: string) {
 
         super()
 
         this.addTag('component')
-        this.addTag(this.componentTag)
+        this.addTag(componentTag)
+
+        this.componentTag = componentTag
 
     }
 

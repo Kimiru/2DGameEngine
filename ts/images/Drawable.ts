@@ -5,7 +5,7 @@ import { ImageManipulator } from "./ImageManipulator.js"
 export class Drawable extends GameObject {
 
     images: HTMLImageElement[] = []
-    size: Vector = new Vector()
+    imageSize: Vector = new Vector()
     halfSize: Vector = new Vector()
 
     constructor(...images: HTMLImageElement[]) {
@@ -16,12 +16,12 @@ export class Drawable extends GameObject {
 
         this.images = images
 
-        this.size.set(this.images[0].width, this.images[0].height)
-        this.halfSize.copy(this.size).divS(2)
+        this.imageSize.set(this.images[0].width, this.images[0].height)
+        this.halfSize.copy(this.imageSize).divS(2)
 
     }
 
-    render(resolution: Vector = this.size, margin: number = 0, smoothing: boolean = false): ImageManipulator {
+    render(resolution: Vector = this.imageSize, margin: number = 0, smoothing: boolean = false): ImageManipulator {
 
         let imageManipulator = new ImageManipulator(resolution.x + margin * 2, resolution.y + margin * 2)
         imageManipulator.ctx.imageSmoothingQuality = 'high'
@@ -41,7 +41,7 @@ export class Drawable extends GameObject {
 
         ctx.save()
 
-        ctx.scale(1 / this.size.x, -1 / this.size.y)
+        ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y)
 
         for (let image of this.images)
             ctx.drawImage(image, -this.halfSize.x, -this.halfSize.y)

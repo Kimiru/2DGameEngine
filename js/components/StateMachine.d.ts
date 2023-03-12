@@ -3,7 +3,6 @@ type UpdateCallback<T> = (object: T, dt: number) => (number[] | null);
 type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void;
 export declare class StateMachine<T> extends GameComponent {
     #private;
-    componentTag: string;
     unique: boolean;
     boundObject: T;
     state: number[];

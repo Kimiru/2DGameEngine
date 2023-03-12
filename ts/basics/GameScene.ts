@@ -36,7 +36,9 @@ export class GameScene {
     /**
      * Create a new empty GameScene
      */
-    constructor() {
+    constructor(parentScene: GameScene = null) {
+
+        this.parentScene = parentScene
 
     }
 

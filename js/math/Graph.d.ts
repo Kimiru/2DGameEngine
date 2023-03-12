@@ -5,9 +5,8 @@ export declare class Graph<I, T> {
     nodes: Set<I>;
     nodesObjects: Map<I, T>;
     links: Map<I, Set<I>>;
-    display: boolean;
     positionGetter: (object: T) => Vector;
-    constructor(display?: boolean, positionGetter?: (object: T) => Vector);
+    constructor(positionGetter?: (object: T) => Vector);
     addNode(...nodes: [I, T][]): void;
     removeNode(...nodes: I[]): void;
     /**
@@ -20,18 +19,12 @@ export declare class Graph<I, T> {
      *
      * @param {...{source:I, target:I, data:any}} links
      */
-    addLink(...links: {
-        source: I;
-        target: I;
-    }[]): void;
+    addLink(...links: [I, I][]): void;
     /**
      *
      * @param {...{source:I, target:I}} links
      */
-    removeLink(...links: {
-        source: I;
-        target: I;
-    }[]): void;
+    removeLink(...links: [I, I][]): void;
     hasLink(source: I, target: I): boolean;
     isConnectedTo(source: I, target: I): boolean;
     isConnected(node: I): boolean;

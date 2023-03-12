@@ -27,8 +27,8 @@ export class SpriteSheet extends Drawable {
         this.options = { ...SpriteSheetOptions, ...options }
 
         this.horizontalCount = this.images[0].width / this.options.cellWidth
-        this.size.set(this.options.cellWidth, this.options.cellHeight)
-        this.halfSize.copy(this.size).divS(2)
+        this.imageSize.set(this.options.cellWidth, this.options.cellHeight)
+        this.halfSize.copy(this.imageSize).divS(2)
 
     }
 
@@ -72,11 +72,11 @@ export class SpriteSheet extends Drawable {
         let x = this.cursor % this.horizontalCount
         let y = Math.floor(this.cursor / this.horizontalCount)
 
-        x *= this.size.x
-        y *= this.size.y
+        x *= this.imageSize.x
+        y *= this.imageSize.y
 
-        ctx.scale(1 / this.size.x, -1 / this.size.y)
-        ctx.drawImage(this.images[0], x, y, this.size.x, this.size.y, -this.halfSize.x, -this.halfSize.y, this.size.x, this.size.y)
+        ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y)
+        ctx.drawImage(this.images[0], x, y, this.imageSize.x, this.imageSize.y, -this.halfSize.x, -this.halfSize.y, this.imageSize.x, this.imageSize.y)
 
         ctx.restore()
 

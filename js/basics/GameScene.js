@@ -25,7 +25,8 @@ export class GameScene {
     /**
      * Create a new empty GameScene
      */
-    constructor() {
+    constructor(parentScene = null) {
+        this.parentScene = parentScene;
     }
     store() { GameScene.list.set(this.id, this); }
     exit() {

@@ -52,6 +52,10 @@ export declare class GameObject {
      * Return true if object is either in a scene or has a parent object
      */
     get used(): boolean;
+    get position(): Vector;
+    get rotation(): number;
+    set rotation(rotation: number);
+    get size(): Vector;
     /**
      * Adds one or more tag to the object
      *
@@ -90,8 +94,8 @@ export declare class GameObject {
      * Should not be called by the user
      */
     onRemove(): void;
-    getComponent(componentTag: string): GameComponent | null;
-    getComponents(componentTag: string): GameComponent[];
+    getComponent<T extends GameComponent>(componentTag: string): T | null;
+    getComponents<T extends GameComponent>(componentTag: string): T[];
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -165,5 +169,5 @@ export declare class GameObject {
 export declare class GameComponent extends GameObject {
     unique: boolean;
     componentTag: string;
-    constructor();
+    constructor(componentTag: string);
 }

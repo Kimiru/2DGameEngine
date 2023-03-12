@@ -4,7 +4,6 @@ import { Vector } from "../math/Vector.js"
 
 export class CameraDragComponent extends GameComponent {
 
-    componentTag: string = 'camera-drag'
     unique: boolean = true
 
     static leftButton = 0
@@ -14,9 +13,11 @@ export class CameraDragComponent extends GameComponent {
     button: number
     scrollZoomEnabled: boolean
 
+    enabled: boolean = true
+
     constructor(button: number = 1, scrollZoomEnabled: boolean = true) {
 
-        super()
+        super('camera-drag')
 
         this.button = button
         this.scrollZoomEnabled = scrollZoomEnabled
@@ -29,6 +30,8 @@ export class CameraDragComponent extends GameComponent {
 
     #target: Vector = null
     update(dt: number): void {
+
+        if (!this.enabled) return
 
         let mouse = this.input.mouse
 

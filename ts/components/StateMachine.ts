@@ -5,7 +5,6 @@ type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
 
 export class StateMachine<T> extends GameComponent {
 
-    componentTag: string = 'camera-drag'
     unique: boolean = true
 
     boundObject: T
@@ -16,7 +15,7 @@ export class StateMachine<T> extends GameComponent {
 
     constructor(boundObject: T, startState: number[] = [0]) {
 
-        super()
+        super('state-machine')
 
         this.boundObject = boundObject
         this.state = startState

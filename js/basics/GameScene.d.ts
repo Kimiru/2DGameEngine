@@ -25,7 +25,7 @@ export declare class GameScene {
     /**
      * Create a new empty GameScene
      */
-    constructor();
+    constructor(parentScene?: GameScene);
     store(): void;
     exit(): void;
     /**

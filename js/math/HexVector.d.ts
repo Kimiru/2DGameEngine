@@ -8,7 +8,8 @@ export declare class HexVector {
     orientation: HexOrientation;
     vector: Vector;
     unit: number;
-    constructor(orientation?: HexOrientation, unit?: number, vector?: Vector, q?: number, r?: number, s?: number);
+    constructor(orientation?: HexOrientation, unit?: number, q?: number, r?: number, s?: number, vector?: Vector);
+    static fromVector(orientation: HexOrientation, unit: number, vector: Vector): HexVector;
     get q(): number;
     get r(): number;
     get s(): number;

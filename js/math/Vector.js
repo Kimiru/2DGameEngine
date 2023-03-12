@@ -289,6 +289,8 @@ export class Vector {
         this.z = Math.abs(this.z);
         return this;
     }
+    arrayXY() { return [this.x, this.y]; }
+    arrayXYZ() { return [this.x, this.y, this.z]; }
     neighbors(_8 = false) {
         return (_8 ? this.units8() : this.units()).map((vector) => vector.add(this));
     }

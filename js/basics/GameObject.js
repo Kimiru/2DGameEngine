@@ -56,6 +56,10 @@ export class GameObject {
      * Return true if object is either in a scene or has a parent object
      */
     get used() { return this.scene !== null || this.parent !== null; }
+    get position() { return this.transform.translation; }
+    get rotation() { return this.transform.rotation; }
+    set rotation(rotation) { this.transform.rotation = rotation; }
+    get size() { return this.transform.scale; }
     /**
      * Adds one or more tag to the object
      *
@@ -280,10 +284,11 @@ export class GameObject {
 }
 export class GameComponent extends GameObject {
     unique = false;
-    componentTag = 'basic-component';
-    constructor() {
+    componentTag = null;
+    constructor(componentTag) {
         super();
         this.addTag('component');
-        this.addTag(this.componentTag);
+        this.addTag(componentTag);
+        this.componentTag = componentTag;
     }
 }

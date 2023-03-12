@@ -3,10 +3,8 @@ export class Graph {
     nodes = new Set();
     nodesObjects = new Map();
     links = new Map();
-    display = false;
     positionGetter = null;
-    constructor(display = false, positionGetter = null) {
-        this.display = display;
+    constructor(positionGetter = null) {
         this.positionGetter = positionGetter;
     }
     addNode(...nodes) {
@@ -40,9 +38,9 @@ export class Graph {
      */
     addLink(...links) {
         for (let link of links) {
-            if (!this.hasNode(link.source) || !this.hasNode(link.target))
+            if (!this.hasNode(link[0]) || !this.hasNode(link[1]))
                 continue;
-            this.links.get(link.source).add(link.target);
+            this.links.get(link[0]).add(link[1]);
         }
     }
     /**
@@ -51,8 +49,8 @@ export class Graph {
      */
     removeLink(...links) {
         for (let link of links)
-            if (this.hasLink(link.source, link.target)) {
-                this.links.get(link.source).delete(link.target);
+            if (this.hasLink(link[0], link[1])) {
+                this.links.get(link[0]).delete(link[1]);
             }
     }
     hasLink(source, target) { return this.links.has(source) && this.links.get(source).has(target); }
@@ -185,7 +183,7 @@ export class Graph {
     }
     populate(nodes) { return nodes.map(id => this.nodesObjects.get(id)); }
     draw(ctx) {
-        if (this.display && this.positionGetter) {
+        if (this.positionGetter) {
             ctx.save();
             ctx.restore();
             let positions = new Map();
@@ -208,16 +206,16 @@ export class Graph {
         return true;
     }
     clone() {
-        let graph = new Graph(this.display, this.positionGetter);
+        let graph = new Graph(this.positionGetter);
         graph.addNode(...this.nodesObjects.entries());
-        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat());
+        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => [source, target])).flat());
         return graph;
     }
     static generate(data, dataToId, dataToObj, getIdNeighbors, objectToPosition) {
-        let graph = new Graph(false, objectToPosition);
+        let graph = new Graph(objectToPosition);
         let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]);
         graph.addNode(...dataEntries);
-        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => ({ source: entry[0], target: id }))));
+        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => [entry[0], id])));
         return graph;
     }
 }
@@ -283,14 +281,14 @@ export class HexagonGraph {
 }
 export class SquareGraph {
     static buildGraph(gameObjects, includeDiagonals = false) {
-        let graph = new Graph(false, object => object.transform.translation.clone());
+        let graph = new Graph(object => object.transform.translation.clone());
         for (let object of gameObjects)
             graph.addNode([object.id, object]);
         for (let object of gameObjects)
             for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
                 let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor));
                 if (neighborObject)
-                    graph.addLink({ source: object.id, target: neighborObject.id });
+                    graph.addLink([object.id, neighborObject.id]);
             }
         return graph;
     }

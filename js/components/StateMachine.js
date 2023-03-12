@@ -1,13 +1,12 @@
 import { GameComponent } from "../basics/GameObject.js";
 export class StateMachine extends GameComponent {
-    componentTag = 'camera-drag';
     unique = true;
     boundObject;
     state = [];
     updates = new Map();
     draws = new Map();
     constructor(boundObject, startState = [0]) {
-        super();
+        super('state-machine');
         this.boundObject = boundObject;
         this.state = startState;
     }

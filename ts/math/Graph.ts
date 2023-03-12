@@ -7,12 +7,10 @@ export class Graph<I, T> {
     nodes: Set<I> = new Set()
     nodesObjects: Map<I, T> = new Map()
     links: Map<I, Set<I>> = new Map()
-    display: boolean = false
     positionGetter: (object: T) => Vector = null
 
-    constructor(display: boolean = false, positionGetter: (object: T) => Vector = null) {
+    constructor(positionGetter: (object: T) => Vector = null) {
 
-        this.display = display
         this.positionGetter = positionGetter
 
     }
@@ -60,13 +58,13 @@ export class Graph<I, T> {
      * 
      * @param {...{source:I, target:I, data:any}} links 
      */
-    addLink(...links: { source: I, target: I }[]) {
+    addLink(...links: [I, I][]) {
 
         for (let link of links) {
 
-            if (!this.hasNode(link.source) || !this.hasNode(link.target)) continue
+            if (!this.hasNode(link[0]) || !this.hasNode(link[1])) continue
 
-            this.links.get(link.source).add(link.target)
+            this.links.get(link[0]).add(link[1])
 
         }
 
@@ -76,12 +74,12 @@ export class Graph<I, T> {
      * 
      * @param {...{source:I, target:I}} links 
      */
-    removeLink(...links: { source: I, target: I }[]) {
+    removeLink(...links: [I, I][]) {
 
         for (let link of links)
-            if (this.hasLink(link.source, link.target)) {
+            if (this.hasLink(link[0], link[1])) {
 
-                this.links.get(link.source).delete(link.target)
+                this.links.get(link[0]).delete(link[1])
 
             }
 
@@ -286,7 +284,7 @@ export class Graph<I, T> {
 
     draw(ctx: CanvasRenderingContext2D): boolean {
 
-        if (this.display && this.positionGetter) {
+        if (this.positionGetter) {
 
             ctx.save()
             ctx.restore()
@@ -324,10 +322,10 @@ export class Graph<I, T> {
 
     clone(): Graph<I, T> {
 
-        let graph = new Graph<I, T>(this.display, this.positionGetter)
+        let graph = new Graph<I, T>(this.positionGetter)
 
         graph.addNode(...this.nodesObjects.entries())
-        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => ({ source, target }))).flat())
+        graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => [source, target] as [I, I])).flat())
 
         return graph
 
@@ -341,13 +339,13 @@ export class Graph<I, T> {
         objectToPosition?: (OBJ: OBJ) => Vector
     ): Graph<ID, OBJ> {
 
-        let graph: Graph<ID, OBJ> = new Graph(false, objectToPosition)
+        let graph: Graph<ID, OBJ> = new Graph(objectToPosition)
 
         let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]) as [ID, OBJ][]
 
         graph.addNode(...dataEntries)
 
-        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => ({ source: entry[0], target: id }))))
+        dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => ([entry[0], id] as [ID, ID]))))
 
         return graph
 
@@ -471,7 +469,7 @@ export class HexagonGraph {
 export class SquareGraph {
 
     static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals: boolean = false): Graph<number, T> {
-        let graph = new Graph<number, T>(false, object => object.transform.translation.clone())
+        let graph = new Graph<number, T>(object => object.transform.translation.clone())
 
         for (let object of gameObjects)
             graph.addNode([object.id, object])
@@ -480,7 +478,7 @@ export class SquareGraph {
             for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
                 let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor))
                 if (neighborObject)
-                    graph.addLink({ source: object.id, target: neighborObject.id })
+                    graph.addLink([object.id, neighborObject.id])
             }
 
         return graph

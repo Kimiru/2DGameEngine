@@ -1,15 +1,15 @@
 import { GameComponent } from "../basics/GameObject.js";
 import { Camera } from "../camera/Camera.js";
 export class CameraDragComponent extends GameComponent {
-    componentTag = 'camera-drag';
     unique = true;
     static leftButton = 0;
     static rightButton = 1;
     static middleButton = 2;
     button;
     scrollZoomEnabled;
+    enabled = true;
     constructor(button = 1, scrollZoomEnabled = true) {
-        super();
+        super('camera-drag');
         this.button = button;
         this.scrollZoomEnabled = scrollZoomEnabled;
     }
@@ -19,6 +19,8 @@ export class CameraDragComponent extends GameComponent {
     }
     #target = null;
     update(dt) {
+        if (!this.enabled)
+            return;
         let mouse = this.input.mouse;
         let button = false;
         if (this.button === 0)
