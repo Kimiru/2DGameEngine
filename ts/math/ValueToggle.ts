@@ -1,6 +1,6 @@
 import { GameComponent } from "../2DGameEngine.js"
 
-export class Toggle extends GameComponent {
+export class ValueToggle extends GameComponent {
 
     active: boolean = false
 
@@ -12,7 +12,7 @@ export class Toggle extends GameComponent {
 
     constructor(patternFunction: (t: number) => number, speed: number = 1) {
 
-        super('toggle')
+        super('valuetoggle')
 
         this.drawEnabled = false
 
