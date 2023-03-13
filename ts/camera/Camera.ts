@@ -18,6 +18,8 @@ export class Camera extends GameObject {
         this.physicsEnabled = false
         this.drawEnabled = false
 
+        this.zIndex = Number.MAX_SAFE_INTEGER
+
     }
 
     getViewTransformMatrix(): matrix {

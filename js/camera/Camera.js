@@ -12,6 +12,7 @@ export class Camera extends GameObject {
         this.updateEnabled = false;
         this.physicsEnabled = false;
         this.drawEnabled = false;
+        this.zIndex = Number.MAX_SAFE_INTEGER;
     }
     getViewTransformMatrix() {
         let wpos = this.getWorldPosition();
