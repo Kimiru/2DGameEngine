@@ -12,6 +12,8 @@ let textboxOptions = {
     size: .15,
     font: 'sans-serif',
     color: 'black',
+    outlineColor: 'white',
+    lineWidth: 0.1,
     maxWidth: .4,
     align: 'center',
     baseline: 'middle'
