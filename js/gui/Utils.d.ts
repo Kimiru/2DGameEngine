@@ -8,5 +8,7 @@ export type textoptions = {
     outlineColor?: stringable;
     lineWidth?: number;
     maxWidth?: number;
+    translateX?: number;
+    translateY?: number;
 };
 export declare function drawText(ctx: CanvasRenderingContext2D, text: stringable, textoptions: textoptions): void;

@@ -11,7 +11,7 @@ export function drawText(ctx, text, textoptions) {
     let baseline = textoptions.baseline ?? 'middle';
     let maxWidth = textoptions.maxWidth ?? undefined;
     ctx.save();
-    ctx.scale(size, -size);
+    ctx.transform(size, 0, 0, -size, textoptions.translateX ?? 0, textoptions.translateY ?? 0);
     ctx.font = `1px ${font}`;
     ctx.textAlign = align;
     ctx.textBaseline = baseline;

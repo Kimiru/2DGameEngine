@@ -14,6 +14,9 @@ export type textoptions = {
     lineWidth?: number
     maxWidth?: number
 
+    translateX?: number
+    translateY?: number
+
 }
 
 export function drawText(ctx: CanvasRenderingContext2D, text: stringable, textoptions: textoptions) {
@@ -34,7 +37,10 @@ export function drawText(ctx: CanvasRenderingContext2D, text: stringable, textop
     let maxWidth = textoptions.maxWidth ?? undefined
 
     ctx.save()
-    ctx.scale(size, -size)
+    ctx.transform(size, 0,
+        0, -size,
+        textoptions.translateX ?? 0,
+        textoptions.translateY ?? 0)
 
     ctx.font = `1px ${font}`
     ctx.textAlign = align
