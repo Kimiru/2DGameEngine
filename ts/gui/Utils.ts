@@ -14,8 +14,8 @@ export type textoptions = {
     lineWidth?: number
     maxWidth?: number
 
-    translateX?: number
-    translateY?: number
+    posX?: number
+    posY?: number
 
 }
 
@@ -39,8 +39,8 @@ export function drawText(ctx: CanvasRenderingContext2D, text: stringable, textop
     ctx.save()
     ctx.transform(size, 0,
         0, -size,
-        textoptions.translateX ?? 0,
-        textoptions.translateY ?? 0)
+        textoptions.posX ?? 0,
+        textoptions.posY ?? 0)
 
     ctx.font = `1px ${font}`
     ctx.textAlign = align
