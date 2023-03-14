@@ -1,3 +1,4 @@
+import { GameObject } from "./GameObject.js";
 export type imageBank = Map<string, HTMLImageElement>;
 /**
  * loads multiple images and use callbacks for progression checks and at the end
@@ -44,3 +45,4 @@ export declare function HexColorToRGB(hexColor: string): [number, number, number
 export declare function RBGToHexColor(r: number, g: number, b: number): string;
 export type stringable = string | (() => string);
 export declare function resolveStringable(value: stringable): string;
+export declare function dummy(x?: number, y?: number): GameObject;

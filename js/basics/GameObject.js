@@ -139,6 +139,15 @@ export class GameObject {
         return this.children.filter(child => child.tags.includes('component') &&
             child.tags.includes(componentTag));
     }
+    doIf(predicate) {
+        this.updateIf(predicate);
+        this.physicsIf(predicate);
+        this.drawIf(predicate);
+    }
+    #updatePredicate = [];
+    updateIf(predicate) {
+        this.#updatePredicate.push(predicate);
+    }
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -147,6 +156,8 @@ export class GameObject {
     * @param {number} dt
     */
     executeUpdate(dt) {
+        if (this.#updatePredicate.length && !this.#updatePredicate.every(predicate => predicate()))
+            return;
         if (this.updateEnabled)
             this.update(dt);
         if (this.childrenUpdateEnabled)
@@ -154,7 +165,13 @@ export class GameObject {
                 if (child instanceof GameObject)
                     child.executeUpdate(dt);
     }
+    #physicsPredicate = [];
+    physicsIf(predicate) {
+        this.#physicsPredicate.push(predicate);
+    }
     executePhysics(dt) {
+        if (this.#physicsPredicate.length && !this.#physicsPredicate.every(predicate => predicate()))
+            return;
         if (this.physicsEnabled)
             this.physics(dt);
         if (this.childrenPhysicsEnabled)
@@ -163,6 +180,10 @@ export class GameObject {
                     child.executePhysics(dt);
     }
     childrenDrawFilter(children) { return children; }
+    #drawPredicate = [];
+    drawIf(predicate) {
+        this.#drawPredicate.push(predicate);
+    }
     /**
     * Draw the object and its child.
     * Is called by the Scene or parent objects to draw this object.
@@ -171,6 +192,8 @@ export class GameObject {
     * @param {number} dt
     */
     executeDraw(ctx, drawRange, cameraPosition) {
+        if (this.#drawPredicate.length && !this.#drawPredicate.every(predicate => predicate()))
+            return;
         ctx.save();
         ctx.transform(...this.transform.getMatrix());
         if (this.#drawBeforeChild && this.drawEnabled)

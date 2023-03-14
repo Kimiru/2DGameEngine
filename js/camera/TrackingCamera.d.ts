@@ -1,3 +1,4 @@
+import { Vector } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 import { Camera } from "./Camera.js";
 export declare enum TrackingCameraDisableMode {
@@ -9,7 +10,7 @@ export declare class TrackingCamera extends Camera {
     /**
      * The object the camera should track, if null, stops tracking
      */
-    trackedObject: GameObject;
+    trackedObject: GameObject | Vector;
     /**
      * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
      */

@@ -96,6 +96,8 @@ export declare class GameObject {
     onRemove(): void;
     getComponent<T extends GameComponent>(componentTag: string): T | null;
     getComponents<T extends GameComponent>(componentTag: string): T[];
+    doIf(predicate: () => boolean): void;
+    updateIf(predicate: () => boolean): void;
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -104,8 +106,10 @@ export declare class GameObject {
     * @param {number} dt
     */
     executeUpdate(dt: number): void;
+    physicsIf(predicate: () => boolean): void;
     executePhysics(dt: number): void;
     childrenDrawFilter(children: GameObject[]): GameObject[];
+    drawIf(predicate: () => boolean): void;
     /**
     * Draw the object and its child.
     * Is called by the Scene or parent objects to draw this object.

@@ -1,4 +1,6 @@
+import { Rectangle } from "../2DGameEngine.js"
 import { SVGStringToImage } from "../images/Utils.js"
+import { GameObject } from "./GameObject.js"
 
 export type imageBank = Map<string, HTMLImageElement>
 
@@ -348,4 +350,17 @@ export type stringable = string | (() => string)
 export function resolveStringable(value: stringable) {
     if (value === null) return ''
     return typeof value === 'string' ? value : value()
+}
+
+export function dummy(x: number = 0, y: number = 0) {
+
+    let obj = new GameObject()
+    obj.position.set(x, y)
+    let rect = new Rectangle(0, 0, 1, 1)
+    rect.fill = false
+    rect.display = true
+    obj.add(rect)
+
+    return obj
+
 }

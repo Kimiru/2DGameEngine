@@ -70,8 +70,15 @@ export class Rectangle extends Polygon {
         if (this.display) {
             ctx.save();
             // ctx.scale(1 / this.w, 1 / this.h)
-            ctx.fillStyle = this.displayColor;
-            ctx.fillRect(-.5, -.5, 1, 1);
+            if (this.fill) {
+                ctx.fillStyle = this.displayColor;
+                ctx.fillRect(-.5, -.5, 1, 1);
+            }
+            else {
+                ctx.lineWidth = .05;
+                ctx.strokeStyle = this.displayColor;
+                ctx.strokeRect(-.5, -.5, 1, 1);
+            }
             ctx.restore();
         }
         return true;

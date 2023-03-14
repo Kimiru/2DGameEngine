@@ -3,10 +3,12 @@ import { GameObject } from "../basics/GameObject.js";
 import { Rectangle } from "../geometry/Rectangle.js";
 import { textoptions } from "./Utils.js";
 export declare class TextBox extends GameObject {
+    #private;
     static lock: boolean;
     enabled: boolean;
     text: string;
     active: boolean;
+    cursorPosition: number;
     rect: Rectangle;
     options: textoptions;
     onSound: string;

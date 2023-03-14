@@ -1,4 +1,6 @@
+import { Rectangle } from "../2DGameEngine.js";
 import { SVGStringToImage } from "../images/Utils.js";
+import { GameObject } from "./GameObject.js";
 /**
  * loads multiple images and use callbacks for progression checks and at the end
  *
@@ -209,4 +211,13 @@ export function resolveStringable(value) {
     if (value === null)
         return '';
     return typeof value === 'string' ? value : value();
+}
+export function dummy(x = 0, y = 0) {
+    let obj = new GameObject();
+    obj.position.set(x, y);
+    let rect = new Rectangle(0, 0, 1, 1);
+    rect.fill = false;
+    rect.display = true;
+    obj.add(rect);
+    return obj;
 }

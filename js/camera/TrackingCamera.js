@@ -1,3 +1,4 @@
+import { Vector } from "../2DGameEngine.js";
 import { Camera } from "./Camera.js";
 export var TrackingCameraDisableMode;
 (function (TrackingCameraDisableMode) {
@@ -28,9 +29,9 @@ export class TrackingCamera extends Camera {
         this.updateEnabled = true;
     }
     update(dt) {
-        if (this.trackedObject && this.scene === this.trackedObject.scene) {
+        if (this.trackedObject && (this.trackedObject instanceof Vector || this.scene === this.trackedObject.scene)) {
             let cameraWorldPosition = this.getWorldPosition();
-            let objectWorldPosition = this.trackedObject.getWorldPosition();
+            let objectWorldPosition = this.trackedObject instanceof Vector ? this.trackedObject.clone() : this.trackedObject.getWorldPosition();
             if (!cameraWorldPosition.equal(objectWorldPosition)) {
                 let rawOffset = objectWorldPosition.clone().sub(cameraWorldPosition);
                 let offset = rawOffset.clone().divS(this.trackLag);

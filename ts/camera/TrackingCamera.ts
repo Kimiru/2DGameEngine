@@ -1,3 +1,4 @@
+import { Vector } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Camera } from "./Camera.js"
 
@@ -10,7 +11,7 @@ export class TrackingCamera extends Camera {
     /**
      * The object the camera should track, if null, stops tracking
      */
-    trackedObject: GameObject = null
+    trackedObject: GameObject | Vector = null
     /**
      * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
      */
@@ -36,10 +37,10 @@ export class TrackingCamera extends Camera {
 
     update(dt: number): void {
 
-        if (this.trackedObject && this.scene === this.trackedObject.scene) {
+        if (this.trackedObject && (this.trackedObject instanceof Vector || this.scene === this.trackedObject.scene)) {
 
             let cameraWorldPosition = this.getWorldPosition()
-            let objectWorldPosition = this.trackedObject.getWorldPosition()
+            let objectWorldPosition = this.trackedObject instanceof Vector ? this.trackedObject.clone() : this.trackedObject.getWorldPosition()
 
             if (!cameraWorldPosition.equal(objectWorldPosition)) {
 

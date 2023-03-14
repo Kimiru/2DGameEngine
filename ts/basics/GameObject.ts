@@ -192,6 +192,21 @@ export class GameObject {
 
     }
 
+    doIf(predicate: () => boolean) {
+
+        this.updateIf(predicate)
+        this.physicsIf(predicate)
+        this.drawIf(predicate)
+
+    }
+
+    #updatePredicate: (() => boolean)[] = []
+    updateIf(predicate: () => boolean) {
+
+        this.#updatePredicate.push(predicate)
+
+    }
+
     /**
     * Update the object and its child.
     * Is called by the Scene or parent objects to update this object.
@@ -200,6 +215,8 @@ export class GameObject {
     * @param {number} dt 
     */
     executeUpdate(dt: number) {
+
+        if (this.#updatePredicate.length && !this.#updatePredicate.every(predicate => predicate())) return
 
         if (this.updateEnabled) this.update(dt)
 
@@ -210,7 +227,16 @@ export class GameObject {
 
     }
 
+    #physicsPredicate: (() => boolean)[] = []
+    physicsIf(predicate: () => boolean) {
+
+        this.#physicsPredicate.push(predicate)
+
+    }
+
     executePhysics(dt: number) {
+
+        if (this.#physicsPredicate.length && !this.#physicsPredicate.every(predicate => predicate())) return
 
         if (this.physicsEnabled) this.physics(dt)
 
@@ -223,6 +249,13 @@ export class GameObject {
 
     childrenDrawFilter(children: GameObject[]): GameObject[] { return children }
 
+    #drawPredicate: (() => boolean)[] = []
+    drawIf(predicate: () => boolean) {
+
+        this.#drawPredicate.push(predicate)
+
+    }
+
     /**
     * Draw the object and its child.
     * Is called by the Scene or parent objects to draw this object.
@@ -231,6 +264,8 @@ export class GameObject {
     * @param {number} dt 
     */
     executeDraw(ctx: CanvasRenderingContext2D, drawRange: number, cameraPosition: Vector) {
+
+        if (this.#drawPredicate.length && !this.#drawPredicate.every(predicate => predicate())) return
 
         ctx.save()
 
