@@ -114,6 +114,8 @@ export class GameScene {
             ctx.transform(...this.camera.getViewTransformMatrix())
         }
 
+        this.draw(ctx)
+
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y)
 
         if (this.renderingType === RenderingType.INFINITY) {
@@ -135,10 +137,6 @@ export class GameScene {
             }
 
         }
-
-
-
-        this.draw(ctx)
 
     }
 

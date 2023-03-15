@@ -76,6 +76,7 @@ export class GameScene {
         if (this.camera) {
             ctx.transform(...this.camera.getViewTransformMatrix());
         }
+        this.draw(ctx);
         let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
         if (this.renderingType === RenderingType.INFINITY) {
             for (let child of children)
@@ -91,7 +92,6 @@ export class GameScene {
                     child.executeDraw(ctx, drawRange, cameraPosition);
             }
         }
-        this.draw(ctx);
     }
     /**
      * Add one or more object to the scene sorting them out by their tages, removing them from previous parent/scene if needed
