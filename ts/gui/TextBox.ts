@@ -50,7 +50,7 @@ export class TextBox extends GameObject {
                 } else if (event.key.length === 1) {
                     this.#addStr(event.key)
                 } else if (event.key === 'Backspace') {
-                    this.text = this.text.slice(0, this.cursorPosition - 1) + this.text.slice(this.cursorPosition)
+                    this.text = this.text.slice(0, Math.max(0, this.cursorPosition - 1)) + this.text.slice(this.cursorPosition)
                     this.cursorPosition = Math.max(this.cursorPosition - 1, 0)
                 } else if (event.key === 'Delete') {
                     this.text = this.text.slice(0, this.cursorPosition) + this.text.slice(this.cursorPosition + 1)

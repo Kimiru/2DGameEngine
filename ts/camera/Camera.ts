@@ -1,3 +1,4 @@
+import { Rectangle } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 import { Transform } from "../math/Transform.js"
 import { matrix } from "../math/TransformMatrix.js"
@@ -19,6 +20,18 @@ export class Camera extends GameObject {
         this.drawEnabled = false
 
         this.zIndex = Number.MAX_SAFE_INTEGER
+
+    }
+
+    get viewRect(): Rectangle {
+
+        return new Rectangle(
+            this.position.x,
+            this.position.y,
+
+            this.engine.usableWidth * this.size.x,
+            this.engine.usableHeight * this.size.y
+        )
 
     }
 
