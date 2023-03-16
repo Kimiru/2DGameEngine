@@ -1,6 +1,5 @@
 import { TransformMatrix } from "../math/TransformMatrix.js";
 import { Vector } from "../math/Vector.js";
-import { NetworkGameObject } from "../network/NetworkGameObject.js";
 import { Input } from "./Input.js";
 import { loadImages, loadSounds, loadSVGs } from "./Utils.js";
 const gameEngineConstructorArguments = {
@@ -229,9 +228,6 @@ export class GameEngine {
             this.#currentScene.executeUpdate(this.#dt);
             this.#currentScene.executePhysics(this.#dt);
             this.#currentScene.executeDraw(this.ctx);
-            if (window.Peer)
-                if (NetworkGameObject.hasPendingUpdates())
-                    NetworkGameObject.flushPendingUpdates();
         }
         this.ctx.restore();
         this.input.mouseLoop();

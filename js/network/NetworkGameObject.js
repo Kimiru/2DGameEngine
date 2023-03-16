@@ -227,4 +227,5 @@ export class NetworkGameObject extends GameObject {
         createObject(message);
         updates(message);
     });
+    console.log('automanagment enabled');
 }

@@ -38,5 +38,4 @@ export * from './math/TransformMatrix.js'
 export * from './math/Utils.js'
 export * from './math/ValueToggle.js'
 export * from './math/Vector.js'
-export * from './network/NetworkGameObject.js'
 

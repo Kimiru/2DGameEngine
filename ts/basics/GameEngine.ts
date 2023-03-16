@@ -1,6 +1,5 @@
 import { TransformMatrix } from "../math/TransformMatrix.js"
 import { Vector } from "../math/Vector.js"
-import { NetworkGameObject } from "../network/NetworkGameObject.js"
 import { GameScene } from "./GameScene.js"
 import { Input } from "./Input.js"
 import { imageBank, loadImages, loadSounds, loadSVGs, soundBank, svgBank } from "./Utils.js"
@@ -343,10 +342,6 @@ export class GameEngine {
             this.#currentScene.executeUpdate(this.#dt)
             this.#currentScene.executePhysics(this.#dt)
             this.#currentScene.executeDraw(this.ctx)
-
-            if (window.Peer)
-                if (NetworkGameObject.hasPendingUpdates())
-                    NetworkGameObject.flushPendingUpdates()
 
         }
 
