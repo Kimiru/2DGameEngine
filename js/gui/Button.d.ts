@@ -14,6 +14,6 @@ export declare class Button extends GameObject {
     constructor(text: stringable, options?: textoptions, onSound?: string, margin?: number);
     get currentColor(): string;
     update(dt: number): void;
-    onActive(): void;
+    onClick(): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }

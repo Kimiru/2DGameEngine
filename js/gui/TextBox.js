@@ -75,7 +75,7 @@ export class TextBox extends GameObject {
         TextBox.lock = false;
         if (this.offSound)
             this.engine.soundBank.get(this.offSound)?.play();
-        this.onFinish(this.text);
+        this.onChange(this.text);
     }
     toggle() {
         if (!this.active)
@@ -83,7 +83,7 @@ export class TextBox extends GameObject {
         else
             this.toggleOff();
     }
-    onFinish(text) { }
+    onChange(text) { }
     update(dt) {
         let mouse = this.input.mouse;
         if (mouse.leftClick) {

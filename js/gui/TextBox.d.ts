@@ -18,7 +18,7 @@ export declare class TextBox extends GameObject {
     toggleOn(): void;
     toggleOff(): void;
     toggle(): void;
-    onFinish(text: string): void;
+    onChange(text: string): void;
     update(dt: number): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }

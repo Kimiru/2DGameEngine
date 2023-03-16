@@ -40,7 +40,7 @@ export class ColorPicker extends GameObject {
         super()
 
         this.htb.transform.translation.set(.75, 0.375)
-        this.htb.onFinish = (str: string) => {
+        this.htb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
                 this.h = minmax(0, parseInt(str), 360)
@@ -53,7 +53,7 @@ export class ColorPicker extends GameObject {
         this.add(this.htb)
 
         this.stb.transform.translation.set(.75, 0.125)
-        this.stb.onFinish = (str: string) => {
+        this.stb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
                 this.s = minmax(0, parseInt(str), 100)
@@ -65,7 +65,7 @@ export class ColorPicker extends GameObject {
         this.add(this.stb)
 
         this.ltb.transform.translation.set(.75, -0.125)
-        this.ltb.onFinish = (str: string) => {
+        this.ltb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
                 this.l = minmax(0, parseInt(str), 100)

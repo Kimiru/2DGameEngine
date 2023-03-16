@@ -33,6 +33,11 @@ export class Button extends GameObject {
 
         this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.size * 1.1 + margin)
 
+        if (options.align === 'right')
+            this.rect.x = -this.rect.w / 2
+        if (options.align === 'left')
+            this.rect.x = this.rect.w / 2
+
         this.add(this.rect)
 
         this.drawAfterChildren()
@@ -50,7 +55,7 @@ export class Button extends GameObject {
             if (this.rect.containsWorldVector(mouse.position) && !this.active) {
 
                 this.#active.reset()
-                this.onActive()
+                this.onClick()
 
                 if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
 
@@ -63,7 +68,7 @@ export class Button extends GameObject {
 
     }
 
-    onActive() { }
+    onClick() { }
 
     draw(ctx: CanvasRenderingContext2D): void {
 

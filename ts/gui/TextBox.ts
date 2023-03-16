@@ -101,7 +101,7 @@ export class TextBox extends GameObject {
 
         if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
 
-        this.onFinish(this.text)
+        this.onChange(this.text)
 
     }
 
@@ -115,7 +115,7 @@ export class TextBox extends GameObject {
 
     }
 
-    onFinish(text: string) { }
+    onChange(text: string) { }
 
     update(dt: number): void {
 

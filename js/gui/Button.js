@@ -21,6 +21,10 @@ export class Button extends GameObject {
         options.posX = 0;
         options.posY = 0;
         this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.size * 1.1 + margin);
+        if (options.align === 'right')
+            this.rect.x = -this.rect.w / 2;
+        if (options.align === 'left')
+            this.rect.x = this.rect.w / 2;
         this.add(this.rect);
         this.drawAfterChildren();
     }
@@ -30,7 +34,7 @@ export class Button extends GameObject {
         if (mouse.leftClick) {
             if (this.rect.containsWorldVector(mouse.position) && !this.active) {
                 this.#active.reset();
-                this.onActive();
+                this.onClick();
                 if (this.onSound)
                     this.engine.soundBank.get(this.onSound)?.play();
             }
@@ -40,7 +44,7 @@ export class Button extends GameObject {
         else
             this.rect.displayColor = 'red';
     }
-    onActive() { }
+    onClick() { }
     draw(ctx) {
         drawText(ctx, this.text, this.options);
     }
