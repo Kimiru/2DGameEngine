@@ -35,6 +35,28 @@ export class GameScene {
         this.engine.setScene(this.parentScene);
     }
     /**
+     * Execute the scene update when not in use by an engine.
+     * Still requires an engine as a reference point.
+     */
+    executeBlindUpdate(engine, dt) {
+        if (this.engine)
+            return;
+        this.engine = engine;
+        this.executeUpdate(dt);
+        this.engine = null;
+    }
+    /**
+     * Execute the scene physics when not in use by an engine.
+     * Still requires an engine as a reference point.
+     */
+    executeBlindPhysics(engine, dt) {
+        if (this.engine)
+            return;
+        this.engine = engine;
+        this.executePhysics(dt);
+        this.engine = null;
+    }
+    /**
      * Update the scene and its child
      * Is called by the GameEngine to update the scene
      * Should not be called by the user

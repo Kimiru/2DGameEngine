@@ -1,7 +1,14 @@
 import { GameComponent } from "../basics/GameObject.js"
 
-type UpdateCallback<T> = (object: T, dt: number) => (number[] | null)
-type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
+export type UpdateCallback<T> = (object: T, dt: number) => (number[] | null)
+export type PhysicsCallback<T> = (object: T, dt: number) => void
+export type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
+export type StateActions<T> = {
+    update?: UpdateCallback<T>
+    physics?: PhysicsCallback<T>
+    draw?: DrawCallback<T>
+}
+
 
 export class StateMachine<T> extends GameComponent {
 
@@ -10,8 +17,7 @@ export class StateMachine<T> extends GameComponent {
     boundObject: T
     state: number[] = []
 
-    updates: Map<string, UpdateCallback<T>[]> = new Map()
-    draws: Map<string, DrawCallback<T>[]> = new Map()
+    statesActions: Map<string, StateActions<T>[]> = new Map()
 
     constructor(boundObject: T, startState: number[] = [0]) {
 
@@ -40,36 +46,13 @@ export class StateMachine<T> extends GameComponent {
 
     #computeStateString(state: number[], postState: boolean = false): string { return state.join('_') + (postState ? '_post' : '') }
 
-
-    /**
-     * Add a callback to a given state value.
-     * Multiple callback can be added to the same state, they will then be exeecuted in order.
-     * Post state returned state will be ignored
-     * Post state execution will not be interupted
-     * 
-     * @param state 
-     * @param callback 
-     * @param postState 
-     */
-    addStateCallback(state: number[], update: UpdateCallback<T> = null, draw: DrawCallback<T> = null, postState: boolean = false) {
+    addStateActions(state: number[], stateActions: StateActions<T>, postState: boolean = false) {
 
         let stateString = this.#computeStateString(state, postState)
 
-        if (update) {
+        if (!this.statesActions.has(stateString)) this.statesActions.set(stateString, [])
 
-            if (!this.updates.has(stateString)) this.updates.set(stateString, [])
-
-            this.updates.get(stateString).push(update)
-
-        }
-
-        if (draw) {
-
-            if (!this.draws.has(stateString)) this.draws.set(stateString, [])
-
-            this.draws.get(stateString).push(draw)
-
-        }
+        this.statesActions.get(stateString).push(stateActions)
 
     }
 
@@ -89,9 +72,9 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state)
 
-            for (let callback of this.updates.get(stateString) ?? []) {
+            for (let stateActions of this.statesActions.get(stateString) ?? []) {
 
-                nextState = callback(this.boundObject, dt)
+                nextState = stateActions.update?.(this.boundObject, dt) ?? null
 
                 if (!nextState) continue
 
@@ -107,17 +90,48 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let callback of this.updates.get(stateString) ?? [])
-                callback(this.boundObject, dt)
+            for (let stateActions of this.statesActions.get(stateString) ?? [])
+                stateActions.update?.(this.boundObject, dt)
 
             state.pop()
 
         }
 
-        for (let callback of this.updates.get(this.#computeStateString([], true)) ?? [])
-            callback(this.boundObject, dt)
+        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+            stateActions.update?.(this.boundObject, dt)
 
         if (nextState) this.state = nextState
+
+    }
+
+    physics(dt: number): void {
+
+        let state = []
+
+        while (state.length < this.state.length + 1) {
+
+            let stateString = this.#computeStateString(state)
+
+            for (let stateActions of this.statesActions.get(stateString) ?? [])
+                stateActions.physics?.(this.boundObject, dt)
+
+            state.push(this.state[state.length])
+
+        }
+
+        while (state.length != 0) {
+
+            let stateString = this.#computeStateString(state, true)
+
+            for (let stateActions of this.statesActions.get(stateString) ?? [])
+                stateActions.physics?.(this.boundObject, dt)
+
+            state.pop()
+
+        }
+
+        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+            stateActions.physics?.(this.boundObject, dt)
 
     }
 
@@ -129,8 +143,8 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state)
 
-            for (let draw of this.draws.get(stateString) ?? [])
-                draw(this.boundObject, ctx)
+            for (let stateActions of this.statesActions.get(stateString) ?? [])
+                stateActions.draw?.(this.boundObject, ctx)
 
             state.push(this.state[state.length])
 
@@ -140,15 +154,15 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let draw of this.draws.get(stateString) ?? [])
-                draw(this.boundObject, ctx)
+            for (let stateActions of this.statesActions.get(stateString) ?? [])
+                stateActions.draw?.(this.boundObject, ctx)
 
             state.pop()
 
         }
 
-        for (let draw of this.draws.get(this.#computeStateString([], true)) ?? [])
-            draw(this.boundObject, ctx)
+        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+            stateActions.draw?.(this.boundObject, ctx)
 
     }
 

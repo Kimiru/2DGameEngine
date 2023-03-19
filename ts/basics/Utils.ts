@@ -267,7 +267,7 @@ export function getCircularReplacer() {
 
 }
 
-export function badclone(o: any): any { return JSON.parse(JSON.stringify(o, getCircularReplacer())) }
+export function badclone<T>(o: T): T { return JSON.parse(JSON.stringify(o, getCircularReplacer())) }
 
 export function HSLToRGB(h: number, s: number, l: number): [number, number, number] {
 

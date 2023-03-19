@@ -29,6 +29,16 @@ export declare class GameScene {
     store(): void;
     exit(): void;
     /**
+     * Execute the scene update when not in use by an engine.
+     * Still requires an engine as a reference point.
+     */
+    executeBlindUpdate(engine: GameEngine, dt: number): void;
+    /**
+     * Execute the scene physics when not in use by an engine.
+     * Still requires an engine as a reference point.
+     */
+    executeBlindPhysics(engine: GameEngine, dt: number): void;
+    /**
      * Update the scene and its child
      * Is called by the GameEngine to update the scene
      * Should not be called by the user
