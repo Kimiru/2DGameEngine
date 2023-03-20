@@ -17,6 +17,10 @@ export class CheckBox extends GameObject {
         this.options = options
         this.sound = sound
 
+        this.position.set(options.posX ?? 0, options.posY ?? 0)
+        options.posX = 0
+        options.posY = 0
+
         let size = this.options.size ?? 1
 
         this.rect.transform.scale.set(size, size)
