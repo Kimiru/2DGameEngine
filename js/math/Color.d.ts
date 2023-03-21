@@ -28,6 +28,8 @@ export declare class Color {
     static RGBtoHSL([r, g, b]: colortuple): colortuple;
     static HEXtoRGB(hexColor: string): colortuple;
     static RBGtoHEX([r, g, b]: colortuple): string;
+    static lerpRGB(a: colortuple, b: colortuple, t: number): colortuple;
+    static lerpHSL(a: colortuple, b: colortuple, t: number): colortuple;
 }
 export type colorable = string | (() => string) | Color;
 export declare function resolveColorable(value: colorable): string;

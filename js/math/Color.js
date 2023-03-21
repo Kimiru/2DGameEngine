@@ -1,3 +1,4 @@
+import { lerp, lerpArray } from "./Utils.js";
 export var ColorFormat;
 (function (ColorFormat) {
     ColorFormat[ColorFormat["HSL"] = 0] = "HSL";
@@ -131,6 +132,29 @@ export class Color {
         if (bStr.length === 1)
             bStr = '0' + bStr;
         return `#${rStr}${gStr}${bStr}`;
+    }
+    // Lerp
+    static lerpRGB(a, b, t) {
+        return lerpArray(a, b, t);
+    }
+    static lerpHSL(a, b, t) {
+        let h0 = a[0];
+        let h1 = b[0];
+        let d = Math.abs(h1 - h0);
+        let h;
+        if (h0 < h1) {
+            if (d > 180)
+                h = lerp(h0 + 360, h1, t) % 360;
+            else
+                h = lerp(h0, h1, t);
+        }
+        else {
+            if (d > 180)
+                h = lerp(h0, h1 + 360, t) % 360;
+            else
+                h = lerp(h0, h1, t);
+        }
+        return [h, lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
     }
 }
 export function resolveColorable(value) {
