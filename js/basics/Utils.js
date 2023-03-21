@@ -155,58 +155,6 @@ export function getCircularReplacer() {
     };
 }
 export function badclone(o) { return JSON.parse(JSON.stringify(o, getCircularReplacer())); }
-export function HSLToRGB(h, s, l) {
-    s /= 100;
-    l /= 100;
-    let k = n => (n + h / 30) % 12;
-    let a = s * Math.min(l, 1 - l);
-    let f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
-    return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
-}
-export function RGBToHSL(r, g, b) {
-    r /= 255;
-    g /= 255;
-    b /= 255;
-    const l = Math.max(r, g, b);
-    const s = l - Math.min(r, g, b);
-    const h = s
-        ? l === r
-            ? (g - b) / s
-            : l === g
-                ? 2 + (b - r) / s
-                : 4 + (r - g) / s
-        : 0;
-    return [
-        Math.round(60 * h < 0 ? 60 * h + 360 : 60 * h),
-        Math.round(100 * (s ? (l <= 0.5 ? s / (2 * l - s) : s / (2 - (2 * l - s))) : 0)),
-        Math.round((100 * (2 * l - s)) / 2),
-    ];
-}
-export function HexColorToRGB(hexColor) {
-    let match;
-    if ((match = /^#?([0-9a-fA-F]{3})$/.exec(hexColor))) {
-        return match[1]
-            .split('')
-            .map(v => v + v)
-            .map(v => parseInt(v, 16));
-    }
-    if ((match = /^#?([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$/.exec(hexColor))) {
-        return match.slice(1, 4).map(v => parseInt(v, 16));
-    }
-    return [0, 0, 0];
-}
-export function RBGToHexColor(r, g, b) {
-    let rStr = r.toString(16);
-    if (rStr.length === 1)
-        rStr = '0' + rStr;
-    let gStr = g.toString(16);
-    if (gStr.length === 1)
-        gStr = '0' + gStr;
-    let bStr = b.toString(16);
-    if (bStr.length === 1)
-        bStr = '0' + bStr;
-    return `#${rStr}${gStr}${bStr}`;
-}
 export function resolveStringable(value) {
     if (value === null)
         return '';

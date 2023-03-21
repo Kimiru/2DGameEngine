@@ -1,4 +1,4 @@
-import { GameObject, HexColorToRGB, HSLToRGB, map, minmax, RBGToHexColor, Rectangle, RGBToHSL, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js'
+import { Color, GameObject, map, minmax, Rectangle, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js'
 import { textoptions } from './Utils.js'
 
 const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')
@@ -25,29 +25,27 @@ let textboxOptions: textoptions = {
 
 export class ColorPicker extends GameObject {
 
-
+    color: Color = new Color()
 
     htb: TextBox = new TextBox('0', textboxOptions)
     stb: TextBox = new TextBox('100', textboxOptions)
     ltb: TextBox = new TextBox('50', textboxOptions)
 
-    h: number = 0
-    s: number = 100
-    l: number = 50
-
     constructor() {
 
         super()
+
+        this.color.HSL = [0, 100, 50]
 
         this.htb.transform.translation.set(.75, 0.375)
         this.htb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
-                this.h = minmax(0, parseInt(str), 360)
+                this.color.h = minmax(0, parseInt(str), 360)
 
 
-            this.htb.text = this.h.toString()
-            this.onChange(this.h, this.s, this.l)
+            this.htb.text = this.color.h.toString()
+            this.onChange(this.color.clone())
 
         }
         this.add(this.htb)
@@ -56,10 +54,10 @@ export class ColorPicker extends GameObject {
         this.stb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
-                this.s = minmax(0, parseInt(str), 100)
+                this.color.s = minmax(0, parseInt(str), 100)
 
-            this.stb.text = this.s.toString()
-            this.onChange(this.h, this.s, this.l)
+            this.stb.text = this.color.s.toString()
+            this.onChange(this.color.clone())
 
         }
         this.add(this.stb)
@@ -68,10 +66,10 @@ export class ColorPicker extends GameObject {
         this.ltb.onChange = (str: string) => {
 
             if (!isNaN(parseInt(str)))
-                this.l = minmax(0, parseInt(str), 100)
+                this.color.l = minmax(0, parseInt(str), 100)
 
-            this.ltb.text = this.l.toString()
-            this.onChange(this.h, this.s, this.l)
+            this.ltb.text = this.color.l.toString()
+            this.onChange(this.color.clone())
 
         }
 
@@ -79,41 +77,7 @@ export class ColorPicker extends GameObject {
 
     }
 
-    getHSLColor(): string { return `hsl(${this.h},${this.s}%,${this.l}%)` }
-
-    getHSL(): [number, number, number] { return [this.h, this.s, this.l] }
-
-    importHSL(h: number, s: number, l: number) {
-
-        this.h = h
-        this.s = s
-        this.l = l
-
-        this.htb.text = h.toString()
-        this.stb.text = s.toString()
-        this.ltb.text = l.toString()
-
-    }
-
-    getRGBColor(): string { return `rgb(${this.getRGB().join(',')})` }
-
-    getRGB(): [number, number, number] { return HSLToRGB(this.h, this.s, this.l) }
-
-    importRGB(r: number, g: number, b: number) { this.importHSL(...RGBToHSL(r, g, b)) }
-
-    getHexColor(): string {
-
-        return RBGToHexColor(...this.getRGB())
-
-    }
-
-    importHexColor(hexColor: string) {
-
-        this.importRGB(...HexColorToRGB(hexColor))
-
-    }
-
-    onChange(h: number, s: number, l: number): void { }
+    onChange(color: Color): void { }
 
     update(dt: number): void {
 
@@ -138,8 +102,8 @@ export class ColorPicker extends GameObject {
 
             if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
 
-                this.h = Math.round(360 * t)
-                this.htb.text = this.h.toString()
+                this.color.h = Math.round(360 * t)
+                this.htb.text = this.color.h.toString()
 
                 return
 
@@ -149,8 +113,8 @@ export class ColorPicker extends GameObject {
 
             if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
 
-                this.s = Math.round(100 * t)
-                this.stb.text = this.s.toString()
+                this.color.s = Math.round(100 * t)
+                this.stb.text = this.color.s.toString()
 
                 return
 
@@ -160,15 +124,15 @@ export class ColorPicker extends GameObject {
 
             if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
 
-                this.l = Math.round(100 * t)
-                this.ltb.text = this.l.toString()
+                this.color.l = Math.round(100 * t)
+                this.ltb.text = this.color.l.toString()
 
                 return
 
             }
 
             if (mouse.leftClick)
-                this.onChange(this.h, this.s, this.l)
+                this.onChange(this.color.clone())
 
         }
 
@@ -183,26 +147,26 @@ export class ColorPicker extends GameObject {
         ctx.fillRect(-1, 0.3125, 1.5, .125)
 
         const saturation = ctx.createLinearGradient(-1, 0, .5, 0)
-        saturation.addColorStop(0, `hsl(${this.h}, 0%, ${this.l}%)`)
-        saturation.addColorStop(1, `hsl(${this.h}, 100%, ${this.l}%)`)
+        saturation.addColorStop(0, `hsl(${this.color.h}, 0%, ${this.color.l}%)`)
+        saturation.addColorStop(1, `hsl(${this.color.h}, 100%, ${this.color.l}%)`)
 
         ctx.fillStyle = saturation
         ctx.fillRect(-1, 0.0625, 1.5, .125)
 
         const lightness = ctx.createLinearGradient(-1, 0, .5, 0)
-        lightness.addColorStop(0, `hsl(${this.h}, ${this.s}%, 0%)`)
-        lightness.addColorStop(.5, `hsl(${this.h}, ${this.s}%, 50%)`)
-        lightness.addColorStop(1, `hsl(${this.h}, ${this.s}%, 100%)`)
+        lightness.addColorStop(0, `hsl(${this.color.h}, ${this.color.s}%, 0%)`)
+        lightness.addColorStop(.5, `hsl(${this.color.h}, ${this.color.s}%, 50%)`)
+        lightness.addColorStop(1, `hsl(${this.color.h}, ${this.color.s}%, 100%)`)
 
         ctx.fillStyle = lightness
         ctx.fillRect(-1, -0.1875, 1.5, .125)
 
-        ctx.fillStyle = this.getHSLColor()
+        ctx.fillStyle = this.color.toString()
         ctx.fillRect(-1, -0.4375, 1.5, .125)
 
-        let h = map(Number(this.h), 0, 360, -1, .5)
-        let s = map(Number(this.s), 0, 100, -1, .5)
-        let l = map(Number(this.l), 0, 100, -1, .5)
+        let h = map(Number(this.color.h), 0, 360, -1, .5)
+        let s = map(Number(this.color.s), 0, 100, -1, .5)
+        let l = map(Number(this.color.l), 0, 100, -1, .5)
 
         ctx.beginPath()
 
