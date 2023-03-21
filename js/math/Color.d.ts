@@ -18,6 +18,7 @@ export declare class Color {
     get XYZ(): colortuple;
     set XYZ([x, y, z]: colortuple);
     get HCL(): colortuple;
+    set HCL([h, c, l]: colortuple);
     clone(): Color;
     toString(type?: ColorFormat): string;
     static HSL([h, s, l]: colortuple): Color;

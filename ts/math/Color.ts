@@ -68,6 +68,18 @@ export class Color {
         return [h, c, l]
 
     }
+    set HCL([h, c, l]: colortuple) {
+
+        let rad = h * Math.PI / 180
+        let chroma = c / 100
+
+        let x = chroma * Math.cos(rad)
+        let y = l / 100
+        let z = chroma * Math.sin(rad)
+
+        this.XYZ = [x, y, z]
+
+    }
 
 
     clone(): Color { return Color.HSL(this.HSL) }

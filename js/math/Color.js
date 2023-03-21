@@ -44,6 +44,14 @@ export class Color {
         let l = z;
         return [h, c, l];
     }
+    set HCL([h, c, l]) {
+        let rad = h * Math.PI / 180;
+        let chroma = c / 100;
+        let x = chroma * Math.cos(rad);
+        let y = l / 100;
+        let z = chroma * Math.sin(rad);
+        this.XYZ = [x, y, z];
+    }
     clone() { return Color.HSL(this.HSL); }
     toString(type = ColorFormat.HSL) {
         switch (type) {
