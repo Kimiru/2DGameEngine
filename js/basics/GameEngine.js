@@ -257,3 +257,21 @@ export function fullScreen(engine) {
     window.addEventListener('resize', handler);
     handler();
 }
+export function fillCanvasParent(engine) {
+    let verticalPixels = engine.verticalPixels;
+    const handler = () => {
+        let canvas = engine.canvas;
+        let parent = canvas.parentElement;
+        let width = parent.clientWidth;
+        let height = parent.clientHeight;
+        if (height < width)
+            engine.resize(width, height, devicePixelRatio, verticalPixels);
+        else {
+            const ratio = height / width;
+            const adaptedVerticalPixels = verticalPixels * ratio;
+            engine.resize(width, height, devicePixelRatio, adaptedVerticalPixels);
+        }
+    };
+    window.addEventListener('resize', handler);
+    handler();
+}

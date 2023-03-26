@@ -23,6 +23,13 @@ export class ImageManipulator extends GameObject {
 
     get height(): number { return this.canvas.height }
 
+    setCtxToCenter() {
+
+        this.ctx.resetTransform()
+        this.ctx.transform(this.width, 0, 0, -this.height, this.width / 2, this.height / 2)
+
+    }
+
     setSize(width: number, height: number) {
 
         let tmpcanvas = document.createElement('canvas')

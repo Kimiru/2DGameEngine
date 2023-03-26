@@ -27,11 +27,10 @@ export class Drawable extends GameObject {
         imageManipulator.ctx.imageSmoothingQuality = 'high'
         imageManipulator.ctx.imageSmoothingEnabled = smoothing
 
-        for (let image of this.images) {
+        imageManipulator.setCtxToCenter()
+        imageManipulator.ctx.scale(...resolution.clone().div(resolution.clone().addS(margin, margin)).arrayXY())
 
-            imageManipulator.ctx.drawImage(image, 0, 0, image.width, image.height, margin, margin, resolution.x, resolution.y)
-
-        }
+        this.executeDraw(imageManipulator.ctx)
 
         return imageManipulator
 

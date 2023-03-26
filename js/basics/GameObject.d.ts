@@ -117,7 +117,7 @@ export declare class GameObject {
     *
     * @param {number} dt
     */
-    executeDraw(ctx: CanvasRenderingContext2D, drawRange: number, cameraPosition: Vector): void;
+    executeDraw(ctx: CanvasRenderingContext2D, drawRange?: number, cameraPosition?: Vector): void;
     /**
      * Update the object specific operation
      *

@@ -191,7 +191,7 @@ export class GameObject {
     *
     * @param {number} dt
     */
-    executeDraw(ctx, drawRange, cameraPosition) {
+    executeDraw(ctx, drawRange = 0, cameraPosition = new Vector()) {
         if (this.#drawPredicate.length && !this.#drawPredicate.every(predicate => predicate()))
             return;
         ctx.save();

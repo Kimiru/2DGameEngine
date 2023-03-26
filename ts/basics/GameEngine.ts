@@ -5,8 +5,8 @@ import { Input } from "./Input.js"
 import { imageBank, loadImages, loadSounds, loadSVGs, soundBank, svgBank } from "./Utils.js"
 
 const gameEngineConstructorArguments: {
-    width: number,
-    height: number,
+    width?: number,
+    height?: number,
     verticalPixels: number,
     scaling?: number,
     canvas?: HTMLCanvasElement,
@@ -373,7 +373,6 @@ export function fullScreen(engine: GameEngine) {
     const handler = () => {
         if (innerHeight < innerWidth)
             engine.resize(innerWidth, innerHeight, devicePixelRatio, verticalPixels)
-
         else {
 
             const ratio = innerHeight / innerWidth
@@ -382,6 +381,36 @@ export function fullScreen(engine: GameEngine) {
             engine.resize(innerWidth, innerHeight, devicePixelRatio, adaptedVerticalPixels)
 
         }
+    }
+
+    window.addEventListener('resize', handler)
+    handler()
+
+}
+
+export function fillCanvasParent(engine: GameEngine) {
+
+    let verticalPixels: number = engine.verticalPixels
+
+    const handler = () => {
+
+        let canvas = engine.canvas
+        let parent = canvas.parentElement
+
+        let width = parent.clientWidth
+        let height = parent.clientHeight
+
+        if (height < width)
+            engine.resize(width, height, devicePixelRatio, verticalPixels)
+        else {
+
+            const ratio = height / width
+            const adaptedVerticalPixels = verticalPixels * ratio
+
+            engine.resize(width, height, devicePixelRatio, adaptedVerticalPixels)
+
+        }
+
     }
 
     window.addEventListener('resize', handler)

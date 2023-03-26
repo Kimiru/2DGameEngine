@@ -263,7 +263,7 @@ export class GameObject {
     * 
     * @param {number} dt 
     */
-    executeDraw(ctx: CanvasRenderingContext2D, drawRange: number, cameraPosition: Vector) {
+    executeDraw(ctx: CanvasRenderingContext2D, drawRange: number = 0, cameraPosition: Vector = new Vector()) {
 
         if (this.#drawPredicate.length && !this.#drawPredicate.every(predicate => predicate())) return
 

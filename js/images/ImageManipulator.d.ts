@@ -5,6 +5,7 @@ export declare class ImageManipulator extends GameObject {
     constructor(width?: number, height?: number);
     get width(): number;
     get height(): number;
+    setCtxToCenter(): void;
     setSize(width: number, height: number): void;
     setPixel(x: number, y: number, color: string): void;
     setPixelRGBA(x: number, y: number, r: number, g: number, b: number, a: number): void;

@@ -40,8 +40,8 @@ export declare class GameEngine {
      * @param {width: number, height: number, verticalPixels: number, scaling: number, images: Image[]} args
      */
     constructor(args?: {
-        width: number;
-        height: number;
+        width?: number;
+        height?: number;
         verticalPixels: number;
         scaling?: number;
         canvas?: HTMLCanvasElement;
@@ -99,3 +99,4 @@ export declare class GameEngine {
     onResourcesLoaded(callback: any): void;
 }
 export declare function fullScreen(engine: GameEngine): void;
+export declare function fillCanvasParent(engine: GameEngine): void;
