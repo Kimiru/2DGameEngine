@@ -435,7 +435,7 @@ export class Input {
             button_home: this.#gamepad.button_home,
             is_calibrating: this.isGamepadCalibrating,
             is_calibrated: this.#calibrated,
-            has_gamepad: navigator.getGamepads().length != 0
+            has_gamepad: navigator.getGamepads?.().length != 0 ?? false
         }
 
     }
@@ -664,7 +664,7 @@ export class Input {
 
     gamepadLoop(): void {
 
-        let gamepad = navigator.getGamepads()[0]
+        let gamepad = navigator.getGamepads?.()[0] ?? null
 
         if (!gamepad) return
 

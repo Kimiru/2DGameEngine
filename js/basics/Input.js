@@ -302,7 +302,7 @@ export class Input {
             button_home: this.#gamepad.button_home,
             is_calibrating: this.isGamepadCalibrating,
             is_calibrated: this.#calibrated,
-            has_gamepad: navigator.getGamepads().length != 0
+            has_gamepad: navigator.getGamepads?.().length != 0 ?? false
         };
     }
     #getCorrectedAxisValue(gamepad, index) {
@@ -440,7 +440,7 @@ export class Input {
         this.#gamepad.right_joystick.set(this.#gamepad.right_joystick_right_dir - this.#gamepad.right_joystick_left_dir, this.#gamepad.right_joystick_up_dir - this.#gamepad.right_joystick_down_dir);
     }
     gamepadLoop() {
-        let gamepad = navigator.getGamepads()[0];
+        let gamepad = navigator.getGamepads?.()[0] ?? null;
         if (!gamepad)
             return;
         if (!this.#axesDefaultValue)
