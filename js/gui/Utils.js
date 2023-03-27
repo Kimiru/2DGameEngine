@@ -9,7 +9,7 @@ export function drawText(ctx, text, textoptions) {
     let font = textoptions.font ?? 'sans-serif';
     let align = textoptions.align ?? 'center';
     let baseline = textoptions.baseline ?? 'middle';
-    let maxWidth = textoptions.maxWidth ?? undefined;
+    let maxWidth = textoptions.maxWidth ?? 1000000;
     ctx.save();
     ctx.transform(size, 0, 0, -size, textoptions.posX ?? 0, textoptions.posY ?? 0);
     ctx.font = `1px ${font}`;

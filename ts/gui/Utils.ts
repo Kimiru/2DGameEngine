@@ -34,7 +34,7 @@ export function drawText(ctx: CanvasRenderingContext2D, text: stringable, textop
     let align = textoptions.align ?? 'center'
     let baseline = textoptions.baseline ?? 'middle'
 
-    let maxWidth = textoptions.maxWidth ?? undefined
+    let maxWidth = textoptions.maxWidth ?? 1000000
 
     ctx.save()
     ctx.transform(size, 0,
