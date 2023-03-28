@@ -264,6 +264,10 @@ export function fillCanvasParent(engine) {
         let parent = canvas.parentElement;
         let width = parent.clientWidth;
         let height = parent.clientHeight;
+        if (document.fullscreenElement === canvas) {
+            width = innerWidth;
+            height = innerHeight;
+        }
         if (height < width)
             engine.resize(width, height, devicePixelRatio, verticalPixels);
         else {
