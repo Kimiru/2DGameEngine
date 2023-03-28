@@ -1,3 +1,4 @@
+import { Vector } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 
 export class ImageManipulator extends GameObject {
@@ -132,5 +133,116 @@ export class ImageManipulator extends GameObject {
         ctx.restore()
 
     }
+
+}
+
+
+const CANVAS_RESOLUTION = 2048
+
+export type rawlargeimagemanipulator = {
+    x: number,
+    y: number,
+    image: string,
+}
+
+export class LargeImageManipulator extends GameObject {
+
+    canvases: { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, position: Vector }[]
+
+    fullSize: Vector = new Vector()
+    gridSize: Vector = new Vector()
+
+    constructor(width: number, height: number) {
+
+        super()
+
+        this.updateSize(width, height)
+
+    }
+
+    updateSize(width: number, height: number) {
+
+        let horizontalCount = Math.ceil(width / CANVAS_RESOLUTION)
+        let verticalCount = Math.ceil(height / CANVAS_RESOLUTION)
+
+        this.fullSize.set(width, height)
+
+        if (this.gridSize.equalS(horizontalCount, verticalCount)) return
+
+        this.gridSize.set(horizontalCount, verticalCount)
+
+        let oldCanvases = this.canvases
+        this.canvases = []
+
+        let techicalWidth = (horizontalCount - 1) / 2
+        let techicalHeight = (verticalCount - 1) / 2
+
+        for (let x = -techicalWidth; x <= techicalWidth; x++)
+            for (let y = -techicalHeight; y <= techicalHeight; y++) {
+
+                let canvas = document.createElement('canvas') as HTMLCanvasElement
+                let ctx = canvas.getContext('2d')
+
+                this.canvases.push({
+                    canvas,
+                    ctx,
+                    position: new Vector(x, y)
+                })
+
+            }
+
+        this.do((ctx) => {
+
+            for (let { canvas, position } of oldCanvases) {
+
+                position.subS(.5, .5).multS(CANVAS_RESOLUTION)
+
+                ctx.drawImage(canvas, position.x, position.y)
+
+            }
+        })
+
+    }
+
+    do(callback: (ctx: CanvasRenderingContext2D) => void, invertVertical: boolean = false): void {
+
+        let vinv = invertVertical ? -1 : 1
+
+        let hw = -this.fullSize.x / 2
+        let hh = -this.fullSize.y / 2
+
+        for (let { ctx, position } of this.canvases) {
+
+            ctx.save()
+
+            ctx.setTransform(
+                1, 0,
+                0, vinv,
+                -CANVAS_RESOLUTION * position.x + CANVAS_RESOLUTION / 2,
+                -vinv * CANVAS_RESOLUTION * position.y + CANVAS_RESOLUTION / 2
+            )
+
+            ctx.beginPath()
+            ctx.rect(hw, hh, this.fullSize.x, this.fullSize.y)
+            ctx.clip()
+
+            ctx.save()
+
+            callback(ctx)
+
+            ctx.restore()
+            ctx.restore()
+
+        }
+
+    }
+
+    export() {
+
+
+
+
+    }
+
 
 }

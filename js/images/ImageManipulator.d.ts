@@ -1,3 +1,4 @@
+import { Vector } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 export declare class ImageManipulator extends GameObject {
     canvas: HTMLCanvasElement;
@@ -17,4 +18,22 @@ export declare class ImageManipulator extends GameObject {
     clone(): ImageManipulator;
     static fromImage(image: HTMLImageElement): ImageManipulator;
     draw(ctx: CanvasRenderingContext2D): void;
+}
+export type rawlargeimagemanipulator = {
+    x: number;
+    y: number;
+    image: string;
+};
+export declare class LargeImageManipulator extends GameObject {
+    canvases: {
+        canvas: HTMLCanvasElement;
+        ctx: CanvasRenderingContext2D;
+        position: Vector;
+    }[];
+    fullSize: Vector;
+    gridSize: Vector;
+    constructor(width: number, height: number);
+    updateSize(width: number, height: number): void;
+    do(callback: (ctx: CanvasRenderingContext2D) => void, invertVertical?: boolean): void;
+    export(): void;
 }
