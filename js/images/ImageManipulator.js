@@ -13,8 +13,7 @@ export class ImageManipulator extends GameObject {
     get width() { return this.canvas.width; }
     get height() { return this.canvas.height; }
     setCtxToCenter() {
-        this.ctx.resetTransform();
-        this.ctx.transform(this.width, 0, 0, -this.height, this.width / 2, this.height / 2);
+        this.ctx.setTransform(this.width, 0, 0, -this.height, this.width / 2, this.height / 2);
     }
     setSize(width, height) {
         let tmpcanvas = document.createElement('canvas');
