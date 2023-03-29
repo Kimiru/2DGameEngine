@@ -1,4 +1,4 @@
-import { Rectangle, Vector } from "../2DGameEngine.js"
+import { Drawable, Rectangle, Vector, badclone, loadDataUrl } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 
 export class ImageManipulator extends GameObject {
@@ -145,7 +145,7 @@ export type RawLargeImageManipulator = {
     data: {
         x: number,
         y: number,
-        image: ImageData,
+        image: string,
     }[]
 }
 
@@ -256,15 +256,18 @@ export class LargeImageManipulator extends GameObject {
             data: []
         }
 
-        for (let { ctx, position } of this.canvases) {
+        for (let { canvas, ctx, position } of this.canvases) {
 
             result.data.push({
-                image: ctx.getImageData(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION),
-                x: (position.x - .5) * CANVAS_RESOLUTION,
-                y: (position.y - .5) * CANVAS_RESOLUTION
+                image: canvas.toDataURL(),
+                x: position.x * CANVAS_RESOLUTION,
+                y: position.y * CANVAS_RESOLUTION
             })
 
         }
+
+        console.log(result)
+
 
         return result
 
@@ -274,16 +277,22 @@ export class LargeImageManipulator extends GameObject {
 
         if (!raw) return
 
+        console.log(badclone(raw))
+
         let { width, height, data } = raw
 
         for (let { x, y, image } of data) {
 
-            let canvas = document.createElement('canvas')
-            canvas.width = canvas.height = CANVAS_RESOLUTION
-            let ctx = canvas.getContext('2d')
-            ctx.putImageData(image, 0, 0)
+            console.log(image)
 
-            this.run((ctx, area) => ctx.drawImage(canvas, x, y))
+
+            loadDataUrl(image)
+                .then(image => this.run((ctx) => {
+                    let drawable = new Drawable(image)
+                    drawable.size.set(CANVAS_RESOLUTION, CANVAS_RESOLUTION)
+                    drawable.position.set(x, y)
+                    drawable.executeDraw(ctx)
+                }))
 
         }
 

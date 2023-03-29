@@ -8,3 +8,10 @@ export function SVGStringToImage(svg) {
         image.src = url;
     });
 }
+export function loadDataUrl(dataurl) {
+    return new Promise((ok) => {
+        let image = new Image();
+        image.onload = () => ok(image);
+        image.onerror = () => ok(image);
+    });
+}

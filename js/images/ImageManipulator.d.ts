@@ -26,7 +26,7 @@ export type RawLargeImageManipulator = {
     data: {
         x: number;
         y: number;
-        image: ImageData;
+        image: string;
     }[];
 };
 export declare class LargeImageManipulator extends GameObject {

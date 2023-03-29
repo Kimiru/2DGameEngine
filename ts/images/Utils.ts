@@ -16,3 +16,15 @@ export function SVGStringToImage(svg: string): Promise<HTMLImageElement> {
 
 
 }
+
+export function loadDataUrl(dataurl: string): Promise<HTMLImageElement> {
+
+    return new Promise((ok) => {
+
+        let image = new Image()
+        image.onload = () => ok(image)
+        image.onerror = () => ok(image)
+
+    })
+
+}
