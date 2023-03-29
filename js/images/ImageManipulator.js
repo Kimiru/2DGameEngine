@@ -1,4 +1,4 @@
-import { Vector } from "../2DGameEngine.js";
+import { Rectangle, Vector } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 export class ImageManipulator extends GameObject {
     canvas;
@@ -76,7 +76,7 @@ export class ImageManipulator extends GameObject {
         ctx.restore();
     }
 }
-const CANVAS_RESOLUTION = 2048;
+export const CANVAS_RESOLUTION = 2048;
 export class LargeImageManipulator extends GameObject {
     canvases;
     fullSize = new Vector();
@@ -99,6 +99,7 @@ export class LargeImageManipulator extends GameObject {
         for (let x = -techicalWidth; x <= techicalWidth; x++)
             for (let y = -techicalHeight; y <= techicalHeight; y++) {
                 let canvas = document.createElement('canvas');
+                canvas.width = canvas.height = CANVAS_RESOLUTION;
                 let ctx = canvas.getContext('2d');
                 this.canvases.push({
                     canvas,
@@ -106,29 +107,68 @@ export class LargeImageManipulator extends GameObject {
                     position: new Vector(x, y)
                 });
             }
-        this.do((ctx) => {
-            for (let { canvas, position } of oldCanvases) {
-                position.subS(.5, .5).multS(CANVAS_RESOLUTION);
-                ctx.drawImage(canvas, position.x, position.y);
-            }
-        });
+        if (oldCanvases)
+            this.run((ctx) => {
+                for (let { canvas, position } of oldCanvases) {
+                    position.subS(.5, .5).multS(CANVAS_RESOLUTION);
+                    ctx.drawImage(canvas, position.x, position.y);
+                }
+            });
     }
-    do(callback, invertVertical = false) {
+    /**
+     * Call the callback on each stored canvas, with the area associated.
+     * Edge canvas are automatically clipped out.
+     * area Rectangle is freely modifyable
+     */
+    run(callback, invertVertical = false) {
         let vinv = invertVertical ? -1 : 1;
         let hw = -this.fullSize.x / 2;
         let hh = -this.fullSize.y / 2;
         for (let { ctx, position } of this.canvases) {
+            let effectivePosition = position.clone().multS(CANVAS_RESOLUTION);
             ctx.save();
-            ctx.setTransform(1, 0, 0, vinv, -CANVAS_RESOLUTION * position.x + CANVAS_RESOLUTION / 2, -vinv * CANVAS_RESOLUTION * position.y + CANVAS_RESOLUTION / 2);
+            ctx.setTransform(1, 0, 0, -1, -effectivePosition.x + CANVAS_RESOLUTION / 2, effectivePosition.y + CANVAS_RESOLUTION / 2);
             ctx.beginPath();
             ctx.rect(hw, hh, this.fullSize.x, this.fullSize.y);
             ctx.clip();
-            ctx.save();
-            callback(ctx);
-            ctx.restore();
+            callback(ctx, new Rectangle(effectivePosition.x, effectivePosition.y, CANVAS_RESOLUTION, CANVAS_RESOLUTION));
             ctx.restore();
         }
     }
     export() {
+        let result = {
+            width: this.fullSize.x,
+            height: this.fullSize.y,
+            data: []
+        };
+        for (let { ctx, position } of this.canvases) {
+            result.data.push({
+                image: ctx.getImageData(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION),
+                x: (position.x - .5) * CANVAS_RESOLUTION,
+                y: (position.y - .5) * CANVAS_RESOLUTION
+            });
+        }
+        return result;
+    }
+    import(raw) {
+        if (!raw)
+            return;
+        let { width, height, data } = raw;
+        for (let { x, y, image } of data) {
+            let canvas = document.createElement('canvas');
+            canvas.width = canvas.height = CANVAS_RESOLUTION;
+            let ctx = canvas.getContext('2d');
+            ctx.putImageData(image, 0, 0);
+            this.run((ctx, area) => ctx.drawImage(canvas, x, y));
+        }
+    }
+    draw(ctx) {
+        ctx.save();
+        ctx.scale(1 / this.fullSize.x, -1 / this.fullSize.y);
+        for (let { canvas, position } of this.canvases) {
+            let positionOnCanvas = position.clone().multS(CANVAS_RESOLUTION).subS(CANVAS_RESOLUTION / 2, -CANVAS_RESOLUTION / 2);
+            ctx.drawImage(canvas, positionOnCanvas.x, -positionOnCanvas.y);
+        }
+        ctx.restore();
     }
 }

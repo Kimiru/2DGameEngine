@@ -1,4 +1,4 @@
-import { Vector } from "../2DGameEngine.js";
+import { Rectangle, Vector } from "../2DGameEngine.js";
 import { GameObject } from "../basics/GameObject.js";
 export declare class ImageManipulator extends GameObject {
     canvas: HTMLCanvasElement;
@@ -19,10 +19,15 @@ export declare class ImageManipulator extends GameObject {
     static fromImage(image: HTMLImageElement): ImageManipulator;
     draw(ctx: CanvasRenderingContext2D): void;
 }
-export type rawlargeimagemanipulator = {
-    x: number;
-    y: number;
-    image: string;
+export declare const CANVAS_RESOLUTION = 2048;
+export type RawLargeImageManipulator = {
+    width: number;
+    height: number;
+    data: {
+        x: number;
+        y: number;
+        image: ImageData;
+    }[];
 };
 export declare class LargeImageManipulator extends GameObject {
     canvases: {
@@ -34,6 +39,13 @@ export declare class LargeImageManipulator extends GameObject {
     gridSize: Vector;
     constructor(width: number, height: number);
     updateSize(width: number, height: number): void;
-    do(callback: (ctx: CanvasRenderingContext2D) => void, invertVertical?: boolean): void;
-    export(): void;
+    /**
+     * Call the callback on each stored canvas, with the area associated.
+     * Edge canvas are automatically clipped out.
+     * area Rectangle is freely modifyable
+     */
+    run(callback: (ctx: CanvasRenderingContext2D, area: Rectangle) => void, invertVertical?: boolean): void;
+    export(): RawLargeImageManipulator;
+    import(raw: RawLargeImageManipulator): void;
+    draw(ctx: CanvasRenderingContext2D): void;
 }

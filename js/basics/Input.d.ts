@@ -39,6 +39,8 @@ export declare class Input {
     constructor();
     lock(lock?: string): void;
     unlock(lock?: string): void;
+    clearChar(char: string): void;
+    clear(code: string): void;
     /**
      * Return true if the given char is down
      *

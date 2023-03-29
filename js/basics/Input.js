@@ -63,6 +63,14 @@ export class Input {
             return;
         this.#keylock = null;
     }
+    clearChar(char) {
+        this.#charDown.delete(char);
+        this.#charOnce.delete(char);
+    }
+    clear(code) {
+        this.#keysDown.delete(code);
+        this.#keysOnce.delete(code);
+    }
     /**
      * Return true if the given char is down
      *

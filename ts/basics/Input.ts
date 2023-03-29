@@ -95,6 +95,20 @@ export class Input {
 
     }
 
+    clearChar(char: string) {
+
+        this.#charDown.delete(char)
+        this.#charOnce.delete(char)
+
+    }
+
+    clear(code: string) {
+
+        this.#keysDown.delete(code)
+        this.#keysOnce.delete(code)
+
+    }
+
     /**
      * Return true if the given char is down
      * 

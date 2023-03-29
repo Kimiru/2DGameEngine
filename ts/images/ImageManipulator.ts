@@ -1,4 +1,4 @@
-import { Vector } from "../2DGameEngine.js"
+import { Rectangle, Vector } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 
 export class ImageManipulator extends GameObject {
@@ -137,12 +137,16 @@ export class ImageManipulator extends GameObject {
 }
 
 
-const CANVAS_RESOLUTION = 2048
+export const CANVAS_RESOLUTION = 2048
 
-export type rawlargeimagemanipulator = {
-    x: number,
-    y: number,
-    image: string,
+export type RawLargeImageManipulator = {
+    width: number,
+    height: number,
+    data: {
+        x: number,
+        y: number,
+        image: ImageData,
+    }[]
 }
 
 export class LargeImageManipulator extends GameObject {
@@ -181,6 +185,7 @@ export class LargeImageManipulator extends GameObject {
             for (let y = -techicalHeight; y <= techicalHeight; y++) {
 
                 let canvas = document.createElement('canvas') as HTMLCanvasElement
+                canvas.width = canvas.height = CANVAS_RESOLUTION
                 let ctx = canvas.getContext('2d')
 
                 this.canvases.push({
@@ -191,20 +196,27 @@ export class LargeImageManipulator extends GameObject {
 
             }
 
-        this.do((ctx) => {
 
-            for (let { canvas, position } of oldCanvases) {
+        if (oldCanvases)
+            this.run((ctx) => {
 
-                position.subS(.5, .5).multS(CANVAS_RESOLUTION)
+                for (let { canvas, position } of oldCanvases) {
 
-                ctx.drawImage(canvas, position.x, position.y)
+                    position.subS(.5, .5).multS(CANVAS_RESOLUTION)
 
-            }
-        })
+                    ctx.drawImage(canvas, position.x, position.y)
+
+                }
+            })
 
     }
 
-    do(callback: (ctx: CanvasRenderingContext2D) => void, invertVertical: boolean = false): void {
+    /**
+     * Call the callback on each stored canvas, with the area associated.
+     * Edge canvas are automatically clipped out.
+     * area Rectangle is freely modifyable 
+     */
+    run(callback: (ctx: CanvasRenderingContext2D, area: Rectangle) => void, invertVertical: boolean = false): void {
 
         let vinv = invertVertical ? -1 : 1
 
@@ -213,36 +225,85 @@ export class LargeImageManipulator extends GameObject {
 
         for (let { ctx, position } of this.canvases) {
 
+            let effectivePosition = position.clone().multS(CANVAS_RESOLUTION)
+
             ctx.save()
 
             ctx.setTransform(
                 1, 0,
-                0, vinv,
-                -CANVAS_RESOLUTION * position.x + CANVAS_RESOLUTION / 2,
-                -vinv * CANVAS_RESOLUTION * position.y + CANVAS_RESOLUTION / 2
+                0, -1,
+                -effectivePosition.x + CANVAS_RESOLUTION / 2,
+                effectivePosition.y + CANVAS_RESOLUTION / 2
             )
 
             ctx.beginPath()
             ctx.rect(hw, hh, this.fullSize.x, this.fullSize.y)
             ctx.clip()
 
-            ctx.save()
+            callback(ctx, new Rectangle(effectivePosition.x, effectivePosition.y, CANVAS_RESOLUTION, CANVAS_RESOLUTION))
 
-            callback(ctx)
-
-            ctx.restore()
             ctx.restore()
 
         }
 
     }
 
-    export() {
+    export(): RawLargeImageManipulator {
 
+        let result: RawLargeImageManipulator = {
+            width: this.fullSize.x,
+            height: this.fullSize.y,
+            data: []
+        }
 
+        for (let { ctx, position } of this.canvases) {
 
+            result.data.push({
+                image: ctx.getImageData(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION),
+                x: (position.x - .5) * CANVAS_RESOLUTION,
+                y: (position.y - .5) * CANVAS_RESOLUTION
+            })
+
+        }
+
+        return result
 
     }
 
+    import(raw: RawLargeImageManipulator) {
+
+        if (!raw) return
+
+        let { width, height, data } = raw
+
+        for (let { x, y, image } of data) {
+
+            let canvas = document.createElement('canvas')
+            canvas.width = canvas.height = CANVAS_RESOLUTION
+            let ctx = canvas.getContext('2d')
+            ctx.putImageData(image, 0, 0)
+
+            this.run((ctx, area) => ctx.drawImage(canvas, x, y))
+
+        }
+
+    }
+
+    draw(ctx: CanvasRenderingContext2D): void {
+
+        ctx.save()
+
+        ctx.scale(1 / this.fullSize.x, -1 / this.fullSize.y)
+
+        for (let { canvas, position } of this.canvases) {
+
+            let positionOnCanvas = position.clone().multS(CANVAS_RESOLUTION).subS(CANVAS_RESOLUTION / 2, -CANVAS_RESOLUTION / 2)
+
+            ctx.drawImage(canvas, positionOnCanvas.x, -positionOnCanvas.y)
+        }
+
+        ctx.restore()
+
+    }
 
 }
