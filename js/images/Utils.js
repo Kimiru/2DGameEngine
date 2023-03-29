@@ -13,5 +13,6 @@ export function loadDataUrl(dataurl) {
         let image = new Image();
         image.onload = () => ok(image);
         image.onerror = () => ok(image);
+        image.src = dataurl;
     });
 }

@@ -1,4 +1,4 @@
-import { Drawable, Rectangle, Vector, badclone, loadDataUrl } from "../2DGameEngine.js"
+import { Rectangle, Vector, loadDataUrl } from "../2DGameEngine.js"
 import { GameObject } from "../basics/GameObject.js"
 
 export class ImageManipulator extends GameObject {
@@ -277,21 +277,19 @@ export class LargeImageManipulator extends GameObject {
 
         if (!raw) return
 
-        console.log(badclone(raw))
-
         let { width, height, data } = raw
 
         for (let { x, y, image } of data) {
 
-            console.log(image)
-
-
             loadDataUrl(image)
                 .then(image => this.run((ctx) => {
-                    let drawable = new Drawable(image)
-                    drawable.size.set(CANVAS_RESOLUTION, CANVAS_RESOLUTION)
-                    drawable.position.set(x, y)
-                    drawable.executeDraw(ctx)
+
+                    console.log('image loaded')
+
+
+                    ctx.scale(1, -1)
+                    ctx.drawImage(image, x - CANVAS_RESOLUTION / 2, -y - CANVAS_RESOLUTION / 2)
+
                 }))
 
         }
