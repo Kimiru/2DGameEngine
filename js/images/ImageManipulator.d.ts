@@ -45,7 +45,7 @@ export declare class LargeImageManipulator extends GameObject {
      * area Rectangle is freely modifyable
      */
     run(callback: (ctx: CanvasRenderingContext2D, area: Rectangle) => void, invertVertical?: boolean): void;
-    export(): RawLargeImageManipulator;
+    export(): Promise<RawLargeImageManipulator>;
     import(raw: RawLargeImageManipulator): void;
     draw(ctx: CanvasRenderingContext2D): void;
 }

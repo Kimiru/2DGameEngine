@@ -5,7 +5,8 @@
         "rootDir": "./ts",
         "outDir": "./js",
         "moduleResolution": "NodeNext",
-        "declaration": true
+        "declaration": true,
+        "isolatedModules": false
     },
     "include": [
         "ts/**/*"

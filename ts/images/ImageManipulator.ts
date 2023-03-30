@@ -248,7 +248,10 @@ export class LargeImageManipulator extends GameObject {
 
     }
 
-    export(): RawLargeImageManipulator {
+    async export(): Promise<RawLargeImageManipulator> {
+
+        console.log('exporting')
+
 
         let result: RawLargeImageManipulator = {
             width: this.fullSize.x,
@@ -265,9 +268,6 @@ export class LargeImageManipulator extends GameObject {
             })
 
         }
-
-        console.log(result)
-
 
         return result
 

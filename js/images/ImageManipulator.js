@@ -135,7 +135,8 @@ export class LargeImageManipulator extends GameObject {
             ctx.restore();
         }
     }
-    export() {
+    async export() {
+        console.log('exporting');
         let result = {
             width: this.fullSize.x,
             height: this.fullSize.y,
@@ -148,7 +149,6 @@ export class LargeImageManipulator extends GameObject {
                 y: position.y * CANVAS_RESOLUTION
             });
         }
-        console.log(result);
         return result;
     }
     import(raw) {
