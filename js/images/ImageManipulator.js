@@ -136,7 +136,6 @@ export class LargeImageManipulator extends GameObject {
         }
     }
     async export() {
-        console.log('exporting');
         let result = {
             width: this.fullSize.x,
             height: this.fullSize.y,
@@ -158,7 +157,6 @@ export class LargeImageManipulator extends GameObject {
         for (let { x, y, image } of data) {
             loadDataUrl(image)
                 .then(image => this.run((ctx) => {
-                console.log('image loaded');
                 ctx.scale(1, -1);
                 ctx.drawImage(image, x - CANVAS_RESOLUTION / 2, -y - CANVAS_RESOLUTION / 2);
             }));
