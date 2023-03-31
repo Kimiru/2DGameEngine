@@ -15,14 +15,14 @@ export function drawText(ctx, text, textoptions) {
     ctx.font = `1px ${font}`;
     ctx.textAlign = align;
     ctx.textBaseline = baseline;
+    if (color) {
+        ctx.fillStyle = color;
+        ctx.fillText(value, 0, 0, maxWidth / size);
+    }
     if (outlineColor) {
         ctx.lineWidth = textoptions.lineWidth ?? 1;
         ctx.strokeStyle = outlineColor;
         ctx.strokeText(value, 0, 0, maxWidth / size);
-    }
-    if (color) {
-        ctx.fillStyle = color;
-        ctx.fillText(value, 0, 0, maxWidth / size);
     }
     ctx.restore();
 }
