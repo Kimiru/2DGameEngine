@@ -8,11 +8,15 @@ export declare class WaveFunctionCollapse {
         [n: number]: WFCPattern[];
     };
     connectors: {
-        [number: number]: WFCConnector;
+        [n: number]: WFCConnector;
+    };
+    connectorsLookupTable: {
+        [n: number]: [number[], number[], number[], number[]];
     };
     constructor(ruleType: WFCRuleType);
     addPattern(pattern: WFCPattern): void;
     addConnector(connector: WFCConnector): void;
+    buildConnectorsLookupTable(): void;
 }
 export interface WFCRule {
     id: number;
@@ -30,3 +34,4 @@ export type WFCConnectorConstraints = [WFCConnectorTriple, WFCConnectorTriple, W
 export interface WFCConnector extends WFCRule {
     constraints: WFCConnectorConstraints;
 }
+export declare function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnector, WFCConnector, WFCConnector];

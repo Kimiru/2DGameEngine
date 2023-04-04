@@ -1,4 +1,8 @@
 import { Vector } from "./Vector.js";
+const TOP = 0;
+const RIGHT = 1;
+const BOTTOM = 2;
+const LEFT = 3;
 export var WFCRuleType;
 (function (WFCRuleType) {
     WFCRuleType[WFCRuleType["PATTERN"] = 0] = "PATTERN";
@@ -8,6 +12,7 @@ export class WaveFunctionCollapse {
     ruleType;
     patterns;
     connectors;
+    connectorsLookupTable;
     constructor(ruleType) {
         this.ruleType = ruleType;
     }
@@ -27,6 +32,17 @@ export class WaveFunctionCollapse {
         if (this.connectors[connector.id])
             throw `A connector for id "${connector.id}" already exists.`;
         this.connectors[connector.id] = connector;
+    }
+    buildConnectorsLookupTable() {
+        this.connectorsLookupTable = {};
+        for (let [id, connector] of Object.entries(this.connectors)) {
+            let lookup = [[], [], [], []];
+            for (let [nextid, nextconnector] of Object.entries(this.connectors))
+                for (let side = 0; side < 4; side++)
+                    if (connectorsConnects(connector, side, nextconnector))
+                        lookup[side].push(Number(nextid));
+            this.connectors[id] = lookup;
+        }
     }
 }
 function rotateWFCPattern(pattern) {
@@ -48,7 +64,7 @@ function rotateWFCPattern(pattern) {
         }
     return patterns;
 }
-function rotateWFCConnector(connector) {
+export function rotateWFCConnector(connector) {
     let connectors = [
         connector,
         { id: connector.id, rotate: true, constraints: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] },
@@ -61,4 +77,14 @@ function rotateWFCConnector(connector) {
         connectors[i].constraints = [...constraints];
     }
     return connectors;
+}
+function connectorTripleMatch(tripleA, tripleB) {
+    for (let indexA = 0; indexA < 3; indexA++)
+        if (tripleA[indexA] !== tripleB[2 - indexA])
+            return false;
+    return true;
+}
+function connectorsConnects(connectorA, side, connectorB) {
+    let otherside = (side + 2) % 4;
+    return connectorTripleMatch(connectorA.constraints[side], connectorB.constraints[otherside]);
 }

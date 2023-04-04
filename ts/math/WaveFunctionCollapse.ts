@@ -1,5 +1,10 @@
 import { Vector } from "./Vector.js"
 
+const TOP = 0
+const RIGHT = 1
+const BOTTOM = 2
+const LEFT = 3
+
 export enum WFCRuleType {
 
     PATTERN, CONNECTOR
@@ -11,7 +16,9 @@ export class WaveFunctionCollapse {
     ruleType: WFCRuleType
 
     patterns: { [n: number]: WFCPattern[] }
-    connectors: { [number: number]: WFCConnector }
+    connectors: { [n: number]: WFCConnector }
+
+    connectorsLookupTable: { [n: number]: [number[], number[], number[], number[]] }
 
     constructor(ruleType: WFCRuleType) {
 
@@ -39,6 +46,25 @@ export class WaveFunctionCollapse {
         if (this.connectors[connector.id]) throw `A connector for id "${connector.id}" already exists.`
 
         this.connectors[connector.id] = connector
+
+    }
+
+    buildConnectorsLookupTable(): void {
+
+        this.connectorsLookupTable = {}
+
+        for (let [id, connector] of Object.entries(this.connectors)) {
+
+            let lookup: [number[], number[], number[], number[]] = [[], [], [], []]
+
+            for (let [nextid, nextconnector] of Object.entries(this.connectors))
+                for (let side = 0; side < 4; side++)
+                    if (connectorsConnects(connector, side, nextconnector))
+                        lookup[side].push(Number(nextid))
+
+            this.connectors[id] = lookup
+
+        }
 
     }
 
@@ -97,7 +123,7 @@ function rotateWFCPattern(pattern: WFCPattern): [WFCPattern, WFCPattern, WFCPatt
 
 }
 
-function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnector, WFCConnector, WFCConnector] {
+export function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnector, WFCConnector, WFCConnector] {
 
     let connectors: [WFCConnector, WFCConnector, WFCConnector, WFCConnector] = [
         connector,
@@ -113,5 +139,22 @@ function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnecto
     }
 
     return connectors
+
+}
+
+function connectorTripleMatch(tripleA: WFCConnectorTriple, tripleB: WFCConnectorTriple): boolean {
+
+    for (let indexA = 0; indexA < 3; indexA++)
+        if (tripleA[indexA] !== tripleB[2 - indexA]) return false
+
+    return true
+
+}
+
+function connectorsConnects(connectorA: WFCConnector, side: number, connectorB: WFCConnector): boolean {
+
+    let otherside = (side + 2) % 4
+
+    return connectorTripleMatch(connectorA.constraints[side], connectorB.constraints[otherside])
 
 }
