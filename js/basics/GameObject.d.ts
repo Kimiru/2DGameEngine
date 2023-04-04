@@ -17,7 +17,6 @@ export declare class GameObject {
     childrenPhysicsEnabled: boolean;
     drawEnabled: boolean;
     childrenDrawEnabled: boolean;
-    nbvc: Map<any, any>;
     parent: GameObject;
     transform: Transform;
     zIndex: number;

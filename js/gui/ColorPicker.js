@@ -64,7 +64,14 @@ export class ColorPicker extends GameObject {
             rect.bottom = 0.3125;
             let left = TransformMatrix.multVec(wtm, new Vector(rect.left, rect.y));
             let right = TransformMatrix.multVec(wtm, new Vector(rect.right, rect.y));
-            let [t, p] = new Segment(left, right).project(mouse.position);
+            let p = new Segment(left, right).project(mouse.position);
+            let t = 0;
+            if (p.distanceTo(right) > left.distanceTo(right))
+                t = 0;
+            else if (p.distanceTo(left) > left.distanceTo(right))
+                t = 0;
+            else
+                t = p.distanceTo(left) / left.distanceTo(right);
             if (rect.containsWorldVector(mouse.position) && !mouse.leftClick) {
                 this.color.h = Math.round(360 * t);
                 this.htb.text = this.color.h.toString();

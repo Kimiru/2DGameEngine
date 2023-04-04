@@ -18,7 +18,6 @@ export class GameObject {
     childrenPhysicsEnabled = true;
     drawEnabled = true;
     childrenDrawEnabled = true;
-    nbvc = new Map();
     parent = null;
     #scene = null;
     #drawBeforeChild = true;

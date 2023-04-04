@@ -21,7 +21,6 @@ export class GameObject {
     childrenPhysicsEnabled: boolean = true
     drawEnabled: boolean = true
     childrenDrawEnabled: boolean = true
-    nbvc = new Map()
     parent: GameObject = null
     #scene: GameScene = null
     #drawBeforeChild: boolean = true
