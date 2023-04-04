@@ -238,7 +238,7 @@ export function id() { return ++idCount }
 
 export function* range(min: number, max: number = null, step: number = 1) {
 
-    if (!max) {
+    if (max === null || max === undefined) {
         max = min
         min = 0
     }

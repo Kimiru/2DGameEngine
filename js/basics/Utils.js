@@ -136,7 +136,7 @@ export function loadSounds(sounds, incrementCallback, finishedCallback) {
 let idCount = 0;
 export function id() { return ++idCount; }
 export function* range(min, max = null, step = 1) {
-    if (!max) {
+    if (max === null || max === undefined) {
         max = min;
         min = 0;
     }
