@@ -1,57 +1,29 @@
 import { range } from "../2DGameEngine.js"
 import { Vector } from "./Vector.js"
 
-const TOP = 0
-const RIGHT = 1
-const BOTTOM = 2
-const LEFT = 3
-
-export enum WFCRuleType {
-
-    PATTERN, CONNECTOR
-
-}
-
 export class WaveFunctionCollapse {
 
-    ruleType: WFCRuleType
+    connectors: { [n: number]: WFC.Connector[] } = {}
 
-    patterns: { [n: number]: WFCPattern[] } = {}
-    connectors: { [n: number]: WFCConnector[] } = {}
+    connectorsLookupTable: { [n: number]: [number[], number[], number[], number[]] } = null
 
-    connectorsLookupTable: { [n: number]: [number[], number[], number[], number[]] }
+    addConnector(rule: WFC.Rule): void {
 
-    constructor(ruleType: WFCRuleType) {
+        if (!this.connectors[rule.id])
+            this.connectors[rule.id] = []
 
-        this.ruleType = ruleType
+        this.connectors[rule.id].push(...rule.connectors)
 
-    }
+        if (rule.allDirection) {
 
-    addPattern(pattern: WFCPattern): void {
+            for (let i = 1; i <= 3; i++)
+                this.connectors[rule.id].push(...rule.connectors.map(connector => ({ side: (connector.side + i) % 4, connection: connector.connection })))
 
-        if (this.ruleType === WFCRuleType.CONNECTOR) throw 'Cannot add a pattern with ruleType CONNECTOR'
-
-        if (!this.patterns[pattern.id]) this.patterns[pattern.id] = []
-
-        if (pattern.rotate)
-            this.patterns[pattern.id].push(...rotateWFCPattern(pattern))
-        else
-            this.patterns[pattern.id].push(pattern)
+        }
 
     }
 
-    addConnector(connector: WFCConnector): void {
-
-        if (this.ruleType === WFCRuleType.PATTERN) throw 'Cannot add a pattern with ruleType PATTERN'
-
-        if (!this.connectors[connector.id])
-            this.connectors[connector.id] = []
-
-        this.connectors[connector.id].push(connector)
-
-    }
-
-    buildConnectorsLookupTable(): void {
+    buildLookupTable(): void {
 
         this.connectorsLookupTable = {}
 
@@ -59,54 +31,28 @@ export class WaveFunctionCollapse {
             this.connectorsLookupTable[id] = [[], [], [], []]
             for (let connector of connectorList)
                 for (let [nextid, nextconnectorList] of Object.entries(this.connectors)) for (let nextconnector of nextconnectorList)
-                    for (let side = 0; side < 4; side++)
-                        if (connectorsConnects(connector, side, nextconnector))
-                            this.connectorsLookupTable[id][side].push(Number(nextid))
+                    if (WFC.areConnectionsCompatible(connector, nextconnector))
+                        this.connectorsLookupTable[id][connector.side].push(Number(nextid))
+
         }
 
     }
 
     getAvailableOptions(): number[] {
 
-        if (this.ruleType === WFCRuleType.CONNECTOR) {
-
-            return [...Object.entries(this.connectors)].map(([id]) => Number(id))
-
-        } else {
-
-            return [...Object.entries(this.patterns)].map(([id]) => Number(id))
-
-        }
+        return [...Object.entries(this.connectors)].map(([id]) => Number(id))
 
     }
 
-    createSolution(width: number, height: number): WFCSolution {
+    createSolution(width: number, height: number): WFC.Solution {
 
-        let options = this.getAvailableOptions()
-
-        let cells: WFCCell[] = []
-        for (let i of range(width * height))
-            cells.push({
-                options: [...options],
-                solved: options.length <= 1
-            })
-
-        return {
-            size: [width, height],
-            cells
-        }
+        return new WFC.Solution(width, height, this)
 
     }
 
-    isSolutionComplete(solution: WFCSolution) {
+    collapse(solution: WFC.Solution, x: number, y: number, idToUse?: number) {
 
-        return solution.cells.every(cell => cell.solved)
-
-    }
-
-    collapse(solution: WFCSolution, x: number, y: number, idToUse?: number) {
-
-        let index = WFCPositionToIndex(solution, x, y)
+        let index = solution.positionToIndex(x, y)
 
         if (idToUse !== undefined)
             solution.cells[index].options = [idToUse]
@@ -119,22 +65,22 @@ export class WaveFunctionCollapse {
 
     }
 
-    fullCollapse(solution: WFCSolution, start?: { x: number, y: number, idToUse?: number }) {
+    fullCollapse(solution: WFC.Solution, start?: { x: number, y: number, idToUse?: number }) {
         if (start)
             this.collapse(solution, start.x, start.y, start.idToUse)
-        while (!this.isSolutionComplete(solution)) {
+        while (!solution.solved()) {
 
             let cell = [...solution.cells].filter(cell => !cell.solved).sort((a, b) => a.options.length - b.options.length)[0]
 
             let index = solution.cells.indexOf(cell)
-            let [x, y] = WFCIndexToPosition(solution, index)
+            let [x, y] = solution.indexToPosition(index)
 
             this.collapse(solution, x, y)
 
         }
     }
 
-    #propagate(solution: WFCSolution, x: number, y: number) {
+    #propagate(solution: WFC.Solution, x: number, y: number) {
 
         // insert first point into open queue
         let open: [number, number][] = [[x, y]]
@@ -142,61 +88,59 @@ export class WaveFunctionCollapse {
         do {
             // Sort open points per available options in ascending order
             open.sort(([xa, ya], [xb, yb]) => {
-                let a = solution.cells[WFCPositionToIndex(solution, xa, ya)]
-                let b = solution.cells[WFCPositionToIndex(solution, xb, yb)]
+                let a = solution.cells[solution.positionToIndex(xa, ya)]
+                let b = solution.cells[solution.positionToIndex(xb, yb)]
 
                 return a.options.length - b.options.length
             })
 
             // Find the list of points which have the same smallest amount of options left
-            let ties = open.filter(([x, y]) => solution.cells[WFCPositionToIndex(solution, x, y)].options.length === solution.cells[WFCPositionToIndex(solution, ...open[0])].options.length)
+            let ties = open.filter(([x, y]) => solution.cells[solution.positionToIndex(x, y)].options.length === solution.cells[solution.positionToIndex(...open[0])].options.length)
 
             // Pick one
             let chosenOne = ties[Math.floor(Math.random() * ties.length)]
             open.splice(open.indexOf(chosenOne), 1)
 
             // Find cell
-            let cell = solution.cells[WFCPositionToIndex(solution, ...chosenOne)]
+            let cell = solution.cells[solution.positionToIndex(...chosenOne)]
 
-            if (this.ruleType === WFCRuleType.CONNECTOR) {
+            // For each side
+            for (let side of [WFC.Side.TOP, WFC.Side.RIGHT, WFC.Side.BOTTOM, WFC.Side.LEFT]) {
 
-                // For each side
-                for (let side of [TOP, RIGHT, BOTTOM, LEFT]) {
+                let neighborPosition = solution.neighborOf(...chosenOne, side)
+                if (!neighborPosition) continue
+                let [nx, ny] = neighborPosition
 
-                    let vec = sideToVec(side)
-                    let nx = chosenOne[0] + vec.x
-                    let ny = chosenOne[1] + vec.y
-                    let index = WFCPositionToIndex(solution, nx, ny)
+                let index = solution.positionToIndex(nx, ny)
 
-                    // If maybe neighbor is outside the solution range, skip this side
-                    if (!(0 <= nx && nx < solution.size[0] && 0 <= ny && ny < solution.size[1])) continue
+                // If maybe neighbor is outside the solution range, skip this side
+                if (!(0 <= nx && nx < solution.size[0] && 0 <= ny && ny < solution.size[1])) continue
 
-                    let neighbor = solution.cells[index]
+                let neighbor = solution.cells[index]
 
-                    let startLength = neighbor.options.length
+                let startLength = neighbor.options.length
 
-                    let nextOptions: Set<number> = new Set()
+                let nextOptions: Set<number> = new Set()
 
-                    for (let option of cell.options) {
+                for (let option of cell.options) {
 
-                        let lookup = this.connectorsLookupTable[option][side]
+                    let lookup = this.connectorsLookupTable[option][side]
 
-                        neighbor.options
-                            .filter(opt => lookup.includes(opt))
-                            .forEach(opt => nextOptions.add(opt))
-
-                    }
-
-                    neighbor.options = [...nextOptions]
-
-                    let endLength = neighbor.options.length
-
-                    if (startLength !== endLength) open.push([nx, ny])
-
-                    if (endLength <= 1)
-                        neighbor.solved = true
+                    neighbor.options
+                        .filter(opt => lookup.includes(opt))
+                        .forEach(opt => nextOptions.add(opt))
 
                 }
+
+                neighbor.options = [...nextOptions]
+
+                let endLength = neighbor.options.length
+
+                if (startLength !== endLength) open.push([nx, ny])
+
+                if (endLength <= 1)
+                    neighbor.solved = true
+
             }
 
         } while (open.length)
@@ -205,138 +149,128 @@ export class WaveFunctionCollapse {
 
 }
 
-export interface WFCCell {
+export namespace WFC {
 
-    options: number[]
-    solved: boolean
+    export enum Side {
+        TOP = 0,
+        RIGHT = 1,
+        BOTTOM = 2,
+        LEFT = 3
+    }
 
-}
+    export type ConnectionTriple = [number, number, number]
 
-export interface WFCSolution {
+    export function areConnectionTripleMatching(tripleA: ConnectionTriple, tripleB: ConnectionTriple): boolean {
 
-    size: [number, number],
-    cells: WFCCell[]
+        for (let indexA = 0; indexA < 3; indexA++)
+            if (tripleA[indexA] !== tripleB[2 - indexA]) return false
 
-}
+        return true
 
-export interface WFCRule {
-    id: number,
-    rotate: boolean
-}
+    }
 
-export interface WFCPattern extends WFCRule {
+    export interface Connector {
+        side: Side,
+        connection: ConnectionTriple
+    }
 
-    constraints: {
-        x: number,
-        y: number,
-        id: number
-    }[]
+    export function areConnectionsCompatible(connectionA: Connector, connectionB: Connector) {
 
-}
+        connectionA.side === (connectionB.side + 2) % 4
 
-export type WFCConnectorTriple = [number, number, number]
-export type WFCConnectorConstraints = [WFCConnectorTriple, WFCConnectorTriple, WFCConnectorTriple, WFCConnectorTriple]
+        return areConnectionTripleMatching(connectionA.connection, connectionB.connection)
 
-export interface WFCConnector extends WFCRule {
+    }
 
-    constraints: WFCConnectorConstraints
+    export interface Rule {
+        id: number,
+        connectors: Connector[],
+        allDirection: boolean
+    }
 
-}
+    export interface Cell {
+        options: number[]
+        solved: boolean
+    }
 
-function rotateWFCPattern(pattern: WFCPattern): [WFCPattern, WFCPattern, WFCPattern, WFCPattern] {
+    export class Solution {
+        size: [number, number] = [1, 1]
+        cells: Cell[] = []
+        wfc: WaveFunctionCollapse
 
-    let patterns: [WFCPattern, WFCPattern, WFCPattern, WFCPattern] = [
-        pattern,
-        { id: pattern.id, rotate: true, constraints: [] },
-        { id: pattern.id, rotate: true, constraints: [] },
-        { id: pattern.id, rotate: true, constraints: [] }
-    ]
+        constructor(width: number, height: number, wfc: WaveFunctionCollapse) {
 
+            if (width < 1 || height < 1) throw 'Solution size cannot be less than 1x1'
 
-    for (let { x, y, id } of pattern.constraints)
-        for (let i = 1; i <= 3; i++) {
+            this.size = [width, height]
+            this.wfc = wfc
 
-            let pos = new Vector(x, y).rotate(Math.PI / 2 * i).round()
+            let options = wfc.getAvailableOptions()
 
-            let newcontstraint = {
-                x: pos.x,
-                y: pos.y,
-                id
-            }
-
-            patterns[i].constraints.push(newcontstraint)
+            for (let index = 0; index < width * height; index++)
+                this.cells.push({ options: [...options], solved: false })
 
         }
 
-    return patterns
+        get width() { return this.size[0] }
+        get height() { return this.size[1] }
 
-}
+        solved() {
 
-export function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnector, WFCConnector, WFCConnector] {
+            return this.cells.every(cell => cell.solved)
 
-    let connectors: [WFCConnector, WFCConnector, WFCConnector, WFCConnector] = [
-        connector,
-        { id: connector.id, rotate: true, constraints: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] },
-        { id: connector.id, rotate: true, constraints: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] },
-        { id: connector.id, rotate: true, constraints: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]] }
-    ]
+        }
 
-    let constraints: WFCConnectorConstraints = [...connector.constraints]
-    for (let i = 1; i <= 3; i++) {
-        constraints.push(constraints.shift())
-        connectors[i].constraints = [...constraints]
+        getIndex(index: number): Cell { return this.cells[index] }
+        getPosition(x: number, y: number) { }
+
+        indexToPosition(index: number): [number, number] {
+
+            return [index % this.width, Math.floor(index / this.width)]
+
+        }
+
+        positionToIndex(x: number, y: number): number {
+
+            return x + y * this.width
+
+        }
+
+        containsPosition(x: number, y: number): boolean {
+
+            return 0 <= x && x < this.width && 0 <= y && y < this.height
+
+        }
+
+        neighborOf(x: number, y: number, side: Side) {
+
+            switch (side) {
+                case Side.TOP:
+                    y++
+                    break;
+
+                case Side.RIGHT:
+                    x++
+                    break
+
+                case Side.BOTTOM:
+                    y--
+                    break
+                case Side.LEFT:
+                    x--
+                    break
+
+                default:
+                    y++
+            }
+
+            if (this.containsPosition(x, y))
+                return [x, y]
+
+            return null
+
+        }
+
     }
-
-    return connectors
-
-}
-
-function connectorTripleMatch(tripleA: WFCConnectorTriple, tripleB: WFCConnectorTriple): boolean {
-
-    for (let indexA = 0; indexA < 3; indexA++)
-        if (tripleA[indexA] !== tripleB[2 - indexA]) return false
-
-    return true
-
-}
-
-function connectorsConnects(connectorA: WFCConnector, side: number, connectorB: WFCConnector): boolean {
-
-    let otherside = (side + 2) % 4
-
-    return connectorTripleMatch(connectorA.constraints[side], connectorB.constraints[otherside])
-
-}
-
-function sideToVec(side: number) {
-    switch (side) {
-        case TOP:
-            return new Vector(0, 1)
-        case RIGHT:
-            return new Vector(1, 0)
-        case BOTTOM:
-            return new Vector(0, -1)
-        case LEFT:
-            return new Vector(-1, 0)
-        default:
-            return new Vector(0, 1)
-    }
-}
-
-export function WFCIndexToPosition(solution: WFCSolution, index: number): [number, number] {
-
-    return [index % solution.size[0], Math.floor(index / solution.size[0])]
-
-}
-
-export function WFCPositionToIndex(solution: WFCSolution, x: number, y: number): number {
-
-    return x + y * solution.size[0]
-
-}
-
-export function WFCPositionInSolution(solution: WFCSolution, x: number, y: number): boolean {
-
-    return 0 <= x && x < solution.size[0] && 0 <= y && y < solution.size[1]
 
 }

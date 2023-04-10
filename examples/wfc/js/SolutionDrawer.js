@@ -1,4 +1,4 @@
-import { GameObject, WFCIndexToPosition, WFCPositionInSolution, WaveFunctionCollapse, drawText } from "../../../js/2DGameEngine.js"
+import { GameObject, WaveFunctionCollapse, drawText } from "../../../js/2DGameEngine.js"
 
 export class SolutionDrawer extends GameObject {
 
@@ -7,7 +7,7 @@ export class SolutionDrawer extends GameObject {
 
     /**
      * 
-     * @param {import("../../../js/2DGameEngine.js").WFCSolution} solution 
+     * @param {import("../../../js/2DGameEngine.js").WFC.Solution} solution 
      * @param {WaveFunctionCollapse} wfc
      */
     constructor(solution, wfc) {
@@ -28,7 +28,7 @@ export class SolutionDrawer extends GameObject {
 
             mouse.position.addS(this.solution.size[0] / 2, this.solution.size[1] / 2).addS(-.5, -.5).round()
 
-            if (WFCPositionInSolution(this.solution, mouse.position.x, mouse.position.y))
+            if (this.solution.containsPosition(mouse.position.x, mouse.position.y))
                 this.wfc.collapse(this.solution, mouse.position.x, mouse.position.y)
         }
 
@@ -44,7 +44,7 @@ export class SolutionDrawer extends GameObject {
 
         for (let [index, cell] of this.solution.cells.entries()) {
 
-            let [x, y] = WFCIndexToPosition(this.solution, index)
+            let [x, y] = this.solution.indexToPosition(index)
 
             x += -this.solution.size[0] / 2 + .5
             y += -this.solution.size[1] / 2 + .5

@@ -1,58 +1,58 @@
-export declare enum WFCRuleType {
-    PATTERN = 0,
-    CONNECTOR = 1
-}
 export declare class WaveFunctionCollapse {
     #private;
-    ruleType: WFCRuleType;
-    patterns: {
-        [n: number]: WFCPattern[];
-    };
     connectors: {
-        [n: number]: WFCConnector[];
+        [n: number]: WFC.Connector[];
     };
     connectorsLookupTable: {
         [n: number]: [number[], number[], number[], number[]];
     };
-    constructor(ruleType: WFCRuleType);
-    addPattern(pattern: WFCPattern): void;
-    addConnector(connector: WFCConnector): void;
-    buildConnectorsLookupTable(): void;
+    addConnector(rule: WFC.Rule): void;
+    buildLookupTable(): void;
     getAvailableOptions(): number[];
-    createSolution(width: number, height: number): WFCSolution;
-    isSolutionComplete(solution: WFCSolution): boolean;
-    collapse(solution: WFCSolution, x: number, y: number, idToUse?: number): void;
-    fullCollapse(solution: WFCSolution, start?: {
+    createSolution(width: number, height: number): WFC.Solution;
+    collapse(solution: WFC.Solution, x: number, y: number, idToUse?: number): void;
+    fullCollapse(solution: WFC.Solution, start?: {
         x: number;
         y: number;
         idToUse?: number;
     }): void;
 }
-export interface WFCCell {
-    options: number[];
-    solved: boolean;
-}
-export interface WFCSolution {
-    size: [number, number];
-    cells: WFCCell[];
-}
-export interface WFCRule {
-    id: number;
-    rotate: boolean;
-}
-export interface WFCPattern extends WFCRule {
-    constraints: {
-        x: number;
-        y: number;
+export declare namespace WFC {
+    enum Side {
+        TOP = 0,
+        RIGHT = 1,
+        BOTTOM = 2,
+        LEFT = 3
+    }
+    type ConnectionTriple = [number, number, number];
+    function areConnectionTripleMatching(tripleA: ConnectionTriple, tripleB: ConnectionTriple): boolean;
+    interface Connector {
+        side: Side;
+        connection: ConnectionTriple;
+    }
+    function areConnectionsCompatible(connectionA: Connector, connectionB: Connector): boolean;
+    interface Rule {
         id: number;
-    }[];
+        connectors: Connector[];
+        allDirection: boolean;
+    }
+    interface Cell {
+        options: number[];
+        solved: boolean;
+    }
+    class Solution {
+        size: [number, number];
+        cells: Cell[];
+        wfc: WaveFunctionCollapse;
+        constructor(width: number, height: number, wfc: WaveFunctionCollapse);
+        get width(): number;
+        get height(): number;
+        solved(): boolean;
+        getIndex(index: number): Cell;
+        getPosition(x: number, y: number): void;
+        indexToPosition(index: number): [number, number];
+        positionToIndex(x: number, y: number): number;
+        containsPosition(x: number, y: number): boolean;
+        neighborOf(x: number, y: number, side: Side): number[];
+    }
 }
-export type WFCConnectorTriple = [number, number, number];
-export type WFCConnectorConstraints = [WFCConnectorTriple, WFCConnectorTriple, WFCConnectorTriple, WFCConnectorTriple];
-export interface WFCConnector extends WFCRule {
-    constraints: WFCConnectorConstraints;
-}
-export declare function rotateWFCConnector(connector: WFCConnector): [WFCConnector, WFCConnector, WFCConnector, WFCConnector];
-export declare function WFCIndexToPosition(solution: WFCSolution, index: number): [number, number];
-export declare function WFCPositionToIndex(solution: WFCSolution, x: number, y: number): number;
-export declare function WFCPositionInSolution(solution: WFCSolution, x: number, y: number): boolean;

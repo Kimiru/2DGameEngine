@@ -1,4 +1,4 @@
-import { GameEngine, GameScene, WFCRuleType, WaveFunctionCollapse, fullScreen, rotateWFCConnector } from "../../../js/2DGameEngine.js"
+import { GameEngine, GameScene, WFC, WaveFunctionCollapse, fullScreen, } from "../../../js/2DGameEngine.js"
 import { Grid } from "./Grid.js"
 import { SolutionDrawer } from "./SolutionDrawer.js"
 
@@ -20,46 +20,51 @@ let scene = new GameScene()
 
 scene.add(new Grid(width, height))
 
-let wfc = new WaveFunctionCollapse(WFCRuleType.CONNECTOR)
+let wfc = new WaveFunctionCollapse()
 
 wfc.addConnector({
-    id: 0, constraints: [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
-})
-wfc.addConnector({
-    id: 0, constraints: [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
-})
-
-wfc.addConnector({
-    id: 1, constraints: [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
-})
-wfc.addConnector({
-    id: 1, constraints: [[2, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]]
+    id: 0, connectors: [
+        { side: WFC.Side.TOP, connection: [0, 0, 0] },
+        { side: WFC.Side.TOP, connection: [1, 1, 1] }
+    ],
+    allDirection: true
 })
 
 wfc.addConnector({
-    id: 2, constraints: [[2, 2, 2], [2, 2, 2], [2, 2, 2], [2, 2, 2]]
-})
-wfc.addConnector({
-    id: 2, constraints: [[3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3]]
-})
-
-wfc.addConnector({
-    id: 3, constraints: [[3, 3, 3], [3, 3, 3], [3, 3, 3], [3, 3, 3]]
-})
-wfc.addConnector({
-    id: 3, constraints: [[4, 4, 4], [4, 4, 4], [4, 4, 4], [4, 4, 4]]
+    id: 1, connectors: [
+        { side: WFC.Side.TOP, connection: [1, 1, 1] },
+        { side: WFC.Side.TOP, connection: [2, 2, 2] }
+    ],
+    allDirection: true
 })
 
 wfc.addConnector({
-    id: 4, constraints: [[4, 4, 4], [4, 4, 4], [4, 4, 4], [4, 4, 4]]
+    id: 2, connectors: [
+        { side: WFC.Side.TOP, connection: [2, 2, 2] },
+        { side: WFC.Side.TOP, connection: [3, 3, 3] }
+    ],
+    allDirection: true
 })
+
 wfc.addConnector({
-    id: 4, constraints: [[5, 5, 5], [5, 5, 5], [5, 5, 5], [5, 5, 5]]
+    id: 3, connectors: [
+        { side: WFC.Side.TOP, connection: [3, 3, 3] },
+        { side: WFC.Side.TOP, connection: [4, 4, 4] }
+    ],
+    allDirection: true
+})
+
+wfc.addConnector({
+    id: 4, connectors: [
+        { side: WFC.Side.TOP, connection: [4, 4, 4] },
+        { side: WFC.Side.TOP, connection: [5, 5, 5] }
+    ],
+    allDirection: true
 })
 
 let solution = wfc.createSolution(width, height)
 
-wfc.buildConnectorsLookupTable()
+wfc.buildLookupTable()
 
 console.log(wfc.connectorsLookupTable)
 
