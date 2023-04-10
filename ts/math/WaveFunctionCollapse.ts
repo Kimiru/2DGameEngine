@@ -235,8 +235,11 @@ export namespace WFC {
 
         }
 
-        getIndex(index: number): Cell { return this.cells[index] }
-        getPosition(x: number, y: number) { }
+        getCellAtIndex(index: number): Cell { return this.cells[index] }
+        getCellAtPosition(x: number, y: number): Cell | null {
+            if (!this.containsPosition(x, y)) return null
+            return this.cells[this.positionToIndex(x, y)] ?? null
+        }
 
         indexToPosition(index: number): [number, number] {
 

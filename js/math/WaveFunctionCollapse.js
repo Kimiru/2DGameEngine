@@ -141,8 +141,12 @@ export var WFC;
         solved() {
             return this.cells.every(cell => cell.solved);
         }
-        getIndex(index) { return this.cells[index]; }
-        getPosition(x, y) { }
+        getCellAtIndex(index) { return this.cells[index]; }
+        getCellAtPosition(x, y) {
+            if (!this.containsPosition(x, y))
+                return null;
+            return this.cells[this.positionToIndex(x, y)] ?? null;
+        }
         indexToPosition(index) {
             return [index % this.width, Math.floor(index / this.width)];
         }

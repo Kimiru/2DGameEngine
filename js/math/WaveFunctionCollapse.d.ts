@@ -49,8 +49,8 @@ export declare namespace WFC {
         get width(): number;
         get height(): number;
         solved(): boolean;
-        getIndex(index: number): Cell;
-        getPosition(x: number, y: number): void;
+        getCellAtIndex(index: number): Cell;
+        getCellAtPosition(x: number, y: number): Cell | null;
         indexToPosition(index: number): [number, number];
         positionToIndex(x: number, y: number): number;
         containsPosition(x: number, y: number): boolean;
