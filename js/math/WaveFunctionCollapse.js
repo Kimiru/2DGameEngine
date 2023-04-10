@@ -46,6 +46,16 @@ export class WaveFunctionCollapse {
             this.collapse(solution, x, y);
         }
     }
+    surround(solution, id) {
+        for (let x = 0; x < solution.width; x++) {
+            this.collapse(solution, x, 0, id);
+            this.collapse(solution, x, solution.height - 1, id);
+        }
+        for (let y = 1; y < solution.width - 1; y++) {
+            this.collapse(solution, 0, y, id);
+            this.collapse(solution, solution.width - 1, y, id);
+        }
+    }
     #propagate(solution, x, y) {
         // insert first point into open queue
         let open = [[x, y]];

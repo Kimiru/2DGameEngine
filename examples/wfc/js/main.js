@@ -2,8 +2,8 @@ import { GameEngine, GameScene, WFC, WaveFunctionCollapse, fullScreen, } from ".
 import { Grid } from "./Grid.js"
 import { SolutionDrawer } from "./SolutionDrawer.js"
 
-let width = 20
-let height = 20
+let width = 30
+let height = 30
 
 let size = Math.max(width, height)
 
@@ -69,6 +69,8 @@ wfc.buildLookupTable()
 console.log(wfc.connectorsLookupTable)
 
 console.log(solution)
+
+wfc.surround(solution, 3)
 
 // wfc.fullCollapse(solution, 0, 0)
 

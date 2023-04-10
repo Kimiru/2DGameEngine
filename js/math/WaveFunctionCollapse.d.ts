@@ -16,6 +16,7 @@ export declare class WaveFunctionCollapse {
         y: number;
         idToUse?: number;
     }): void;
+    surround(solution: WFC.Solution, id: number): void;
 }
 export declare namespace WFC {
     enum Side {
