@@ -7,6 +7,7 @@ export class Drawable extends GameObject {
     images: HTMLImageElement[] = []
     imageSize: Vector = new Vector()
     halfSize: Vector = new Vector()
+    imageSmoothing: boolean = true
 
     constructor(...images: HTMLImageElement[]) {
 
@@ -39,6 +40,8 @@ export class Drawable extends GameObject {
     draw(ctx: CanvasRenderingContext2D): void {
 
         ctx.save()
+
+        ctx.imageSmoothingEnabled = this.imageSmoothing
 
         ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y)
 

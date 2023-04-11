@@ -5,6 +5,7 @@ export class Drawable extends GameObject {
     images = [];
     imageSize = new Vector();
     halfSize = new Vector();
+    imageSmoothing = true;
     constructor(...images) {
         super();
         if (images.length === 0)
@@ -24,6 +25,7 @@ export class Drawable extends GameObject {
     }
     draw(ctx) {
         ctx.save();
+        ctx.imageSmoothingEnabled = this.imageSmoothing;
         ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y);
         for (let image of this.images)
             ctx.drawImage(image, -this.halfSize.x, -this.halfSize.y);

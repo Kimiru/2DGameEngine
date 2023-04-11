@@ -203,7 +203,6 @@ export class GameEngine {
 
         this.canvas.width = width * scaling
         this.canvas.height = height * scaling
-        this.ctx.imageSmoothingEnabled = false
         this.canvas.style.width = width + 'px'
         this.canvas.style.height = height + 'px'
 

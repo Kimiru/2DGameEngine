@@ -5,6 +5,7 @@ export declare class Drawable extends GameObject {
     images: HTMLImageElement[];
     imageSize: Vector;
     halfSize: Vector;
+    imageSmoothing: boolean;
     constructor(...images: HTMLImageElement[]);
     render(resolution?: Vector, margin?: number, smoothing?: boolean): ImageManipulator;
     draw(ctx: CanvasRenderingContext2D): void;
