@@ -24,40 +24,40 @@ let wfc = new WaveFunctionCollapse()
 
 wfc.addConnector({
     id: 0, connectors: [
-        { side: WFC.Side.TOP, connection: [0, 0, 0] },
-        { side: WFC.Side.TOP, connection: [1, 1, 1] }
+        { side: WFC.Side.TOP, connection: [0] },
+        { side: WFC.Side.TOP, connection: [1] }
     ],
     allDirection: true
 })
 
 wfc.addConnector({
     id: 1, connectors: [
-        { side: WFC.Side.TOP, connection: [1, 1, 1] },
-        { side: WFC.Side.TOP, connection: [2, 2, 2] }
+        { side: WFC.Side.TOP, connection: [1] },
+        { side: WFC.Side.TOP, connection: [2] }
     ],
     allDirection: true
 })
 
 wfc.addConnector({
     id: 2, connectors: [
-        { side: WFC.Side.TOP, connection: [2, 2, 2] },
-        { side: WFC.Side.TOP, connection: [3, 3, 3] }
+        { side: WFC.Side.TOP, connection: [2] },
+        { side: WFC.Side.TOP, connection: [3] }
     ],
     allDirection: true
 })
 
 wfc.addConnector({
     id: 3, connectors: [
-        { side: WFC.Side.TOP, connection: [3, 3, 3] },
-        { side: WFC.Side.TOP, connection: [4, 4, 4] }
+        { side: WFC.Side.TOP, connection: [3] },
+        { side: WFC.Side.TOP, connection: [4] }
     ],
     allDirection: true
 })
 
 wfc.addConnector({
     id: 4, connectors: [
-        { side: WFC.Side.TOP, connection: [4, 4, 4] },
-        { side: WFC.Side.TOP, connection: [5, 5, 5] }
+        { side: WFC.Side.TOP, connection: [4] },
+        { side: WFC.Side.TOP, connection: [5] }
     ],
     allDirection: true
 })

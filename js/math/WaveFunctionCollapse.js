@@ -111,9 +111,11 @@ export var WFC;
         Side[Side["BOTTOM"] = 2] = "BOTTOM";
         Side[Side["LEFT"] = 3] = "LEFT";
     })(Side = WFC.Side || (WFC.Side = {}));
-    function areConnectionTripleMatching(tripleA, tripleB) {
-        for (let indexA = 0; indexA < 3; indexA++)
-            if (tripleA[indexA] !== tripleB[2 - indexA])
+    function areConnectionTripleMatching(connectionA, connectionB) {
+        if (connectionA.length !== connectionB.length)
+            return false;
+        for (let indexA = 0; indexA < connectionA.length; indexA++)
+            if (connectionA[indexA] !== connectionB[connectionA.length - 1 - indexA])
                 return false;
         return true;
     }

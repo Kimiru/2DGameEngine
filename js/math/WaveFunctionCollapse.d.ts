@@ -25,11 +25,11 @@ export declare namespace WFC {
         BOTTOM = 2,
         LEFT = 3
     }
-    type ConnectionTriple = [number, number, number];
-    function areConnectionTripleMatching(tripleA: ConnectionTriple, tripleB: ConnectionTriple): boolean;
+    type Connection = number[];
+    function areConnectionTripleMatching(connectionA: Connection, connectionB: Connection): boolean;
     interface Connector {
         side: Side;
-        connection: ConnectionTriple;
+        connection: Connection;
     }
     function areConnectionsCompatible(connectionA: Connector, connectionB: Connector): boolean;
     interface Rule {

@@ -172,12 +172,14 @@ export namespace WFC {
         LEFT = 3
     }
 
-    export type ConnectionTriple = [number, number, number]
+    export type Connection = number[]
 
-    export function areConnectionTripleMatching(tripleA: ConnectionTriple, tripleB: ConnectionTriple): boolean {
+    export function areConnectionTripleMatching(connectionA: Connection, connectionB: Connection): boolean {
 
-        for (let indexA = 0; indexA < 3; indexA++)
-            if (tripleA[indexA] !== tripleB[2 - indexA]) return false
+        if (connectionA.length !== connectionB.length) return false
+
+        for (let indexA = 0; indexA < connectionA.length; indexA++)
+            if (connectionA[indexA] !== connectionB[connectionA.length - 1 - indexA]) return false
 
         return true
 
@@ -185,7 +187,7 @@ export namespace WFC {
 
     export interface Connector {
         side: Side,
-        connection: ConnectionTriple
+        connection: Connection
     }
 
     export function areConnectionsCompatible(connectionA: Connector, connectionB: Connector) {
