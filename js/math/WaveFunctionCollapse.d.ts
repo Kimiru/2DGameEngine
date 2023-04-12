@@ -35,7 +35,7 @@ export declare namespace WFC {
     interface Rule {
         id: number;
         connectors: Connector[];
-        allDirection: boolean;
+        allDirection?: boolean;
     }
     interface Cell {
         options: number[];

@@ -1,5 +1,3 @@
-import { range } from "../2DGameEngine.js"
-import { Vector } from "./Vector.js"
 
 export class WaveFunctionCollapse {
 
@@ -201,7 +199,7 @@ export namespace WFC {
     export interface Rule {
         id: number,
         connectors: Connector[],
-        allDirection: boolean
+        allDirection?: boolean
     }
 
     export interface Cell {
@@ -266,7 +264,7 @@ export namespace WFC {
             switch (side) {
                 case Side.TOP:
                     y++
-                    break;
+                    break
 
                 case Side.RIGHT:
                     x++
