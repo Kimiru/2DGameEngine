@@ -1,5 +1,4 @@
 export declare class WaveFunctionCollapse {
-    #private;
     connectors: {
         [n: number]: WFC.Connector[];
     };
@@ -17,6 +16,7 @@ export declare class WaveFunctionCollapse {
         idToUse?: number;
     }): void;
     surround(solution: WFC.Solution, id: number): void;
+    propagate(solution: WFC.Solution, x: number, y: number): void;
 }
 export declare namespace WFC {
     enum Side {
@@ -55,5 +55,6 @@ export declare namespace WFC {
         positionToIndex(x: number, y: number): number;
         containsPosition(x: number, y: number): boolean;
         neighborOf(x: number, y: number, side: Side): number[];
+        clearCellAtPosition(x: number, y: number): void;
     }
 }

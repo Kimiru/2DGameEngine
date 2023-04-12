@@ -34,7 +34,7 @@ export class WaveFunctionCollapse {
         else
             solution.cells[index].options = [solution.cells[index].options[Math.floor(Math.random() * solution.cells[index].options.length)]];
         solution.cells[index].solved = true;
-        this.#propagate(solution, x, y);
+        this.propagate(solution, x, y);
     }
     fullCollapse(solution, start) {
         if (start)
@@ -56,7 +56,7 @@ export class WaveFunctionCollapse {
             this.collapse(solution, solution.width - 1, y, id);
         }
     }
-    #propagate(solution, x, y) {
+    propagate(solution, x, y) {
         // insert first point into open queue
         let open = [[x, y]];
         do {
@@ -178,6 +178,16 @@ export var WFC;
             if (this.containsPosition(x, y))
                 return [x, y];
             return null;
+        }
+        clearCellAtPosition(x, y) {
+            this.getCellAtPosition(x, y).solved = false;
+            let options = this.wfc.getAvailableOptions();
+            for (let cell of this.cells)
+                if (!cell.solved)
+                    cell.options = [...options];
+            for (let [index, cell] of this.cells.entries())
+                if (cell.solved)
+                    this.wfc.propagate(this, ...this.indexToPosition(index));
         }
     }
     WFC.Solution = Solution;

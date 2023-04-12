@@ -24,7 +24,14 @@ export class SolutionDrawer extends GameObject {
         let input = this.input
         let mouse = input.mouse
 
-        if (mouse.leftClick) {
+        if (mouse.rightClick) {
+            mouse.position.addS(this.solution.size[0] / 2, this.solution.size[1] / 2).addS(-.5, -.5).round()
+
+            if (this.solution.containsPosition(mouse.position.x, mouse.position.y))
+                this.solution.clearCellAtPosition(mouse.position.x, mouse.position.y)
+        }
+
+        else if (mouse.leftClick) {
 
             mouse.position.addS(this.solution.size[0] / 2, this.solution.size[1] / 2).addS(-.5, -.5).round()
 

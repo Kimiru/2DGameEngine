@@ -59,7 +59,7 @@ export class WaveFunctionCollapse {
 
         solution.cells[index].solved = true
 
-        this.#propagate(solution, x, y)
+        this.propagate(solution, x, y)
 
     }
 
@@ -92,7 +92,7 @@ export class WaveFunctionCollapse {
 
     }
 
-    #propagate(solution: WFC.Solution, x: number, y: number) {
+    propagate(solution: WFC.Solution, x: number, y: number) {
 
         // insert first point into open queue
         let open: [number, number][] = [[x, y]]
@@ -285,6 +285,18 @@ export namespace WFC {
                 return [x, y]
 
             return null
+
+        }
+
+        clearCellAtPosition(x: number, y: number) {
+
+            this.getCellAtPosition(x, y).solved = false
+            let options = this.wfc.getAvailableOptions()
+            for (let cell of this.cells) if (!cell.solved)
+                cell.options = [...options]
+
+            for (let [index, cell] of this.cells.entries()) if (cell.solved)
+                this.wfc.propagate(this, ...this.indexToPosition(index))
 
         }
 
