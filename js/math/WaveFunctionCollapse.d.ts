@@ -37,6 +37,10 @@ export declare namespace WFC {
         connectors: Connector[];
         allDirection?: boolean;
     }
+    /**
+     * Rotate the rule steps times to the right
+     */
+    function rotateRule(rule: Rule, newid?: number, steps?: number): Rule;
     interface Cell {
         options: number[];
         solved: boolean;

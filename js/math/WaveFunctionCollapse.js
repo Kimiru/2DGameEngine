@@ -125,6 +125,20 @@ export var WFC;
         return areConnectionTripleMatching(connectionA.connection, connectionB.connection);
     }
     WFC.areConnectionsCompatible = areConnectionsCompatible;
+    /**
+     * Rotate the rule steps times to the right
+     */
+    function rotateRule(rule, newid, steps = 1) {
+        steps = ((steps % 4) + 4) % 4;
+        return {
+            id: newid ?? rule.id,
+            connectors: rule.connectors.map(connector => ({
+                side: (connector.side + steps) % 4,
+                connection: [...connector.connection]
+            }))
+        };
+    }
+    WFC.rotateRule = rotateRule;
     class Solution {
         size = [1, 1];
         cells = [];

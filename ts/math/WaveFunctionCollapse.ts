@@ -202,6 +202,23 @@ export namespace WFC {
         allDirection?: boolean
     }
 
+    /**
+     * Rotate the rule steps times to the right
+     */
+    export function rotateRule(rule: Rule, newid?: number, steps: number = 1): Rule {
+
+        steps = ((steps % 4) + 4) % 4
+
+        return {
+            id: newid ?? rule.id,
+            connectors: rule.connectors.map(connector => ({
+                side: (connector.side + steps) % 4,
+                connection: [...connector.connection]
+            }))
+        }
+
+    }
+
     export interface Cell {
         options: number[]
         solved: boolean
