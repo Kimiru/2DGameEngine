@@ -41,6 +41,7 @@ export declare namespace WFC {
      * Rotate the rule steps times to the right
      */
     function rotateRule(rule: Rule, newid?: number, steps?: number): Rule;
+    function flipRule(rule: Rule, newid?: number, direction?: number): Rule;
     interface Cell {
         options: number[];
         solved: boolean;

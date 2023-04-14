@@ -113,6 +113,32 @@ export class ImageManipulator extends GameObject {
 
     }
 
+    flipV(): this {
+
+        let im = this.clone()
+
+        this.ctx.save()
+        this.ctx.scale(1, -1)
+        this.ctx.drawImage(im.canvas, 0, -im.height)
+        this.ctx.restore()
+
+        return this
+
+    }
+
+    flipH(): this {
+
+        let im = this.clone()
+
+        this.ctx.save()
+        this.ctx.scale(-1, 1)
+        this.ctx.drawImage(im.canvas, -im.width, 0)
+        this.ctx.restore()
+
+        return this
+
+    }
+
     static fromImage(image: HTMLImageElement): ImageManipulator {
 
         let im = new ImageManipulator(image.width, image.height)

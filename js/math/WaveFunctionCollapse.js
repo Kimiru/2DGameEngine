@@ -139,6 +139,28 @@ export var WFC;
         };
     }
     WFC.rotateRule = rotateRule;
+    function flipRule(rule, newid, direction = -1) {
+        if (direction !== -1) {
+            return {
+                id: newid ?? rule.id,
+                connectors: rule.connectors.map(connector => {
+                    let flip = (connector.side & 1) === (direction & 1);
+                    return {
+                        side: flip ? (connector.side + 2) % 4 : connector.side,
+                        connection: [...connector.connection].reverse()
+                    };
+                })
+            };
+        }
+        return {
+            id: newid ?? rule.id,
+            connectors: rule.connectors.map(connector => ({
+                side: connector.side,
+                connection: [...connector.connection]
+            }))
+        };
+    }
+    WFC.flipRule = flipRule;
     class Solution {
         size = [1, 1];
         cells = [];
