@@ -16,6 +16,10 @@ export declare class ImageManipulator extends GameObject {
     getImage(): Promise<HTMLImageElement>;
     toString(): string;
     clone(): ImageManipulator;
+    flipV(): this;
+    flipH(): this;
+    rotate270(): void;
+    rotate90(): void;
     static fromImage(image: HTMLImageElement): ImageManipulator;
     draw(ctx: CanvasRenderingContext2D): void;
 }

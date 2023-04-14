@@ -64,6 +64,40 @@ export class ImageManipulator extends GameObject {
         im.ctx.drawImage(this.canvas, 0, 0);
         return im;
     }
+    flipV() {
+        let im = this.clone();
+        this.ctx.save();
+        this.ctx.scale(1, -1);
+        this.ctx.drawImage(im.canvas, 0, -im.height);
+        this.ctx.restore();
+        return this;
+    }
+    flipH() {
+        let im = this.clone();
+        this.ctx.save();
+        this.ctx.scale(-1, 1);
+        this.ctx.drawImage(im.canvas, -im.width, 0);
+        this.ctx.restore();
+        return this;
+    }
+    rotate270() {
+        let clone = this.clone();
+        this.setSize(clone.height, clone.width);
+        this.ctx.save();
+        this.setCtxToCenter();
+        this.ctx.rotate(Math.PI / 2);
+        this.ctx.drawImage(clone.canvas, -clone.width / 2, -clone.height / 2);
+        this.ctx.restore();
+    }
+    rotate90() {
+        let clone = this.clone();
+        this.setSize(clone.height, clone.width);
+        this.ctx.save();
+        this.ctx.translate(this.width / 2, this.height / 2);
+        this.ctx.rotate(Math.PI / 2);
+        this.ctx.drawImage(clone.canvas, -clone.width / 2, -clone.height / 2);
+        this.ctx.restore();
+    }
     static fromImage(image) {
         let im = new ImageManipulator(image.width, image.height);
         im.ctx.drawImage(image, 0, 0);

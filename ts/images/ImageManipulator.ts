@@ -139,6 +139,33 @@ export class ImageManipulator extends GameObject {
 
     }
 
+    rotate270() {
+
+        let clone = this.clone()
+
+        this.setSize(clone.height, clone.width)
+
+        this.ctx.save()
+        this.setCtxToCenter()
+        this.ctx.rotate(Math.PI / 2)
+        this.ctx.drawImage(clone.canvas, -clone.width / 2, -clone.height / 2)
+        this.ctx.restore()
+    }
+
+    rotate90() {
+
+        let clone = this.clone()
+
+        this.setSize(clone.height, clone.width)
+
+        this.ctx.save()
+        this.ctx.translate(this.width / 2, this.height / 2)
+        this.ctx.rotate(Math.PI / 2)
+        this.ctx.drawImage(clone.canvas, -clone.width / 2, -clone.height / 2)
+        this.ctx.restore()
+
+    }
+
     static fromImage(image: HTMLImageElement): ImageManipulator {
 
         let im = new ImageManipulator(image.width, image.height)

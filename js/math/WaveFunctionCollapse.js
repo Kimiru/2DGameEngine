@@ -13,12 +13,13 @@ export class WaveFunctionCollapse {
     buildLookupTable() {
         this.connectorsLookupTable = {};
         for (let [id, connectorList] of Object.entries(this.connectors)) {
-            this.connectorsLookupTable[id] = [[], [], [], []];
+            let lookup = [new Set(), new Set(), new Set(), new Set()];
             for (let connector of connectorList)
                 for (let [nextid, nextconnectorList] of Object.entries(this.connectors))
                     for (let nextconnector of nextconnectorList)
                         if (WFC.areConnectionsCompatible(connector, nextconnector))
-                            this.connectorsLookupTable[id][connector.side].push(Number(nextid));
+                            lookup[connector.side].add(Number(nextid));
+            this.connectorsLookupTable[id] = lookup.map(e => [...e].sort((a, b) => a - b));
         }
     }
     getAvailableOptions() {
@@ -121,7 +122,8 @@ export var WFC;
     }
     WFC.areConnectionTripleMatching = areConnectionTripleMatching;
     function areConnectionsCompatible(connectionA, connectionB) {
-        connectionA.side === (connectionB.side + 2) % 4;
+        if (connectionA.side !== (connectionB.side + 2) % 4)
+            return;
         return areConnectionTripleMatching(connectionA.connection, connectionB.connection);
     }
     WFC.areConnectionsCompatible = areConnectionsCompatible;
