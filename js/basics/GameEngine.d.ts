@@ -98,5 +98,5 @@ export declare class GameEngine {
     stop(): void;
     onResourcesLoaded(callback: any): void;
 }
-export declare function fullScreen(engine: GameEngine): void;
-export declare function fillCanvasParent(engine: GameEngine): void;
+export declare function fullScreen(engine: GameEngine): () => void;
+export declare function fillCanvasParent(engine: GameEngine): () => void;

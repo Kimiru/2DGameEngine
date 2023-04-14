@@ -385,6 +385,8 @@ export function fullScreen(engine: GameEngine) {
     window.addEventListener('resize', handler)
     handler()
 
+    return handler
+
 }
 
 export function fillCanvasParent(engine: GameEngine) {
@@ -419,5 +421,7 @@ export function fillCanvasParent(engine: GameEngine) {
 
     window.addEventListener('resize', handler)
     handler()
+
+    return handler
 
 }

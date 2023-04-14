@@ -255,6 +255,7 @@ export function fullScreen(engine) {
     };
     window.addEventListener('resize', handler);
     handler();
+    return handler;
 }
 export function fillCanvasParent(engine) {
     let verticalPixels = engine.verticalPixels;
@@ -277,4 +278,5 @@ export function fillCanvasParent(engine) {
     };
     window.addEventListener('resize', handler);
     handler();
+    return handler;
 }
