@@ -85,20 +85,23 @@ export class WaveFunctionCollapse {
                 if (!(0 <= nx && nx < solution.size[0] && 0 <= ny && ny < solution.size[1]))
                     continue;
                 let neighbor = solution.cells[index];
+                if (neighbor.solved)
+                    continue;
                 let startLength = neighbor.options.length;
-                let nextOptions = new Set();
+                let nextOptions = [];
                 for (let option of cell.options) {
                     let lookup = this.connectorsLookupTable[option][side];
-                    neighbor.options
-                        .filter(opt => lookup.includes(opt))
-                        .forEach(opt => nextOptions.add(opt));
+                    for (let neighborOption of neighbor.options) {
+                        if (lookup.includes(neighborOption))
+                            nextOptions.push(neighborOption);
+                    }
                 }
-                neighbor.options = [...nextOptions];
+                neighbor.options = [...new Set(nextOptions)];
                 let endLength = neighbor.options.length;
-                if (startLength !== endLength)
-                    open.push([nx, ny]);
                 if (endLength <= 1)
                     neighbor.solved = true;
+                if (startLength !== endLength)
+                    open.push([nx, ny]);
             }
         } while (open.length);
     }

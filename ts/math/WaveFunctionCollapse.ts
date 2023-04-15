@@ -131,28 +131,32 @@ export class WaveFunctionCollapse {
 
                 let neighbor = solution.cells[index]
 
+                if (neighbor.solved) continue
+
                 let startLength = neighbor.options.length
 
-                let nextOptions: Set<number> = new Set()
+                let nextOptions: number[] = []
 
                 for (let option of cell.options) {
 
                     let lookup = this.connectorsLookupTable[option][side]
 
-                    neighbor.options
-                        .filter(opt => lookup.includes(opt))
-                        .forEach(opt => nextOptions.add(opt))
+                    for (let neighborOption of neighbor.options) {
+                        if (lookup.includes(neighborOption))
+                            nextOptions.push(neighborOption)
+
+                    }
 
                 }
 
-                neighbor.options = [...nextOptions]
+                neighbor.options = [...new Set(nextOptions)]
 
                 let endLength = neighbor.options.length
 
-                if (startLength !== endLength) open.push([nx, ny])
-
                 if (endLength <= 1)
                     neighbor.solved = true
+
+                if (startLength !== endLength) open.push([nx, ny])
 
             }
 
