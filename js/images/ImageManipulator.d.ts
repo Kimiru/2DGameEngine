@@ -3,6 +3,7 @@ import { GameObject } from "../basics/GameObject.js";
 export declare class ImageManipulator extends GameObject {
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
+    smooth: boolean;
     constructor(width?: number, height?: number);
     get width(): number;
     get height(): number;
@@ -41,6 +42,7 @@ export declare class LargeImageManipulator extends GameObject {
     }[];
     fullSize: Vector;
     gridSize: Vector;
+    smooth: boolean;
     constructor(width: number, height: number);
     updateSize(width: number, height: number): void;
     /**

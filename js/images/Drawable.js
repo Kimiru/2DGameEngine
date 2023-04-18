@@ -16,7 +16,6 @@ export class Drawable extends GameObject {
     }
     render(resolution = this.imageSize, margin = 0, smoothing = false) {
         let imageManipulator = new ImageManipulator(resolution.x + margin * 2, resolution.y + margin * 2);
-        imageManipulator.ctx.imageSmoothingQuality = 'high';
         imageManipulator.ctx.imageSmoothingEnabled = smoothing;
         imageManipulator.setCtxToCenter();
         imageManipulator.ctx.scale(...resolution.clone().div(resolution.clone().addS(margin, margin)).arrayXY());

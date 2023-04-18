@@ -3,6 +3,7 @@ import { GameObject } from "../basics/GameObject.js";
 export class ImageManipulator extends GameObject {
     canvas;
     ctx;
+    smooth = true;
     constructor(width = 1, height = 1) {
         super();
         this.canvas = document.createElement('canvas');
@@ -105,6 +106,7 @@ export class ImageManipulator extends GameObject {
     }
     draw(ctx) {
         ctx.save();
+        ctx.imageSmoothingEnabled = this.smooth;
         ctx.scale(1 / this.width, -1 / this.height);
         ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2);
         ctx.restore();
@@ -115,6 +117,7 @@ export class LargeImageManipulator extends GameObject {
     canvases;
     fullSize = new Vector();
     gridSize = new Vector();
+    smooth = true;
     constructor(width, height) {
         super();
         this.updateSize(width, height);
@@ -198,6 +201,7 @@ export class LargeImageManipulator extends GameObject {
     }
     draw(ctx) {
         ctx.save();
+        ctx.imageSmoothingEnabled = this.smooth;
         ctx.scale(1 / this.fullSize.x, -1 / this.fullSize.y);
         for (let { canvas, position } of this.canvases) {
             let positionOnCanvas = position.clone().multS(CANVAS_RESOLUTION).subS(CANVAS_RESOLUTION / 2, -CANVAS_RESOLUTION / 2);

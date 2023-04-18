@@ -5,6 +5,7 @@ export class ImageManipulator extends GameObject {
 
     canvas: HTMLCanvasElement
     ctx: CanvasRenderingContext2D
+    smooth: boolean = true
 
     constructor(width: number = 1, height: number = 1) {
 
@@ -180,6 +181,8 @@ export class ImageManipulator extends GameObject {
 
         ctx.save()
 
+        ctx.imageSmoothingEnabled = this.smooth
+
         ctx.scale(1 / this.width, -1 / this.height)
         ctx.drawImage(this.canvas, -this.width / 2, -this.height / 2)
 
@@ -208,6 +211,7 @@ export class LargeImageManipulator extends GameObject {
 
     fullSize: Vector = new Vector()
     gridSize: Vector = new Vector()
+    smooth: boolean = true
 
     constructor(width: number, height: number) {
 
@@ -346,6 +350,7 @@ export class LargeImageManipulator extends GameObject {
     draw(ctx: CanvasRenderingContext2D): void {
 
         ctx.save()
+        ctx.imageSmoothingEnabled = this.smooth
 
         ctx.scale(1 / this.fullSize.x, -1 / this.fullSize.y)
 
