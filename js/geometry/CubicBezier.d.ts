@@ -7,6 +7,7 @@ export declare class CubicBezier extends GameObject {
     get point_1(): Vector;
     lineWidth: number;
     strokeStyle: string | CanvasGradient | CanvasPattern;
+    drawTangents: boolean;
     /**
      *
      * @param point_0

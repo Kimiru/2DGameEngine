@@ -6,11 +6,12 @@ export class CatmullRomSpline extends GameObject {
     points: Vector[] = []
     loop: boolean = false
 
-    constructor(points: Vector[]) {
+    constructor(points: Vector[], loop: boolean = false) {
 
         super()
 
         this.points = points
+        this.loop = loop
 
     }
 
@@ -23,10 +24,10 @@ export class CatmullRomSpline extends GameObject {
         let points = [...this.points]
         if (this.loop) {
             points.unshift(this.points[this.points.length - 1])
-            points.push(this.points[0])
+            points.push(this.points[0], this.points[1])
         }
 
-        for (let index = 0; index < points.length - 1; index++) {
+        for (let index = 1; index < points.length - 1; index++) {
 
             let p_0 = points[index - 1]
             let p_1 = points[index]

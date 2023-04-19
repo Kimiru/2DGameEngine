@@ -18,6 +18,7 @@ export class CubicBezier extends GameObject {
 
     lineWidth: number = 0.01
     strokeStyle: string | CanvasGradient | CanvasPattern = 'black'
+    drawTangents: boolean = false
 
     /**
      * 
@@ -162,13 +163,17 @@ export class CubicBezier extends GameObject {
         ctx.bezierCurveTo(this.#control_0.x, this.#control_0.y, this.#control_1.x, this.#control_1.y, this.#point_1.x, this.#point_1.y)
         ctx.stroke()
 
-        ctx.strokeStyle = 'red'
-        ctx.beginPath()
-        ctx.moveTo(this.#point_0.x, this.#point_0.y)
-        ctx.lineTo(this.#control_0.x, this.#control_0.y)
-        ctx.moveTo(this.#point_1.x, this.#point_1.y)
-        ctx.lineTo(this.#control_1.x, this.#control_1.y)
-        ctx.stroke()
+        if (this.drawTangents) {
+
+            ctx.strokeStyle = 'red'
+            ctx.beginPath()
+            ctx.moveTo(this.#point_0.x, this.#point_0.y)
+            ctx.lineTo(this.#control_0.x, this.#control_0.y)
+            ctx.moveTo(this.#point_1.x, this.#point_1.y)
+            ctx.lineTo(this.#control_1.x, this.#control_1.y)
+            ctx.stroke()
+        }
+
         ctx.restore()
 
     }

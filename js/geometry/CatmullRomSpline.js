@@ -3,9 +3,10 @@ import { HermiteSpline } from "./HermiteSpline.js";
 export class CatmullRomSpline extends GameObject {
     points = [];
     loop = false;
-    constructor(points) {
+    constructor(points, loop = false) {
         super();
         this.points = points;
+        this.loop = loop;
     }
     getHermiteSpline() {
         if (this.points.length < 3)
@@ -14,9 +15,9 @@ export class CatmullRomSpline extends GameObject {
         let points = [...this.points];
         if (this.loop) {
             points.unshift(this.points[this.points.length - 1]);
-            points.push(this.points[0]);
+            points.push(this.points[0], this.points[1]);
         }
-        for (let index = 0; index < points.length - 1; index++) {
+        for (let index = 1; index < points.length - 1; index++) {
             let p_0 = points[index - 1];
             let p_1 = points[index];
             let p_2 = points[index + 1];
