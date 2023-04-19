@@ -25,7 +25,7 @@ export function map(nbr, sourceMin, sourceMax, targetMin, targetMax) {
 export function minmax(min, value, max) {
     return Math.max(min, Math.min(value, max));
 }
-export function bezier(p0, p1, p2, p3, t) {
+export function cubicBezier(p0, p1, p2, p3, t) {
     t = minmax(0, t, 1);
     const tt = t * t;
     const mt = (1 - t);

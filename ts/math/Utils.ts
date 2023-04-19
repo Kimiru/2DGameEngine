@@ -50,7 +50,7 @@ export function minmax(min: number, value: number, max: number) {
 
 }
 
-export function bezier(p0: number[], p1: number[], p2: number[], p3: number[], t: number): number[] {
+export function cubicBezier(p0: number[], p1: number[], p2: number[], p3: number[], t: number): number[] {
 
     t = minmax(0, t, 1)
 
