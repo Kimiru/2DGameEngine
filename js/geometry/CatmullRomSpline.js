@@ -26,6 +26,6 @@ export class CatmullRomSpline extends GameObject {
         return new HermiteSpline(nodes);
     }
     draw(ctx) {
-        this.getHermiteSpline().executeDraw(ctx);
+        this.getHermiteSpline()?.executeDraw(ctx);
     }
 }

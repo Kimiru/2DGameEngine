@@ -44,7 +44,7 @@ export class CatmullRomSpline extends GameObject {
 
     draw(ctx: CanvasRenderingContext2D): void {
 
-        this.getHermiteSpline().executeDraw(ctx)
+        this.getHermiteSpline()?.executeDraw(ctx)
 
     }
 
