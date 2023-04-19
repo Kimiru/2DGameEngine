@@ -220,8 +220,10 @@ export var WFC;
                 return [x, y];
             return null;
         }
-        clearCellAtPosition(x, y) {
-            this.getCellAtPosition(x, y).solved = false;
+        clearCellsAtPositions(positions) {
+            for (let [x, y] of positions)
+                if (this.getCellAtPosition(x, y))
+                    this.getCellAtPosition(x, y).solved = false;
             let options = this.wfc.getAvailableOptions();
             for (let cell of this.cells)
                 if (!cell.solved)

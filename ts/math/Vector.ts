@@ -344,11 +344,11 @@ export class Vector {
      * 
      * @returns {this}
      */
-    round(): this {
+    round(n: number = 1): this {
 
-        this.x = Math.round(this.x)
-        this.y = Math.round(this.y)
-        this.z = Math.round(this.z)
+        this.x = Math.round(this.x / n) * n
+        this.y = Math.round(this.y / n) * n
+        this.z = Math.round(this.z / n) * n
 
         return this
 

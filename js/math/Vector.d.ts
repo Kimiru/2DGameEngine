@@ -190,7 +190,7 @@ export declare class Vector {
      *
      * @returns {this}
      */
-    round(): this;
+    round(n?: number): this;
     /**
      *
      * @returns {this}

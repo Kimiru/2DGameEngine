@@ -335,9 +335,13 @@ export namespace WFC {
 
         }
 
-        clearCellAtPosition(x: number, y: number) {
+        clearCellsAtPositions(positions: [number, number][]) {
 
-            this.getCellAtPosition(x, y).solved = false
+
+            for (let [x, y] of positions)
+                if (this.getCellAtPosition(x, y))
+                    this.getCellAtPosition(x, y).solved = false
+
             let options = this.wfc.getAvailableOptions()
             for (let cell of this.cells) if (!cell.solved)
                 cell.options = [...options]

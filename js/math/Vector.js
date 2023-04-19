@@ -267,10 +267,10 @@ export class Vector {
      *
      * @returns {this}
      */
-    round() {
-        this.x = Math.round(this.x);
-        this.y = Math.round(this.y);
-        this.z = Math.round(this.z);
+    round(n = 1) {
+        this.x = Math.round(this.x / n) * n;
+        this.y = Math.round(this.y / n) * n;
+        this.z = Math.round(this.z / n) * n;
         return this;
     }
     /**

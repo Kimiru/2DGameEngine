@@ -60,6 +60,6 @@ export declare namespace WFC {
         positionToIndex(x: number, y: number): number;
         containsPosition(x: number, y: number): boolean;
         neighborOf(x: number, y: number, side: Side): number[];
-        clearCellAtPosition(x: number, y: number): void;
+        clearCellsAtPositions(positions: [number, number][]): void;
     }
 }
