@@ -186,16 +186,9 @@ export declare class Vector {
     static fromAngle(angle: number): Vector;
     static distanceBetween(a: Vector, b: Vector): number;
     exec(func: (vec: Vector) => void): this;
-    /**
-     *
-     * @returns {this}
-     */
     round(n?: number): this;
-    /**
-     *
-     * @returns {this}
-     */
-    floor(): this;
+    floor(n?: number): this;
+    ceil(n?: number): this;
     abs(): this;
     arrayXY(): [number, number];
     arrayXYZ(): [number, number, number];

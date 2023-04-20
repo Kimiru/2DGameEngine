@@ -263,24 +263,22 @@ export class Vector {
         func(this);
         return this;
     }
-    /**
-     *
-     * @returns {this}
-     */
     round(n = 1) {
         this.x = Math.round(this.x / n) * n;
         this.y = Math.round(this.y / n) * n;
         this.z = Math.round(this.z / n) * n;
         return this;
     }
-    /**
-     *
-     * @returns {this}
-     */
-    floor() {
-        this.x = Math.floor(this.x);
-        this.y = Math.floor(this.y);
-        this.z = Math.floor(this.z);
+    floor(n = 1) {
+        this.x = Math.floor(this.x / n) * n;
+        this.y = Math.floor(this.y / n) * n;
+        this.z = Math.floor(this.z / n) * n;
+        return this;
+    }
+    ceil(n = 1) {
+        this.x = Math.ceil(this.x / n) * n;
+        this.y = Math.ceil(this.y / n) * n;
+        this.z = Math.ceil(this.z / n) * n;
         return this;
     }
     abs() {

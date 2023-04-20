@@ -340,10 +340,6 @@ export class Vector {
 
     }
 
-    /**
-     * 
-     * @returns {this}
-     */
     round(n: number = 1): this {
 
         this.x = Math.round(this.x / n) * n
@@ -354,15 +350,21 @@ export class Vector {
 
     }
 
-    /**
-     * 
-     * @returns {this}
-     */
-    floor(): this {
+    floor(n: number = 1): this {
 
-        this.x = Math.floor(this.x)
-        this.y = Math.floor(this.y)
-        this.z = Math.floor(this.z)
+        this.x = Math.floor(this.x / n) * n
+        this.y = Math.floor(this.y / n) * n
+        this.z = Math.floor(this.z / n) * n
+
+        return this
+
+    }
+
+    ceil(n: number = 1): this {
+
+        this.x = Math.ceil(this.x / n) * n
+        this.y = Math.ceil(this.y / n) * n
+        this.z = Math.ceil(this.z / n) * n
 
         return this
 
