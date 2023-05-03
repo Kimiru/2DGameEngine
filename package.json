@@ -2,7 +2,7 @@
     "name": "@kimiru/2dgameengine",
     "version": "1.0.1",
     "description": "",
-    "main": "",
+    "main": "js/2DGameEngine.js",
     "type": "module",
     "scripts": {
         "build": "tsc",
@@ -13,7 +13,8 @@
     "license": "ISC",
     "devDependencies": {
         "@types/node": "^18.11.10",
-        "typescript": "^4.6.4"
+        "typescript": "^4.6.4",
+        "webpack-cli": "^5.0.2"
     },
     "dependencies": {
         "clipper-lib": "^6.4.2"

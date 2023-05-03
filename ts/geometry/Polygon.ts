@@ -4,7 +4,7 @@ import { Vector } from "../math/Vector.js"
 import { Ray } from "./Ray.js"
 import { Segment } from "./Segment.js"
 
-import '../../node_modules/clipper-lib/clipper.js'
+import 'clipper-lib'
 
 declare global {
     interface Window {
