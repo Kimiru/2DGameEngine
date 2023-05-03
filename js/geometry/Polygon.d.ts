@@ -1,7 +1,7 @@
 import { GameObject } from "../basics/GameObject.js";
 import { Vector } from "../math/Vector.js";
 import { Segment } from "./Segment.js";
-import '../../node_modules/clipper-lib/clipper.js';
+import 'clipper-lib';
 declare global {
     interface Window {
         ClipperLib: {
