@@ -3,6 +3,8 @@ import { TransformMatrix } from "../math/TransformMatrix.js";
 import { Vector } from "../math/Vector.js";
 import { Ray } from "./Ray.js";
 import { Segment } from "./Segment.js";
+import clipperlib from 'clipper-lib';
+globalThis.ClipperLib = clipperlib;
 import 'clipper-lib';
 /**
  * The Polygon represent a N point polygon

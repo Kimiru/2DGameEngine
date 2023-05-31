@@ -1,4 +1,4 @@
-import { GameEngine, GameScene, WFC, WaveFunctionCollapse, fullScreen, } from "../../../js/2DGameEngine.js"
+import { GameEngine, GameScene, Polygon, WFC, WaveFunctionCollapse, fullScreen, } from "../../../js/2DGameEngine.js"
 import { Grid } from "./Grid.js"
 import { SolutionDrawer } from "./SolutionDrawer.js"
 
