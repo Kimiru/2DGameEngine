@@ -6,7 +6,7 @@ export declare class Segment extends GameObject {
     display: boolean;
     lineWidth: number;
     constructor(a: Vector, b: Vector, display?: boolean);
-    intersect(segment: Segment): Vector;
+    intersect(segment: Segment): Vector | null;
     directionVector(): Vector;
     project(point: Vector): Vector;
     length(): number;

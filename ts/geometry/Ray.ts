@@ -15,7 +15,7 @@ export class Ray extends GameObject {
 
     }
 
-    intersect(segment: Segment): Vector {
+    intersect(segment: Segment): Vector | null {
 
         let sega = segment.getWorldPosition(segment.a.clone())
         let segb = segment.getWorldPosition(segment.b.clone())
@@ -45,7 +45,7 @@ export class Ray extends GameObject {
 
     }
 
-    cast(segments: Segment[]): Vector {
+    cast(segments: Segment[]): Vector | null {
 
         let result: Vector = null
         let length: number = 0

@@ -20,7 +20,7 @@ export class Segment extends GameObject {
 
     }
 
-    intersect(segment: Segment): Vector {
+    intersect(segment: Segment): Vector | null {
 
         let seg1a = segment.getWorldPosition(segment.a.clone())
         let seg1b = segment.getWorldPosition(segment.b.clone())
