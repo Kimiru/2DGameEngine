@@ -14,7 +14,7 @@ export class PositionIntegrator {
         this.previousAcceleration.copy(this.acceleration);
         this.position
             .add(this.velocity.clone().multS(t))
-            .add(this.acceleration.clone().multS(tt * 1 / 2));
+            .add(this.acceleration.clone().multS(tt * .5));
         this.velocity.add(this.acceleration.clone().multS(t));
     }
     positionHasChanged() { return !this.previousPosition.equal(this.position); }
