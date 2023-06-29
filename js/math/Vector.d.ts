@@ -190,6 +190,7 @@ export declare class Vector {
     floor(n?: number): this;
     ceil(n?: number): this;
     abs(): this;
+    projectOn(vector: Vector): Vector;
     arrayXY(): [number, number];
     arrayXYZ(): [number, number, number];
     neighbors(_8?: boolean): Vector[];

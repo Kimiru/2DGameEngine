@@ -287,6 +287,12 @@ export class Vector {
         this.z = Math.abs(this.z);
         return this;
     }
+    projectOn(vector) {
+        let dot = this.dot(vector);
+        let normSquared = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
+        let scalar = dot / normSquared;
+        return vector.clone().multS(scalar);
+    }
     arrayXY() { return [this.x, this.y]; }
     arrayXYZ() { return [this.x, this.y, this.z]; }
     neighbors(_8 = false) {

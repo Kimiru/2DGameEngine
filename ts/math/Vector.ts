@@ -380,6 +380,16 @@ export class Vector {
 
     }
 
+    projectOn(vector: Vector) {
+
+        let dot = this.dot(vector)
+        let normSquared = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z
+        let scalar = dot / normSquared
+
+        return vector.clone().multS(scalar)
+
+    }
+
     arrayXY(): [number, number] { return [this.x, this.y] }
 
     arrayXYZ(): [number, number, number] { return [this.x, this.y, this.z] }

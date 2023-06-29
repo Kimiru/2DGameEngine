@@ -40,8 +40,6 @@ export class Camera extends GameObject {
         let wpos = this.getWorldPosition()
         let wrot = this.getWorldRotation()
 
-        console.log(wpos, wrot)
-
         return new Transform(wpos, wrot, this.transform.scale).getInvertMatrix()
 
     }

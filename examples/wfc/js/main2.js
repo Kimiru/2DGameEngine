@@ -1,4 +1,4 @@
-import { Camera, GameEngine, GameObject, GameScene, fullScreen, } from "../../../js/2DGameEngine.js"
+import { Camera, GameEngine, GameObject, GameScene, Vector, fullScreen, } from "../../../js/2DGameEngine.js"
 
 let width = 30
 let height = 30
@@ -52,3 +52,8 @@ scene.update = (dt) => {
     scene.camera.rotation = b.rotation
 
 }
+
+let v1 = new Vector(1, 1, 0)
+let v2 = new Vector(1, 0, 0)
+let v3 = v1.projectOn(v2)
+console.log(v3.toString())
