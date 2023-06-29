@@ -74,18 +74,18 @@ export class Transform {
 
     getInvertMatrix(): matrix {
 
-        let cos = Math.cos(-this.#rotation)
-        let sin = Math.sin(-this.#rotation)
-        let sx = 1 / this.scale.x
-        let sy = 1 / this.scale.y
-        let x = -this.translation.x * cos * sx + -this.translation.x * -sin * sx
-        let y = -this.translation.y * sin * sy + -this.translation.y * cos * sy
+        let cos = Math.cos(this.#rotation)
+        let sin = Math.sin(this.#rotation)
+        let sx = this.scale.x
+        let sy = this.scale.y
+        let x = (-this.translation.x * cos + -this.translation.y * sin) / sx
+        let y = (this.translation.x * sin + -this.translation.y * cos) / sy
 
         return [
-            cos * sx,
-            sin * sx,
-            -sin * sy,
-            cos * sy,
+            cos / sx,
+            -sin / sy,
+            sin / sx,
+            cos / sy,
             x,
             y
         ]

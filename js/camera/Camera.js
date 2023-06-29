@@ -21,6 +21,7 @@ export class Camera extends GameObject {
     getViewTransformMatrix() {
         let wpos = this.getWorldPosition();
         let wrot = this.getWorldRotation();
+        console.log(wpos, wrot);
         return new Transform(wpos, wrot, this.transform.scale).getInvertMatrix();
     }
     getRange() { return Math.max(this.transform.scale.x, this.transform.scale.y); }
