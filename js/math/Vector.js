@@ -293,6 +293,9 @@ export class Vector {
         let scalar = dot / normSquared;
         return vector.clone().multS(scalar);
     }
+    normal() {
+        return new Vector(-this.y, this.x);
+    }
     arrayXY() { return [this.x, this.y]; }
     arrayXYZ() { return [this.x, this.y, this.z]; }
     neighbors(_8 = false) {

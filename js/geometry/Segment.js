@@ -34,22 +34,11 @@ export class Segment extends GameObject {
             return null;
         return new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1));
     }
+    directionVector() {
+        return this.b.clone().sub(this.a).normalize();
+    }
     project(point) {
-        let dir = this.b.clone().sub(this.a);
-        let vec = point.clone().sub(this.a);
-        let fix = false;
-        if (dir.x === 0)
-            fix = true;
-        if (fix) {
-            dir.rotate(PI_DIV_2);
-            vec.rotate(PI_DIV_2);
-        }
-        let t = ((vec.x * dir.x + vec.y * dir.y) / (dir.x * dir.x + dir.y * dir.y)) * dir.x;
-        let offset = new Vector(t, t * (dir.y / dir.x));
-        if (fix) {
-            offset.rotate(-PI_DIV_2);
-        }
-        return this.a.clone().add(offset);
+        return point.projectOn(this.directionVector());
     }
     length() {
         return this.a.distanceTo(this.b);

@@ -390,6 +390,12 @@ export class Vector {
 
     }
 
+    normal() {
+
+        return new Vector(-this.y, this.x)
+
+    }
+
     arrayXY(): [number, number] { return [this.x, this.y] }
 
     arrayXYZ(): [number, number, number] { return [this.x, this.y, this.z] }
