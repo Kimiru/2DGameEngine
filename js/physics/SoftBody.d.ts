@@ -1,15 +1,18 @@
 import { GameObject, Vector } from "../2DGameEngine.js";
 export declare namespace SoftBody {
     class Solver extends GameObject {
-        springs: Spring[];
-        shapes: Shape[];
-        addSpring(...springs: Spring[]): void;
-        removeSpring(...springs: Spring[]): void;
-        addShape(...shapes: Shape[]): void;
-        removeShape(...shapes: Shape[]): void;
+        integrableBodies: IntegrableBody[];
+        constraints: Constraint[];
+        addIntegrableBody(...integrableBodies: IntegrableBody[]): void;
+        removeIntegrableBody(...integrableBodies: IntegrableBody[]): void;
+        addConstraint(...constraints: Constraint[]): void;
+        removeConstraint(...constraints: Constraint[]): void;
         physics(dt: number): void;
     }
-    class Point {
+    interface IntegrableBody {
+        integrate: (dt: number) => void;
+    }
+    class Point implements IntegrableBody {
         position: Vector;
         velocity: Vector;
         acceleration: Vector;
@@ -17,17 +20,21 @@ export declare namespace SoftBody {
         constructor(position?: Vector, velocity?: Vector, acceleration?: Vector, freeze?: boolean);
         integrate(dt: number): void;
     }
-    class Shape extends GameObject {
+    class Shape extends GameObject implements IntegrableBody {
         points: Point[];
         constructor(points: Point[]);
-        integratePoints(dt: any): void;
+        integrate(dt: any): void;
+    }
+    interface Constraint {
+        applyConstraint: () => void;
     }
     class Spring {
         point_0: Point;
         point_1: Point;
-        strength: number;
+        stiffness: number;
+        damping: number;
         restLength: number;
-        constructor(point_0: Point, point_1: Point, strength: number, restLength?: number);
+        constructor(point_0: Point, point_1: Point, stiffness?: number, damping?: number, restLength?: number);
         relaxSpring(): void;
         applyConstraint(): void;
     }

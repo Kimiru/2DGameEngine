@@ -4,52 +4,52 @@ export namespace SoftBody {
 
     export class Solver extends GameObject {
 
-        springs: Spring[] = []
-        shapes: Shape[] = []
+        integrableBodies: IntegrableBody[] = []
+        constraints: Constraint[] = []
 
-        addSpring(...springs: Spring[]) {
+        addIntegrableBody(...integrableBodies: IntegrableBody[]) {
 
-            for (let spring of springs) {
+            for (let integrableBody of integrableBodies) {
 
-                if (this.springs.indexOf(spring) !== -1) continue
+                if (this.integrableBodies.indexOf(integrableBody) !== -1) continue
 
-                this.springs.push(spring)
-
-            }
-
-        }
-
-        removeSpring(...springs: Spring[]) {
-
-            for (let spring of springs) {
-
-                if (this.springs.indexOf(spring) === -1) continue
-
-                this.springs.splice(this.springs.indexOf(spring), 1)
+                this.integrableBodies.push(integrableBody)
 
             }
 
         }
 
-        addShape(...shapes: Shape[]) {
+        removeIntegrableBody(...integrableBodies: IntegrableBody[]) {
 
-            for (let shape of shapes) {
+            for (let IntegrableBody of integrableBodies) {
 
-                if (this.shapes.indexOf(shape) !== -1) continue
+                if (this.integrableBodies.indexOf(IntegrableBody) === -1) continue
 
-                this.shapes.push(shape)
+                this.integrableBodies.splice(this.integrableBodies.indexOf(IntegrableBody), 1)
 
             }
 
         }
 
-        removeShape(...shapes: Shape[]) {
+        addConstraint(...constraints: Constraint[]) {
 
-            for (let shape of shapes) {
+            for (let constraint of constraints) {
 
-                if (this.shapes.indexOf(shape) === -1) continue
+                if (this.constraints.indexOf(constraint) !== -1) continue
 
-                this.shapes.splice(this.shapes.indexOf(shape), 1)
+                this.constraints.push(constraint)
+
+            }
+
+        }
+
+        removeConstraint(...constraints: Constraint[]) {
+
+            for (let constraint of constraints) {
+
+                if (this.constraints.indexOf(constraint) === -1) continue
+
+                this.constraints.splice(this.constraints.indexOf(constraint), 1)
 
             }
 
@@ -57,17 +57,23 @@ export namespace SoftBody {
 
         physics(dt: number): void {
 
-            for (let spring of this.springs)
-                spring.applyConstraint()
+            for (let constraint of this.constraints)
+                constraint.applyConstraint()
 
-            for (let shape of this.shapes)
-                shape.integratePoints(dt)
+            for (let integrableBody of this.integrableBodies)
+                integrableBody.integrate(dt)
 
         }
 
     }
 
-    export class Point {
+    export interface IntegrableBody {
+
+        integrate: (dt: number) => void
+
+    }
+
+    export class Point implements IntegrableBody {
 
         position: Vector = new Vector()
         velocity: Vector = new Vector()
@@ -97,7 +103,7 @@ export namespace SoftBody {
 
     }
 
-    export class Shape extends GameObject {
+    export class Shape extends GameObject implements IntegrableBody {
 
         points: Point[]
 
@@ -114,7 +120,7 @@ export namespace SoftBody {
 
         }
 
-        integratePoints(dt) {
+        integrate(dt) {
 
             for (let point of this.points)
                 point.integrate(dt)
@@ -123,22 +129,30 @@ export namespace SoftBody {
 
     }
 
+    export interface Constraint {
+
+        applyConstraint: () => void
+
+    }
+
     export class Spring {
 
         point_0: Point
         point_1: Point
 
-        strength: number
+        stiffness: number
+        damping: number
         restLength: number
 
-        constructor(point_0: Point, point_1: Point, strength: number, restLength?: number) {
+        constructor(point_0: Point, point_1: Point, stiffness: number = 1, damping: number = 1, restLength?: number) {
 
             if (point_0 === point_1) throw ('Springs cannot have both end attached to the same point')
 
             this.point_0 = point_0
             this.point_1 = point_1
 
-            this.strength = strength
+            this.stiffness = stiffness
+            this.damping = damping
 
             if (restLength === undefined)
                 this.relaxSpring()
@@ -149,22 +163,24 @@ export namespace SoftBody {
 
         relaxSpring() {
 
-            this.restLength = length ?? this.point_0.position.distanceTo(this.point_1.position)
+            this.restLength = this.point_0.position.distanceTo(this.point_1.position)
 
         }
 
         applyConstraint() {
 
             if (this.point_0.freeze && this.point_1.freeze) return
+            let dir = this.point_1.position.clone().sub(this.point_0.position).normalize()
 
             let currentLength = this.point_0.position.distanceTo(this.point_1.position)
-
             let deltaLength = currentLength - this.restLength
 
-            let force = -this.strength * deltaLength
+            let force = this.stiffness * deltaLength
 
-            let forceVector = this.point_1.position.clone().sub(this.point_0.position).normalize().multS(force)
+            let damping = this.point_1.velocity.clone().projectOn(dir).sub(this.point_0.velocity.clone().projectOn(dir)).multS(this.damping)
 
+
+            let forceVector = dir.clone().multS(force).add(damping)
 
             if (!this.point_0.freeze && !this.point_1.freeze) {
 
