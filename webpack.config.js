@@ -1,6 +1,6 @@
 export default {
 
-    entry: './examples/wfc/js/main3.js',
+    entry: './examples/wfc/js/mainRigidBody.js',
     output: {
         filename: '../examples/wfc/main.js'
     },
