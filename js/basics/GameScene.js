@@ -5,7 +5,7 @@ export var RenderingType;
     RenderingType[RenderingType["INFINITY"] = 0] = "INFINITY";
     // static IN_VIEW = 1 // Render only the object that are in the cameraview, or at default position and range if no camera is set // Distance to camera computation for all object // Recommended when lot of object with little child depth
     RenderingType[RenderingType["IN_VIEW"] = 1] = "IN_VIEW"; // Render only the object for which the root object is in camera range // Distance to camera computation for root object only // Recommended when lots of object with lots of child depth
-})(RenderingType || (RenderingType = {}));
+})(RenderingType = RenderingType || (RenderingType = {}));
 /**
  * GameScene is the class responsible for all the scene related operation such as camera definition, object adding, object grouping, scene update and rendering.
  * GameScene id is not used for scene unicity but for scene sorting regarding Network.

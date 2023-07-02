@@ -98,9 +98,9 @@ export class TextBox extends GameObject {
     draw(ctx) {
         ctx.save();
         if (this.options.align === 'left')
-            ctx.translate(-this.options.maxWidth / 2, 0);
+            ctx.translate(-(this.options.maxWidth ?? 100) / 2, 0);
         else if (this.options.align === 'right')
-            ctx.translate(this.options.maxWidth / 2, 0);
+            ctx.translate((this.options.maxWidth ?? 100) / 2, 0);
         let txt = this.text.slice(0, this.cursorPosition) + (this.active ? '_' : '') + (this.text.slice(this.cursorPosition));
         if (txt.length === 0)
             txt = resolveStringable(this.placeholder);

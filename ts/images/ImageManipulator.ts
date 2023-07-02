@@ -16,7 +16,7 @@ export class ImageManipulator extends GameObject {
         this.canvas.width = width
         this.canvas.height = height
 
-        this.ctx = this.canvas.getContext('2d')
+        this.ctx = this.canvas.getContext('2d')!
         this.ctx.imageSmoothingEnabled = false
 
     }
@@ -36,7 +36,7 @@ export class ImageManipulator extends GameObject {
         let tmpcanvas = document.createElement('canvas')
         tmpcanvas.width = this.canvas.width
         tmpcanvas.height = this.canvas.height
-        let tmpctx = tmpcanvas.getContext('2d')
+        let tmpctx = tmpcanvas.getContext('2d')!
         tmpctx.imageSmoothingEnabled = false
         tmpctx.drawImage(this.canvas, 0, 0)
 
@@ -243,7 +243,7 @@ export class LargeImageManipulator extends GameObject {
 
                 let canvas = document.createElement('canvas') as HTMLCanvasElement
                 canvas.width = canvas.height = CANVAS_RESOLUTION
-                let ctx = canvas.getContext('2d')
+                let ctx = canvas.getContext('2d')!
 
                 this.canvases.push({
                     canvas,

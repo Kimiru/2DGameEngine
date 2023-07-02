@@ -55,14 +55,14 @@ export class RigitBodyComponent extends GameComponent {
 
         this.acceleration.set(0, 0)
 
-        this.parent.position.copy(delta)
+        this.parent!.position.copy(delta)
 
         let deltaAngle = this.angularVelocity * dt + this.angularAcceleration * dt2 * .5
         this.angularVelocity += this.angularAcceleration * dt
 
         this.angularAcceleration = 0
 
-        this.parent.rotation += deltaAngle
+        this.parent!.rotation += deltaAngle
 
     }
 

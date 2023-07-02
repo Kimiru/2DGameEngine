@@ -61,7 +61,7 @@ export class FPSCounter extends GameObject {
 
         let engine = this.engine
 
-        ctx.translate(-engine.usableWidth / 2, engine.usableHeight / 2)
+        ctx.translate(-engine!.usableWidth / 2, engine!.usableHeight / 2)
 
         ctx.scale(1, -1)
 

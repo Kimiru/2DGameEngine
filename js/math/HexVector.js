@@ -3,7 +3,7 @@ export var HexOrientation;
 (function (HexOrientation) {
     HexOrientation[HexOrientation["flat"] = 0] = "flat";
     HexOrientation[HexOrientation["pointy"] = 1] = "pointy";
-})(HexOrientation || (HexOrientation = {}));
+})(HexOrientation = HexOrientation || (HexOrientation = {}));
 export class HexVector {
     orientation;
     #q = 0;

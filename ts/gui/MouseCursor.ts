@@ -10,7 +10,7 @@ export class MouseCursor extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.scene.engine.input.mouse
+        let mouse = this.engine!.input.mouse
 
         this.transform.translation.copy(mouse.position)
 

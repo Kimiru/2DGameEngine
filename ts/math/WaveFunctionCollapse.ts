@@ -3,7 +3,7 @@ export class WaveFunctionCollapse {
 
     connectors: { [n: number]: WFC.Connector[] } = {}
 
-    connectorsLookupTable: { [n: number]: [number[], number[], number[], number[]] } = null
+    connectorsLookupTable: { [n: number]: [number[], number[], number[], number[]] } | null = null
 
     addConnector(rule: WFC.Rule): void {
 
@@ -139,7 +139,7 @@ export class WaveFunctionCollapse {
 
                 for (let option of cell.options) {
 
-                    let lookup = this.connectorsLookupTable[option][side]
+                    let lookup = this.connectorsLookupTable![option][side]
 
                     for (let neighborOption of neighbor.options) {
                         if (lookup.includes(neighborOption))
@@ -340,7 +340,7 @@ export namespace WFC {
 
             for (let [x, y] of positions)
                 if (this.getCellAtPosition(x, y))
-                    this.getCellAtPosition(x, y).solved = false
+                    this.getCellAtPosition(x, y)!.solved = false
 
             let options = this.wfc.getAvailableOptions()
             for (let cell of this.cells) if (!cell.solved)

@@ -1,7 +1,4 @@
-import { Timer } from "../math/Timer.js";
-import { map } from "../math/Utils.js";
-import { Vector } from "../math/Vector.js";
-import { range } from "./Utils.js";
+import { Vector, Timer, map } from "../2DGameEngine.js";
 export var GamepadControl;
 (function (GamepadControl) {
     GamepadControl[GamepadControl["left_joystick_right_dir"] = 0] = "left_joystick_right_dir";
@@ -29,7 +26,7 @@ export var GamepadControl;
     GamepadControl[GamepadControl["button_back"] = 22] = "button_back";
     GamepadControl[GamepadControl["button_start"] = 23] = "button_start";
     GamepadControl[GamepadControl["button_home"] = 24] = "button_home";
-})(GamepadControl || (GamepadControl = {}));
+})(GamepadControl = GamepadControl || (GamepadControl = {}));
 /**
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */
@@ -131,7 +128,9 @@ export class Input {
     #mouseIn = false;
     #mouseClick = [false, false, false];
     #mouseScroll = 0;
-    positionAdapter = function (vector) { return vector; };
+    #delta = new Vector();
+    #trueDelta = new Vector();
+    positionAdapter = function (Vector) { return Vector; };
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only
      */
@@ -144,6 +143,7 @@ export class Input {
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
             position: this.#trueMousePosition.clone(),
+            delta: this.#trueDelta.clone(),
             scroll: this.#mouseScroll,
             in: this.#mouseIn
         };
@@ -153,9 +153,9 @@ export class Input {
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
      *
      * @param {HTMLElement} element
-     * @param {(vector:Vector)=>Vector} positionAdapter
+     * @param {(Vector:Vector)=>Vector} positionAdapter
      */
-    bindMouse(element, positionAdapter = function (vector) { return vector; }) {
+    bindMouse(element, positionAdapter = function (Vector) { return Vector; }) {
         this.positionAdapter = positionAdapter;
         this.#bindedElement = element;
         element.addEventListener('contextmenu', evt => evt.preventDefault());
@@ -188,6 +188,7 @@ export class Input {
                 this.#mouseClick[index] = true;
         if (evt instanceof WheelEvent)
             this.#mouseScroll += Math.sign(evt.deltaY);
+        this.#delta.add(new Vector(evt.movementX, evt.movementY));
     }
     /**
      * Convert the buttons input number to the adapted button boolean
@@ -238,7 +239,11 @@ export class Input {
     #to01() {
         this.#trueMousePosition = this.positionAdapter(this.#mousePosition
             .clone()
-            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1)));
+            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight)));
+        this.#trueDelta = this.#delta
+            .clone()
+            .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight));
+        this.#delta.set(0, 0);
     }
     // Gamepad
     #gamepadMap = new Map();
@@ -314,6 +319,8 @@ export class Input {
         };
     }
     #getCorrectedAxisValue(gamepad, index) {
+        if (!this.#axesDefaultValue)
+            return 0;
         let defaultValue = this.#axesDefaultValue[index];
         let value = gamepad.axes[index];
         if (defaultValue !== 0) {
@@ -344,10 +351,12 @@ export class Input {
     }
     #setupCalibration(gamepad) {
         let axesCount = gamepad.axes.length;
+        if (!this.#gamepadCalibration)
+            return;
         this.#gamepadCalibration.axesStates = [];
         this.#gamepadCalibration.axesTimer = [];
         this.#axesDefaultValue = [];
-        for (let i of range(axesCount)) {
+        for (let i = 0; i < axesCount; i++) {
             this.#gamepadCalibration.axesStates.push(0);
             this.#gamepadCalibration.axesTimer.push({ timer: new Timer(), value: 0 });
             this.#axesDefaultValue.push(0);
@@ -356,14 +365,17 @@ export class Input {
     #pickupAxesForCalibration(gamepad) {
         this.#getAllCurrentGamepadInputs(gamepad)
             .filter(entry => entry.type === 'axes')
-            .filter(entry => this.#gamepadCalibration.axesStates[entry.index] === 0)
+            .filter(entry => this.#gamepadCalibration?.axesStates?.[entry.index] === 0)
             .forEach(entry => {
-            this.#gamepadCalibration.axesStates[entry.index]++;
-            this.#gamepadCalibration.axesTimer[entry.index].timer.reset();
-            this.#gamepadCalibration.update?.([...this.#gamepadCalibration.axesStates]);
+            if (this.#gamepadCalibration?.axesStates?.[entry.index])
+                this.#gamepadCalibration.axesStates[entry.index]++;
+            this.#gamepadCalibration?.axesTimer?.[entry.index].timer.reset();
+            this.#gamepadCalibration?.update?.([...(this.#gamepadCalibration?.axesStates ?? [])]);
         });
     }
     #calibratePickedupAxes(gamepad) {
+        if (!this.#gamepadCalibration?.axesStates)
+            return;
         let axesCalibrating = this.#gamepadCalibration.axesStates
             .map((entry, index) => entry === 1 ? index : -1)
             .filter(entry => entry !== -1);

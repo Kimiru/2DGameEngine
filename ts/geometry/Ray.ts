@@ -47,7 +47,7 @@ export class Ray extends GameObject {
 
     cast(segments: Segment[]): Vector | null {
 
-        let result: Vector = null
+        let result: Vector | null = null
         let length: number = 0
 
         for (let segment of segments) {

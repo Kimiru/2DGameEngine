@@ -5,8 +5,8 @@ export declare class CheckBox extends GameObject {
     checked: boolean;
     rect: Rectangle;
     options: textoptions;
-    sound: string;
-    constructor(checked?: boolean, options?: textoptions, sound?: string);
+    sound: string | null;
+    constructor(checked?: boolean, options?: textoptions, sound?: string | null);
     update(dt: number): void;
     onChange(): void;
     draw(ctx: CanvasRenderingContext2D): void;

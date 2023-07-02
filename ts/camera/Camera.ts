@@ -29,8 +29,8 @@ export class Camera extends GameObject {
             this.position.x,
             this.position.y,
 
-            this.engine.usableWidth * this.size.x,
-            this.engine.usableHeight * this.size.y
+            this.engine!.usableWidth * this.size.x,
+            this.engine!.usableHeight * this.size.y
         )
 
     }

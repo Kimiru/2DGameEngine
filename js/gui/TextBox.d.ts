@@ -11,10 +11,10 @@ export declare class TextBox extends GameObject {
     cursorPosition: number;
     rect: Rectangle;
     options: textoptions;
-    onSound: string;
-    offSound: string;
+    onSound: string | null;
+    offSound: string | null;
     placeholder: stringable;
-    constructor(placeholder?: stringable, options?: textoptions, onSound?: string, offSound?: string);
+    constructor(placeholder?: stringable, options?: textoptions, onSound?: string | null, offSound?: string | null);
     toggleOn(): void;
     toggleOff(): void;
     toggle(): void;

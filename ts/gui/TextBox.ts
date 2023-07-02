@@ -16,12 +16,12 @@ export class TextBox extends GameObject {
 
     options: textoptions = {}
 
-    onSound: string
-    offSound: string
+    onSound: string | null
+    offSound: string | null
 
     placeholder: stringable = ''
 
-    constructor(placeholder: stringable = '', options: textoptions = {}, onSound: string = null, offSound: string = null) {
+    constructor(placeholder: stringable = '', options: textoptions = {}, onSound: string | null = null, offSound: string | null = null) {
 
         super()
 
@@ -82,11 +82,11 @@ export class TextBox extends GameObject {
 
         this.rect.displayColor = 'blue'
         this.active = true
-        this.input.lock('TextBox')
+        this.input!.lock('TextBox')
         this.cursorPosition = this.text.length
         TextBox.lock = true
 
-        if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
+        if (this.onSound) this.engine!.soundBank.get(this.onSound)?.play()
 
     }
 
@@ -96,10 +96,10 @@ export class TextBox extends GameObject {
 
         this.rect.displayColor = 'red'
         this.active = false
-        this.input.unlock('TextBox')
+        this.input!.unlock('TextBox')
         TextBox.lock = false
 
-        if (this.offSound) this.engine.soundBank.get(this.offSound)?.play()
+        if (this.offSound) this.engine!.soundBank.get(this.offSound)?.play()
 
         this.onChange(this.text)
 
@@ -119,7 +119,7 @@ export class TextBox extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.input.mouse
+        let mouse = this.input!.mouse
 
         if (mouse.leftClick) {
 
@@ -139,10 +139,10 @@ export class TextBox extends GameObject {
         ctx.save()
 
         if (this.options.align === 'left')
-            ctx.translate(-this.options.maxWidth / 2, 0)
+            ctx.translate(-(this.options.maxWidth ?? 100) / 2, 0)
 
         else if (this.options.align === 'right')
-            ctx.translate(this.options.maxWidth / 2, 0)
+            ctx.translate((this.options.maxWidth ?? 100) / 2, 0)
 
         let txt = this.text.slice(0, this.cursorPosition) + (this.active ? '_' : '') + (this.text.slice(this.cursorPosition))
         if (txt.length === 0) txt = resolveStringable(this.placeholder)

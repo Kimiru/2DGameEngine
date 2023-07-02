@@ -49,9 +49,9 @@ export class SpriteSheet extends Drawable {
 
     saveLoop(name: string, loopOrigin: number, tileInLoop: number) { this.savedLoop.set(name, [loopOrigin, tileInLoop]) }
 
-    useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name), index) }
+    useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index) }
 
-    isLoop(name: string): boolean { return this.loopOrigin == this.savedLoop.get(name)[0] }
+    isLoop(name: string): boolean { return this.loopOrigin == this.savedLoop.get(name)?.[0] ?? false }
 
     setLoop(loopOrigin: number, tileInLoop: number, startIndex: number = 0) {
 

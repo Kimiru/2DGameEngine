@@ -1,18 +1,24 @@
-import { GameComponent } from "../basics/GameObject.js";
+export type EnterCallback<T> = (object: T) => void;
+export type LeaveCallback<T> = (object: T) => void;
 export type UpdateCallback<T> = (object: T, dt: number) => (number[] | null);
 export type PhysicsCallback<T> = (object: T, dt: number) => void;
 export type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void;
-export type StateActions<T> = {
+export interface StateActions<T> {
+    enter?: EnterCallback<T>;
+    leave?: EnterCallback<T>;
     update?: UpdateCallback<T>;
     physics?: PhysicsCallback<T>;
     draw?: DrawCallback<T>;
-};
-export declare class StateMachine<T> extends GameComponent {
+    [x: string | number | symbol]: unknown;
+}
+export declare class StateMachine<T> {
     #private;
     unique: boolean;
     boundObject: T;
     state: number[];
-    statesActions: Map<string, StateActions<T>[]>;
+    statesActions: {
+        [s: string]: StateActions<T>[];
+    };
     constructor(boundObject: T, startState?: number[]);
     setState(state: number[]): void;
     isState(state: number[]): boolean;

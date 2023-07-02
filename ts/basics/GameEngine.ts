@@ -9,7 +9,7 @@ const gameEngineConstructorArguments: {
     height?: number,
     verticalPixels: number,
     scaling?: number,
-    canvas?: HTMLCanvasElement,
+    canvas?: HTMLCanvasElement | null,
     images?: { name: string, src: string }[],
     svgs?: { name: string, src: string }[],
     sounds?: { name: string, srcs: string[], backup?: number }[],
@@ -34,13 +34,13 @@ export class GameEngine {
      * Shall not be modified.
      * Can be accessed to retrieved generated canvas if none is passed as argument.
      */
-    canvas: HTMLCanvasElement = null
+    canvas: HTMLCanvasElement
 
     /**
      * The context on which the GameEngine will draw.
      * Shall not be modified.
      */
-    ctx: CanvasRenderingContext2D = null
+    ctx: CanvasRenderingContext2D
 
     /**
      * The input is here to query the keyboard inputs and the mouse inputs.
@@ -60,8 +60,8 @@ export class GameEngine {
     #run: boolean = false
     #lastTime: number = Date.now()
     #dt: number = 0
-    #currentScene: GameScene = null
-    #nextScene: GameScene = undefined
+    #currentScene: GameScene | null = null
+    #nextScene: GameScene | null | undefined = undefined
 
     /**
      * Contains all the images loaded at the engine contruction.
@@ -97,7 +97,7 @@ export class GameEngine {
         args = { ...gameEngineConstructorArguments, ...args }
 
         this.canvas = args.canvas ?? document.createElement('canvas')
-        this.ctx = this.canvas.getContext('2d')
+        this.ctx = this.canvas.getContext('2d')!
 
         this.input.bindMouse(this.canvas, (vector: Vector) => {
 
@@ -119,10 +119,10 @@ export class GameEngine {
         this.canvas.style.position = 'relative'
         this.canvas.style.backgroundColor = 'black'
 
-        this.resize(args.width, args.height, args.scaling ?? devicePixelRatio, args.verticalPixels)
-        this.#imageToLoadCount = args.images.length
-        this.#svgToLoadCount = args.svgs.length
-        this.#soundToLoadCount = args.sounds.map(e => e.srcs.length).reduce((a, b) => a + b, 0)
+        this.resize(args.width!, args.height!, args.scaling ?? devicePixelRatio, args.verticalPixels)
+        this.#imageToLoadCount = args.images!.length
+        this.#svgToLoadCount = args.svgs!.length
+        this.#soundToLoadCount = args.sounds!.map(e => e.srcs.length).reduce((a, b) => a + b, 0)
         this.imageBank = loadImages(
             args.images ?? [],
             (n: number) => { this.#loadedImagesCount = n },
@@ -171,7 +171,7 @@ export class GameEngine {
 
     get dt(): number { return this.#dt }
 
-    get scene(): GameScene { return this.#currentScene }
+    get scene(): GameScene | null { return this.#currentScene }
 
     #checkLocks() {
 
@@ -239,7 +239,7 @@ export class GameEngine {
      * 
      * @param {GameScene | null} scene 
      */
-    setScene(scene: GameScene): void {
+    setScene(scene: GameScene | null): void {
 
         this.#nextScene = scene
 
@@ -396,7 +396,7 @@ export function fillCanvasParent(engine: GameEngine) {
     const handler = () => {
 
         let canvas = engine.canvas
-        let parent = canvas.parentElement
+        let parent = canvas.parentElement!
 
         let width = parent.clientWidth
         let height = parent.clientHeight

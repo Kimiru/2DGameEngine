@@ -36,7 +36,7 @@ export declare function loadSounds(sounds: {
     backup?: number;
 }[], incrementCallback: (completed: number) => void, finishedCallback: () => void): soundBank;
 export declare function id(): number;
-export declare function range(min: number, max?: number, step?: number): Generator<number, void, unknown>;
+export declare function range(min: number, max?: number | null, step?: number): Generator<number, void, unknown>;
 export declare function getCircularReplacer(): (key: any, value: any) => any;
 export declare function badclone<T>(o: T): T;
 export type stringable = string | (() => string);

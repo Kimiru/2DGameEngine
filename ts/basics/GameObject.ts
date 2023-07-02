@@ -21,8 +21,8 @@ export class GameObject {
     childrenPhysicsEnabled: boolean = true
     drawEnabled: boolean = true
     childrenDrawEnabled: boolean = true
-    parent: GameObject = null
-    #scene: GameScene = null
+    parent: GameObject | null = null
+    #scene: GameScene | null = null
     #drawBeforeChild: boolean = true
 
     transform: Transform = new Transform()
@@ -40,18 +40,14 @@ export class GameObject {
 
     /**
      * If the object or any parent object is in the scene, returns it
-     * 
-     * @returns {GameScene}
      */
-    get scene(): GameScene { return this.#scene ?? this.parent?.scene ?? null }
+    get scene(): GameScene | null { return this.#scene ?? this.parent?.scene ?? null }
 
     /**
      * Set the scene of the object
      * Used by GameScene
-     * 
-     * @param {GameScene} scene
      */
-    set scene(scene: GameScene) { this.#scene = scene }
+    set scene(scene: GameScene | null) { this.#scene = scene }
 
     /**
      * @returns {GameEngine}
@@ -365,7 +361,7 @@ export class GameObject {
      */
     getWorldPosition(defaultPosition: Vector = new Vector()): Vector {
 
-        let currentObject: GameObject = this
+        let currentObject: GameObject | null = this
         let currentPosition = defaultPosition
 
         while (currentObject) {
@@ -395,7 +391,7 @@ export class GameObject {
      */
     getWorldRotation(): number {
 
-        let currentObject: GameObject = this
+        let currentObject: GameObject | null = this
         let rotation = 0
 
         while (currentObject) {
@@ -414,7 +410,7 @@ export class GameObject {
 
         let matrix: matrix = this.transform.getMatrix()
 
-        let currentObject: GameObject = this.parent
+        let currentObject: GameObject | null = this.parent
 
         while (currentObject) {
 
@@ -432,7 +428,7 @@ export class GameObject {
 export class GameComponent extends GameObject {
 
     unique: boolean = false
-    componentTag: string = null
+    componentTag: string
 
     constructor(componentTag: string) {
 

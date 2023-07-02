@@ -28,12 +28,12 @@ export class CameraDragComponent extends GameComponent {
         if (!this.parent || !(this.parent instanceof Camera)) throw 'Parent of this component must be a Camera'
     }
 
-    #target: Vector = null
+    #target: Vector | null = null
     update(dt: number): void {
 
         if (!this.enabled) return
 
-        let mouse = this.input.mouse
+        let mouse = this.input!.mouse
 
         let button: boolean = false
         if (this.button === 0) button = mouse.left
@@ -46,7 +46,7 @@ export class CameraDragComponent extends GameComponent {
 
             let delta: Vector = this.#target.clone().sub(mouse.position)
 
-            this.parent.transform.translation.add(delta)
+            this.parent!.transform.translation.add(delta)
 
         } else
             this.#target = null
@@ -54,11 +54,11 @@ export class CameraDragComponent extends GameComponent {
         if (this.scrollZoomEnabled && mouse.scroll) {
 
             let scale = 1.1 ** mouse.scroll
-            let delta = mouse.position.clone().sub(this.parent.transform.translation)
+            let delta = mouse.position.clone().sub(this.parent!.transform.translation)
 
-            this.parent.transform.translation.add(delta)
-            this.parent.transform.scale.multS(scale)
-            this.parent.transform.translation.sub(delta.multS(scale))
+            this.parent!.transform.translation.add(delta)
+            this.parent!.transform.scale.multS(scale)
+            this.parent!.transform.translation.sub(delta.multS(scale))
 
         }
 

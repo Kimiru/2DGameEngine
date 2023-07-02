@@ -11,7 +11,7 @@ export class TrackingCamera extends Camera {
     /**
      * The object the camera should track, if null, stops tracking
      */
-    trackedObject: GameObject | Vector = null
+    trackedObject: GameObject | Vector | null = null
     /**
      * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
      */
@@ -22,7 +22,7 @@ export class TrackingCamera extends Camera {
     minTrackSpeed: number = 1
     autoDisableTracking: TrackingCameraDisableMode = TrackingCameraDisableMode.DONT_DISABLE
 
-    trackedZoom: number = null
+    trackedZoom: number | null = null
     zoomTrackLag: number = 1
     zoomMinTrackSpeed: number = 1
     autoDisableZoomTracking: TrackingCameraDisableMode = TrackingCameraDisableMode.DONT_DISABLE
@@ -86,10 +86,10 @@ export class TrackingCamera extends Camera {
             } else {
 
                 if (this.autoDisableZoomTracking === TrackingCameraDisableMode.DISABLE_ONCE) {
-                    this.trackedZoom = undefined
+                    this.trackedZoom = null
                     this.autoDisableZoomTracking = TrackingCameraDisableMode.DONT_DISABLE
                 } else if (this.autoDisableZoomTracking === TrackingCameraDisableMode.DISABLE)
-                    this.trackedZoom = undefined
+                    this.trackedZoom = null
 
             }
 

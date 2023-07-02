@@ -27,16 +27,16 @@ export class GameScene {
     tags: Map<string, GameObject[]> = new Map()
 
     children: GameObject[] = []
-    camera: Camera = null
-    engine: GameEngine = null
-    parentScene: GameScene = null
+    camera: Camera | null = null
+    engine: GameEngine | null = null
+    parentScene: GameScene | null = null
 
     renderingType: RenderingType = RenderingType.INFINITY
 
     /**
      * Create a new empty GameScene
      */
-    constructor(parentScene: GameScene = null) {
+    constructor(parentScene: GameScene | null = null) {
 
         this.parentScene = parentScene
 
@@ -115,7 +115,7 @@ export class GameScene {
 
     getDrawRange(): number {
 
-        let drawRange = new Vector(this.engine.usableWidth, this.engine.usableHeight).length() / 2
+        let drawRange = new Vector(this.engine!.usableWidth, this.engine!.usableHeight).length() / 2
 
         if (this.camera)
             drawRange *= this.camera.getRange()
@@ -211,7 +211,7 @@ export class GameScene {
 
                 if (!this.tags.has(tag)) this.tags.set(tag, [])
 
-                this.tags.get(tag).push(obj)
+                this.tags.get(tag)!.push(obj)
 
             }
 
@@ -265,7 +265,7 @@ export class GameScene {
 
             for (let tag of obj.tags) {
 
-                let list = this.tags.get(tag)
+                let list = this.tags.get(tag)!
 
                 let index = list.indexOf(obj)
 

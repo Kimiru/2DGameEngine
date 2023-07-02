@@ -10,7 +10,7 @@ export declare class TrackingCamera extends Camera {
     /**
      * The object the camera should track, if null, stops tracking
      */
-    trackedObject: GameObject | Vector;
+    trackedObject: GameObject | Vector | null;
     /**
      * The number of second it should theorycally take to the camera to travel the current distance from the camera to the object.
      */
@@ -20,7 +20,7 @@ export declare class TrackingCamera extends Camera {
      */
     minTrackSpeed: number;
     autoDisableTracking: TrackingCameraDisableMode;
-    trackedZoom: number;
+    trackedZoom: number | null;
     zoomTrackLag: number;
     zoomMinTrackSpeed: number;
     autoDisableZoomTracking: TrackingCameraDisableMode;

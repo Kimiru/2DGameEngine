@@ -1,4 +1,4 @@
-import { Vector } from "../math/Vector.js";
+import { Vector } from "../2DGameEngine.js";
 type GamepadControlAccess = {
     type: string;
     index: number;
@@ -69,7 +69,7 @@ export declare class Input {
      * @returns {boolean}
      */
     isPressed(code: string, lock?: string): boolean;
-    positionAdapter: (vector: Vector) => Vector;
+    positionAdapter: (Vector: Vector) => Vector;
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only
      */
@@ -81,6 +81,7 @@ export declare class Input {
         middleClick: boolean;
         rightClick: boolean;
         position: Vector;
+        delta: Vector;
         scroll: number;
         in: boolean;
     };
@@ -88,9 +89,9 @@ export declare class Input {
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
      *
      * @param {HTMLElement} element
-     * @param {(vector:Vector)=>Vector} positionAdapter
+     * @param {(Vector:Vector)=>Vector} positionAdapter
      */
-    bindMouse(element: HTMLCanvasElement, positionAdapter?: (vector: Vector) => Vector): void;
+    bindMouse(element: HTMLCanvasElement, positionAdapter?: (Vector: Vector) => Vector): void;
     mouseLoop(): void;
     deadPoint: number;
     get isGamepadCalibrating(): boolean;
@@ -133,8 +134,8 @@ export declare class Input {
      * @param {(axesStates: number[]) => void | null} updateCallback
      * @returns {Promise<void>}
      */
-    calibrateGamepad(updateCallback?: (axesStates: number[]) => void): Promise<void>;
-    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess;
+    calibrateGamepad(updateCallback?: ((axesStates: number[]) => void) | null): Promise<void>;
+    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess | undefined;
     gamepadLoop(): void;
     recordGamepadControl(gamepadControl: GamepadControl): Promise<void>;
     unsetGamepadControl(gamepadControl: GamepadControl): void;

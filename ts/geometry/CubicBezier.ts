@@ -12,7 +12,7 @@ export class CubicBezier extends GameObject {
     get control_1(): Vector { return this.#control_1 }
     get point_1(): Vector { return this.#point_1 }
 
-    #lengthCache: number = null
+    #lengthCache: number | null = null
     #lengthToT: Map<number, number> = new Map()
     #tToLength: Map<number, number> = new Map()
 
@@ -62,18 +62,18 @@ export class CubicBezier extends GameObject {
 
     }
 
-    getLengthAtT(t: number) {
+    getLengthAtT(t: number): number {
 
         if (this.#lengthToT.size === 0) this.#computeLengthToT()
 
         t = minmax(0, t, 1)
 
         if (t === 0) return 0
-        if (t == 1) return this.#tToLength.get(1)
+        if (t == 1) return this.#tToLength.get(1)!
 
         let subt = Math.floor(t * 100) / 100
 
-        return lerp(this.#tToLength.get(subt), this.#tToLength.get(subt + 0.01), t - subt)
+        return lerp(this.#tToLength.get(subt)!, this.#tToLength.get(subt + 0.01)!, t - subt)
 
     }
 
@@ -81,21 +81,21 @@ export class CubicBezier extends GameObject {
 
         if (this.#lengthToT.size === 0) this.#computeLengthToT()
 
-        length = minmax(0, length, this.#tToLength.get(1))
+        length = minmax(0, length, this.#tToLength.get(1)!)
 
         if (length === this.#tToLength.get(1)) return 1
         if (length === 0) return 0
 
         let keys = [...this.#lengthToT.keys()].sort((a, b) => a - b)
-        let keyindex = keys.indexOf(keys.find(key => length >= key))
+        let keyindex = keys.indexOf(keys.find(key => length >= key)!)
 
         let d0 = keys[keyindex]
         let d1 = keys[keyindex + 1]
         let d = d1 - d0
         let t = (length - d0) / d
 
-        let t0 = this.#lengthToT.get(d0)
-        let t1 = this.#lengthToT.get(d1)
+        let t0 = this.#lengthToT.get(d0)!
+        let t1 = this.#lengthToT.get(d1)!
 
         return lerp(t0, t1, t)
 

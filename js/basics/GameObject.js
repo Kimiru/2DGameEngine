@@ -32,15 +32,11 @@ export class GameObject {
     }
     /**
      * If the object or any parent object is in the scene, returns it
-     *
-     * @returns {GameScene}
      */
     get scene() { return this.#scene ?? this.parent?.scene ?? null; }
     /**
      * Set the scene of the object
      * Used by GameScene
-     *
-     * @param {GameScene} scene
      */
     set scene(scene) { this.#scene = scene; }
     /**
@@ -306,7 +302,7 @@ export class GameObject {
 }
 export class GameComponent extends GameObject {
     unique = false;
-    componentTag = null;
+    componentTag;
     constructor(componentTag) {
         super();
         this.addTag('component');

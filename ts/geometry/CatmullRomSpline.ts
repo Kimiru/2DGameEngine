@@ -15,7 +15,7 @@ export class CatmullRomSpline extends GameObject {
 
     }
 
-    getHermiteSpline(): HermiteSpline {
+    getHermiteSpline(): HermiteSpline | null {
 
         if (this.points.length < 3) return null
 

@@ -7,9 +7,9 @@ export class CheckBox extends GameObject {
     checked: boolean = false
     rect: Rectangle = new Rectangle(0, 0, 1, 1)
     options: textoptions = {}
-    sound: string
+    sound: string | null
 
-    constructor(checked: boolean = false, options: textoptions = {}, sound: string = null) {
+    constructor(checked: boolean = false, options: textoptions = {}, sound: string | null = null) {
 
         super()
 
@@ -30,14 +30,14 @@ export class CheckBox extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.input.mouse
+        let mouse = this.input!.mouse
 
         if (this.rect.containsWorldVector(mouse.position) && mouse.leftClick) {
 
             this.checked = !this.checked
             this.onChange()
 
-            if (this.sound) this.engine.soundBank.get(this.sound)?.play()
+            if (this.sound) this.engine!.soundBank.get(this.sound)?.play()
 
         }
 

@@ -26,8 +26,8 @@ export class SpriteSheet extends Drawable {
         return [x, y];
     }
     saveLoop(name, loopOrigin, tileInLoop) { this.savedLoop.set(name, [loopOrigin, tileInLoop]); }
-    useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name), index); }
-    isLoop(name) { return this.loopOrigin == this.savedLoop.get(name)[0]; }
+    useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index); }
+    isLoop(name) { return this.loopOrigin == this.savedLoop.get(name)?.[0] ?? false; }
     setLoop(loopOrigin, tileInLoop, startIndex = 0) {
         this.loopOrigin = loopOrigin;
         this.tileInLoop = tileInLoop;

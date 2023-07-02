@@ -34,7 +34,7 @@ export class TextureMapper {
 
     }
 
-    static #findPixelWithColorInImage(image: ImageManipulator, r: number, g: number, b: number, a: number): [number, number] {
+    static #findPixelWithColorInImage(image: ImageManipulator, r: number, g: number, b: number, a: number): [number, number] | null {
 
         for (let x = 0; x < image.width; x++)
             for (let y = 0; y < image.height; y++) {

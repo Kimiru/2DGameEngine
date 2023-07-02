@@ -168,7 +168,7 @@ export class Color {
 
     static HEXtoRGB(hexColor: string): colortuple {
 
-        let match: RegExpExecArray
+        let match: RegExpExecArray | null
 
         if ((match = /^#?([0-9a-fA-F]{3})$/.exec(hexColor))) {
 

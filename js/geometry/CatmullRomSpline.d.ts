@@ -4,6 +4,6 @@ export declare class CatmullRomSpline extends GameObject {
     points: Vector[];
     loop: boolean;
     constructor(points: Vector[], loop?: boolean);
-    getHermiteSpline(): HermiteSpline;
+    getHermiteSpline(): HermiteSpline | null;
     draw(ctx: CanvasRenderingContext2D): void;
 }

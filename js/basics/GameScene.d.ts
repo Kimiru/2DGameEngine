@@ -18,14 +18,14 @@ export declare class GameScene {
     id: string;
     tags: Map<string, GameObject[]>;
     children: GameObject[];
-    camera: Camera;
-    engine: GameEngine;
-    parentScene: GameScene;
+    camera: Camera | null;
+    engine: GameEngine | null;
+    parentScene: GameScene | null;
     renderingType: RenderingType;
     /**
      * Create a new empty GameScene
      */
-    constructor(parentScene?: GameScene);
+    constructor(parentScene?: GameScene | null);
     store(): void;
     exit(): void;
     /**

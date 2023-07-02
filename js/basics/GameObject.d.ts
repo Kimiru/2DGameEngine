@@ -17,7 +17,7 @@ export declare class GameObject {
     childrenPhysicsEnabled: boolean;
     drawEnabled: boolean;
     childrenDrawEnabled: boolean;
-    parent: GameObject;
+    parent: GameObject | null;
     transform: Transform;
     zIndex: number;
     drawRange: number;
@@ -28,25 +28,21 @@ export declare class GameObject {
     constructor();
     /**
      * If the object or any parent object is in the scene, returns it
-     *
-     * @returns {GameScene}
      */
-    get scene(): GameScene;
+    get scene(): GameScene | null;
     /**
      * Set the scene of the object
      * Used by GameScene
-     *
-     * @param {GameScene} scene
      */
-    set scene(scene: GameScene);
+    set scene(scene: GameScene | null);
     /**
      * @returns {GameEngine}
      */
-    get engine(): import("./GameEngine.js").GameEngine;
+    get engine(): import("./GameEngine.js").GameEngine | null;
     /**
      * @returns {Input}
      */
-    get input(): import("./Input.js").Input;
+    get input(): import("./Input.js").Input | null;
     /**
      * Return true if object is either in a scene or has a parent object
      */

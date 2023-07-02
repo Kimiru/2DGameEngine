@@ -14,9 +14,10 @@ class InputButton extends GameObject {
         this.transform.scale.set(.1, .1);
     }
     update(dt) {
-        let mouse = this.input.mouse;
+        let input = this.input;
+        let mouse = input.mouse;
         if (mouse.leftClick) {
-            if (this.input.getRecording())
+            if (input.getRecording())
                 return;
             let wtm = this.getWorldTransformMatrix();
             let myPosition = TransformMatrix.multVec(wtm, new Vector());
@@ -24,17 +25,18 @@ class InputButton extends GameObject {
             let delta = mouse.position.clone().sub(myPosition);
             let mouseToCenter = delta.length();
             if (mouseToCenter < range) {
-                if (this.input.getGamepadControlAccess(GamepadControl[this.button]))
-                    this.input.unsetGamepadControl(GamepadControl[this.button]);
+                if (input.getGamepadControlAccess(GamepadControl[this.button]))
+                    input.unsetGamepadControl(GamepadControl[this.button]);
                 else
-                    this.input.recordGamepadControl(GamepadControl[this.button]);
+                    input.recordGamepadControl(GamepadControl[this.button]);
             }
         }
     }
     draw(ctx) {
-        let gamepad = this.input.gamepad;
-        let defined = this.input.getDefinedGamepadControls();
-        let recording = this.input.getRecording();
+        let input = this.input;
+        let gamepad = input.gamepad;
+        let defined = input.getDefinedGamepadControls();
+        let recording = input.getRecording();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#30303030';
         ctx.beginPath();
@@ -81,9 +83,10 @@ class JoystickDisplay extends GameObject {
         this.transform.scale.set(.2, .2);
     }
     update(dt) {
-        let mouse = this.input.mouse;
+        let input = this.input;
+        let mouse = input.mouse;
         if (mouse.leftClick) {
-            if (this.input.getRecording())
+            if (input.getRecording())
                 return;
             let wtm = this.getWorldTransformMatrix();
             let myPosition = TransformMatrix.multVec(wtm, new Vector());
@@ -102,24 +105,25 @@ class JoystickDisplay extends GameObject {
                         control = GamepadControl[`${this.joystick}_up_dir`];
                     else
                         control = GamepadControl[`${this.joystick}_down_dir`];
-                    if (this.input.getGamepadControlAccess(control))
-                        this.input.unsetGamepadControl(control);
+                    if (input.getGamepadControlAccess(control))
+                        input.unsetGamepadControl(control);
                     else
-                        this.input.recordGamepadControl(control);
+                        input.recordGamepadControl(control);
                 }
                 else {
-                    if (this.input.getGamepadControlAccess(GamepadControl[`${this.joystick}_button`]))
-                        this.input.unsetGamepadControl(GamepadControl[`${this.joystick}_button`]);
+                    if (input.getGamepadControlAccess(GamepadControl[`${this.joystick}_button`]))
+                        input.unsetGamepadControl(GamepadControl[`${this.joystick}_button`]);
                     else
-                        this.input.recordGamepadControl(GamepadControl[`${this.joystick}_button`]);
+                        input.recordGamepadControl(GamepadControl[`${this.joystick}_button`]);
                 }
             }
         }
     }
     draw(ctx) {
-        let gamepad = this.input.gamepad;
-        let defined = this.input.getDefinedGamepadControls();
-        let recording = this.input.getRecording();
+        let input = this.input;
+        let gamepad = input.gamepad;
+        let defined = input.getDefinedGamepadControls();
+        let recording = input.getRecording();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = '#30303030';
         ctx.beginPath();

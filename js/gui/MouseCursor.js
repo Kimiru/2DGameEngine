@@ -4,7 +4,7 @@ export class MouseCursor extends GameObject {
         super();
     }
     update(dt) {
-        let mouse = this.scene.engine.input.mouse;
+        let mouse = this.engine.input.mouse;
         this.transform.translation.copy(mouse.position);
     }
     draw(ctx) {

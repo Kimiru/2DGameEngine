@@ -10,8 +10,8 @@ export declare class Button extends GameObject {
     options: textoptions;
     color: stringable;
     activeColor: stringable;
-    onSound: string;
-    constructor(text: stringable, options?: textoptions, onSound?: string, margin?: number);
+    onSound: string | null;
+    constructor(text: stringable, options?: textoptions, onSound?: string | null, margin?: number);
     get currentColor(): string;
     update(dt: number): void;
     onClick(): void;

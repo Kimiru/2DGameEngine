@@ -9,7 +9,7 @@ export declare class HexVector {
     vector: Vector;
     unit: number;
     constructor(orientation?: HexOrientation, unit?: number, q?: number, r?: number, s?: number, vector?: Vector);
-    static fromVector(orientation: HexOrientation, unit: number, vector: Vector): HexVector;
+    static fromVector(orientation: HexOrientation | undefined, unit: number | undefined, vector: Vector): HexVector;
     get q(): number;
     get r(): number;
     get s(): number;

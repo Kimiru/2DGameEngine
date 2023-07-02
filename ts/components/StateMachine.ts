@@ -1,27 +1,29 @@
-import { GameComponent } from "../basics/GameObject.js"
-
+export type EnterCallback<T> = (object: T) => void
+export type LeaveCallback<T> = (object: T) => void
 export type UpdateCallback<T> = (object: T, dt: number) => (number[] | null)
 export type PhysicsCallback<T> = (object: T, dt: number) => void
 export type DrawCallback<T> = (object: T, ctx: CanvasRenderingContext2D) => void
-export type StateActions<T> = {
+export interface StateActions<T> {
+    enter?: EnterCallback<T>
+    leave?: EnterCallback<T>
     update?: UpdateCallback<T>
     physics?: PhysicsCallback<T>
     draw?: DrawCallback<T>
+
+    [x: string | number | symbol]: unknown
 }
 
 
-export class StateMachine<T> extends GameComponent {
+export class StateMachine<T>  {
 
     unique: boolean = true
 
     boundObject: T
     state: number[] = []
 
-    statesActions: Map<string, StateActions<T>[]> = new Map()
+    statesActions: { [s: string]: StateActions<T>[] } = {}
 
     constructor(boundObject: T, startState: number[] = [0]) {
-
-        super('state-machine')
 
         this.boundObject = boundObject
         this.state = startState
@@ -30,7 +32,17 @@ export class StateMachine<T> extends GameComponent {
 
     setState(state: number[]) {
 
+        let stateString = this.#computeStateString(this.state)
+
+        for (let stateActions of this.statesActions[stateString] ?? [])
+            stateActions.leave?.(this.boundObject)
+
         this.state = state
+
+        stateString = this.#computeStateString(this.state)
+
+        for (let stateActions of this.statesActions[stateString] ?? [])
+            stateActions.enter?.(this.boundObject)
 
     }
 
@@ -50,9 +62,9 @@ export class StateMachine<T> extends GameComponent {
 
         let stateString = this.#computeStateString(state, postState)
 
-        if (!this.statesActions.has(stateString)) this.statesActions.set(stateString, [])
+        if (!this.statesActions[stateString]) this.statesActions[stateString] = []
 
-        this.statesActions.get(stateString).push(stateActions)
+        this.statesActions[stateString].push(stateActions)
 
     }
 
@@ -65,14 +77,14 @@ export class StateMachine<T> extends GameComponent {
      */
     update(dt: number) {
 
-        let state = []
-        let nextState = null
+        let state: number[] = []
+        let nextState: number[] | null = null
 
         stateLoop: while (state.length < this.state.length + 1) {
 
             let stateString = this.#computeStateString(state)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? []) {
+            for (let stateActions of this.statesActions[stateString] ?? []) {
 
                 nextState = stateActions.update?.(this.boundObject, dt) ?? null
 
@@ -90,29 +102,42 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? [])
+            for (let stateActions of this.statesActions[stateString] ?? [])
                 stateActions.update?.(this.boundObject, dt)
 
             state.pop()
 
         }
 
-        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+        for (let stateActions of this.statesActions[this.#computeStateString([], true)] ?? [])
             stateActions.update?.(this.boundObject, dt)
 
-        if (nextState) this.state = nextState
+        if (nextState) {
+
+            let stateString = this.#computeStateString(this.state)
+
+            for (let stateActions of this.statesActions[stateString] ?? [])
+                stateActions.leave?.(this.boundObject)
+
+            this.state = nextState
+
+            stateString = this.#computeStateString(this.state)
+
+            for (let stateActions of this.statesActions[stateString] ?? [])
+                stateActions.enter?.(this.boundObject)
+        }
 
     }
 
     physics(dt: number): void {
 
-        let state = []
+        let state: number[] = []
 
         while (state.length < this.state.length + 1) {
 
             let stateString = this.#computeStateString(state)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? [])
+            for (let stateActions of this.statesActions[stateString] ?? [])
                 stateActions.physics?.(this.boundObject, dt)
 
             state.push(this.state[state.length])
@@ -123,27 +148,27 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? [])
+            for (let stateActions of this.statesActions[stateString] ?? [])
                 stateActions.physics?.(this.boundObject, dt)
 
             state.pop()
 
         }
 
-        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+        for (let stateActions of this.statesActions[this.#computeStateString([], true)] ?? [])
             stateActions.physics?.(this.boundObject, dt)
 
     }
 
     draw(ctx: CanvasRenderingContext2D): void {
 
-        let state = []
+        let state: number[] = []
 
         while (state.length < this.state.length + 1) {
 
             let stateString = this.#computeStateString(state)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? [])
+            for (let stateActions of this.statesActions[stateString] ?? [])
                 stateActions.draw?.(this.boundObject, ctx)
 
             state.push(this.state[state.length])
@@ -154,17 +179,16 @@ export class StateMachine<T> extends GameComponent {
 
             let stateString = this.#computeStateString(state, true)
 
-            for (let stateActions of this.statesActions.get(stateString) ?? [])
+            for (let stateActions of this.statesActions[stateString] ?? [])
                 stateActions.draw?.(this.boundObject, ctx)
 
             state.pop()
 
         }
 
-        for (let stateActions of this.statesActions.get(this.#computeStateString([], true)) ?? [])
+        for (let stateActions of this.statesActions[this.#computeStateString([], true)] ?? [])
             stateActions.draw?.(this.boundObject, ctx)
 
     }
-
 
 }

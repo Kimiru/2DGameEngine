@@ -67,7 +67,7 @@ export function loadSVGs(svgs: { name: string, src: string }[], incrementCallbac
 
     for (let svg of svgs) {
 
-        let data: { raw: string, image: HTMLImageElement } = { raw: '', image: null }
+        let data: { raw: string, image: HTMLImageElement } = { raw: '', image: new Image() }
 
         fetch(svg.src)
             .then(res => {
@@ -175,11 +175,11 @@ export function loadSounds(sounds: { name: string, srcs: string[], backup?: numb
 
     for (let sound of sounds) {
 
-        let backups = []
+        let backups: HTMLAudioElement[][] = []
 
         for (let index = 0; index < (sound.backup ?? 1); index++) {
 
-            let snds = []
+            let snds: HTMLAudioElement[] = []
 
             for (let src of sound.srcs) {
 
@@ -236,7 +236,7 @@ export function loadSounds(sounds: { name: string, srcs: string[], backup?: numb
 let idCount = 0
 export function id() { return ++idCount }
 
-export function* range(min: number, max: number = null, step: number = 1) {
+export function* range(min: number, max: number | null = null, step: number = 1) {
 
     if (max === null || max === undefined) {
         max = min

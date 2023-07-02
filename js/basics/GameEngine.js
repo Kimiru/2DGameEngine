@@ -21,12 +21,12 @@ export class GameEngine {
      * Shall not be modified.
      * Can be accessed to retrieved generated canvas if none is passed as argument.
      */
-    canvas = null;
+    canvas;
     /**
      * The context on which the GameEngine will draw.
      * Shall not be modified.
      */
-    ctx = null;
+    ctx;
     /**
      * The input is here to query the keyboard inputs and the mouse inputs.
      */

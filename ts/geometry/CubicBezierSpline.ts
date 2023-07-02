@@ -22,7 +22,7 @@ export class CubicBezierSpline extends GameObject {
 
     }
 
-    getLengthAtT(t: number) {
+    getLengthAtT(t: number): number {
 
         t = minmax(0, t, this.cubicBeziers.length)
         let floorT = Math.floor(minmax(0, t, this.cubicBeziers.length - 1))
@@ -36,7 +36,7 @@ export class CubicBezierSpline extends GameObject {
 
     }
 
-    getTAtLength(length: number) {
+    getTAtLength(length: number): number {
 
         length = minmax(0, length, this.length())
 

@@ -1,7 +1,4 @@
-import { Timer } from "../math/Timer.js"
-import { map } from "../math/Utils.js"
-import { Vector } from "../math/Vector.js"
-import { range } from "./Utils.js"
+import { Vector, Timer, map } from "../2DGameEngine.js"
 
 type GamepadControlAccess = {
     type: string,
@@ -50,7 +47,7 @@ export enum GamepadControl {
  */
 export class Input {
 
-    #keylock: string = null
+    #keylock: string | null = null
 
     #charDown: Set<string> = new Set()
     #charOnce: Set<string> = new Set()
@@ -189,7 +186,9 @@ export class Input {
     #mouseIn: boolean = false
     #mouseClick: [boolean, boolean, boolean] = [false, false, false]
     #mouseScroll: number = 0
-    positionAdapter = function (vector: Vector) { return vector }
+    #delta: Vector = new Vector()
+    #trueDelta: Vector = new Vector()
+    positionAdapter = function (Vector: Vector) { return Vector }
 
     /**
      * Returns an instant of the mouse, click field if true will be available for one frame only
@@ -202,6 +201,7 @@ export class Input {
         middleClick: boolean
         rightClick: boolean
         position: Vector,
+        delta: Vector,
         scroll: number,
         in: boolean
     } {
@@ -213,6 +213,7 @@ export class Input {
             middleClick: this.#mouseClick[1],
             rightClick: this.#mouseClick[2],
             position: this.#trueMousePosition.clone(),
+            delta: this.#trueDelta.clone(),
             scroll: this.#mouseScroll,
             in: this.#mouseIn
         }
@@ -224,9 +225,9 @@ export class Input {
      * Bind the input object to an html element, a position adapter function can be passed to convert the 0 to 1 default output to a preferable unit
      * 
      * @param {HTMLElement} element 
-     * @param {(vector:Vector)=>Vector} positionAdapter 
+     * @param {(Vector:Vector)=>Vector} positionAdapter 
      */
-    bindMouse(element: HTMLCanvasElement, positionAdapter = function (vector: Vector) { return vector }) {
+    bindMouse(element: HTMLCanvasElement, positionAdapter = function (Vector: Vector) { return Vector }) {
 
         this.positionAdapter = positionAdapter
         this.#bindedElement = element
@@ -274,6 +275,8 @@ export class Input {
 
         if (evt instanceof WheelEvent)
             this.#mouseScroll += Math.sign(evt.deltaY)
+
+        this.#delta.add(new Vector(evt.movementX, evt.movementY))
 
     }
 
@@ -330,8 +333,14 @@ export class Input {
 
         this.#trueMousePosition = this.positionAdapter(this.#mousePosition
             .clone()
-            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1))
+            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight))
         )
+
+        this.#trueDelta = this.#delta
+            .clone()
+            .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight))
+        this.#delta.set(0, 0)
+
     }
 
 
@@ -371,18 +380,18 @@ export class Input {
 
     #calibrated: boolean = false
     deadPoint = .1
-    #recordInput: GamepadControl = null
-    #recordOK: () => void = null
-    #recordKO: (gamepadControl: GamepadControl) => void = null
+    #recordInput: GamepadControl | null = null
+    #recordOK: (() => void) | null = null
+    #recordKO: ((gamepadControl: GamepadControl) => void) | null = null
 
     #gamepadCalibration: {
         ok: () => void,
-        update: (axesStates: number[]) => void,
-        axesStates: number[],
-        axesTimer: { timer: Timer, value: number }[]
-    } = null
+        update: ((axesStates: number[]) => void) | null,
+        axesStates: number[] | null,
+        axesTimer: { timer: Timer, value: number }[] | null
+    } | null = null
 
-    #axesDefaultValue: number[] = null
+    #axesDefaultValue: number[] | null = null
 
     get isGamepadCalibrating(): boolean { return this.#gamepadCalibration !== null }
 
@@ -456,6 +465,7 @@ export class Input {
 
     #getCorrectedAxisValue(gamepad: Gamepad, index: number): number {
 
+        if (!this.#axesDefaultValue) return 0
 
         let defaultValue = this.#axesDefaultValue[index]
 
@@ -484,7 +494,7 @@ export class Input {
      * @param {(axesStates: number[]) => void | null} updateCallback 
      * @returns {Promise<void>}
      */
-    calibrateGamepad(updateCallback: (axesStates: number[]) => void = null): Promise<void> {
+    calibrateGamepad(updateCallback: ((axesStates: number[]) => void) | null = null): Promise<void> {
 
         return new Promise((ok, ko) => {
 
@@ -505,12 +515,14 @@ export class Input {
 
         let axesCount = gamepad.axes.length
 
+        if (!this.#gamepadCalibration) return
+
         this.#gamepadCalibration.axesStates = []
         this.#gamepadCalibration.axesTimer = []
 
         this.#axesDefaultValue = []
 
-        for (let i of range(axesCount)) {
+        for (let i = 0; i < axesCount; i++) {
 
             this.#gamepadCalibration.axesStates.push(0)
             this.#gamepadCalibration.axesTimer.push({ timer: new Timer(), value: 0 })
@@ -525,16 +537,19 @@ export class Input {
 
         this.#getAllCurrentGamepadInputs(gamepad)
             .filter(entry => entry.type === 'axes')
-            .filter(entry => this.#gamepadCalibration.axesStates[entry.index] === 0)
+            .filter(entry => this.#gamepadCalibration?.axesStates?.[entry.index] === 0)
             .forEach(entry => {
-                this.#gamepadCalibration.axesStates[entry.index]++
-                this.#gamepadCalibration.axesTimer[entry.index].timer.reset()
-                this.#gamepadCalibration.update?.([...this.#gamepadCalibration.axesStates])
+                if (this.#gamepadCalibration?.axesStates?.[entry.index])
+                    this.#gamepadCalibration.axesStates[entry.index]++
+                this.#gamepadCalibration?.axesTimer?.[entry.index].timer.reset()
+                this.#gamepadCalibration?.update?.([...(this.#gamepadCalibration?.axesStates ?? [])])
             })
 
     }
 
     #calibratePickedupAxes(gamepad: Gamepad): void {
+
+        if (!this.#gamepadCalibration?.axesStates) return
 
         let axesCalibrating = this.#gamepadCalibration.axesStates
             .map((entry, index) => entry === 1 ? index : -1)
@@ -546,7 +561,7 @@ export class Input {
 
             if (Math.abs(axisValue) < this.deadPoint) axisValue = 0
 
-            let axis = this.#gamepadCalibration.axesTimer[axisIndex]
+            let axis = this.#gamepadCalibration!.axesTimer![axisIndex]
 
             if (axis.value !== axisValue) {
 
@@ -557,7 +572,7 @@ export class Input {
                 if (axis.timer.greaterThan(2000)) {
 
                     this.#gamepadCalibration.axesStates[axisIndex]++
-                    this.#axesDefaultValue[axisIndex] = axisValue
+                    this.#axesDefaultValue![axisIndex] = axisValue
 
                     this.#gamepadCalibration.update?.([...this.#gamepadCalibration.axesStates])
 
@@ -588,7 +603,7 @@ export class Input {
     // Record Controls
 
 
-    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess {
+    getGamepadControlAccess(gamepadControl: GamepadControl): GamepadControlAccess | undefined {
 
         let gca = this.#gamepadMap.get(gamepadControl)
 
@@ -624,12 +639,12 @@ export class Input {
             let duplicate = [...this.#gamepadMap.entries()].find(([_, entry]) => entry.type === input.type && entry.index === input.index && entry.inverted === input.inverted)
 
             if (duplicate)
-                this.#recordKO(duplicate[0])
+                this.#recordKO!(duplicate[0])
 
             else {
 
-                this.#gamepadMap.set(this.#recordInput, input)
-                this.#recordOK()
+                this.#gamepadMap.set(this.#recordInput!, input)
+                this.#recordOK!()
 
             }
 

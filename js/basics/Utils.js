@@ -39,7 +39,7 @@ export function loadSVGs(svgs, incrementCallback, finishedCallback) {
     let bank = new Map();
     let completed = { n: 0 };
     for (let svg of svgs) {
-        let data = { raw: '', image: null };
+        let data = { raw: '', image: new Image() };
         fetch(svg.src)
             .then(res => {
             if (res.ok)

@@ -118,7 +118,7 @@ export class Polygon extends GameObject {
      */
     getSegments(): Segment[] {
 
-        let segments = []
+        let segments: Segment[] = []
 
         let points = this.getLinear()
 
@@ -134,7 +134,7 @@ export class Polygon extends GameObject {
 
     getWorldSegment(): Segment[] {
 
-        let segments = []
+        let segments: Segment[] = []
 
         let points = this.getWorldLinear()
 

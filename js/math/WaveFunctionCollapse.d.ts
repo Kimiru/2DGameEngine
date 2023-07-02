@@ -4,7 +4,7 @@ export declare class WaveFunctionCollapse {
     };
     connectorsLookupTable: {
         [n: number]: [number[], number[], number[], number[]];
-    };
+    } | null;
     addConnector(rule: WFC.Rule): void;
     buildLookupTable(): void;
     getAvailableOptions(): number[];
@@ -31,7 +31,7 @@ export declare namespace WFC {
         side: Side;
         connection: Connection;
     }
-    function areConnectionsCompatible(connectionA: Connector, connectionB: Connector): boolean;
+    function areConnectionsCompatible(connectionA: Connector, connectionB: Connector): boolean | undefined;
     interface Rule {
         id: number;
         connectors: Connector[];
@@ -59,7 +59,7 @@ export declare namespace WFC {
         indexToPosition(index: number): [number, number];
         positionToIndex(x: number, y: number): number;
         containsPosition(x: number, y: number): boolean;
-        neighborOf(x: number, y: number, side: Side): number[];
+        neighborOf(x: number, y: number, side: Side): number[] | null;
         clearCellsAtPositions(positions: [number, number][]): void;
     }
 }

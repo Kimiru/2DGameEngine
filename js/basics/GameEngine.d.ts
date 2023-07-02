@@ -40,24 +40,24 @@ export declare class GameEngine {
      * @param {width: number, height: number, verticalPixels: number, scaling: number, images: Image[]} args
      */
     constructor(args?: {
-        width?: number;
-        height?: number;
+        width?: number | undefined;
+        height?: number | undefined;
         verticalPixels: number;
-        scaling?: number;
-        canvas?: HTMLCanvasElement;
+        scaling?: number | undefined;
+        canvas?: HTMLCanvasElement | null | undefined;
         images?: {
             name: string;
             src: string;
-        }[];
+        }[] | undefined;
         svgs?: {
             name: string;
             src: string;
-        }[];
+        }[] | undefined;
         sounds?: {
             name: string;
             srcs: string[];
-            backup?: number;
-        }[];
+            backup?: number | undefined;
+        }[] | undefined;
     });
     get trueWidth(): number;
     get trueHeight(): number;
@@ -66,7 +66,7 @@ export declare class GameEngine {
     get usableScale(): Vector;
     get verticalPixels(): number;
     get dt(): number;
-    get scene(): GameScene;
+    get scene(): GameScene | null;
     /**
      * update the size of both canvas
      * if a scene is curently used, update it's camera
@@ -87,7 +87,7 @@ export declare class GameEngine {
      *
      * @param {GameScene | null} scene
      */
-    setScene(scene: GameScene): void;
+    setScene(scene: GameScene | null): void;
     /**
      * Start the engine, running the gameloop
      */

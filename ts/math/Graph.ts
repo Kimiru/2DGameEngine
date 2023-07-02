@@ -1,5 +1,4 @@
-import { GameObject } from "../2DGameEngine.js"
-import { HexVector } from "./HexVector.js"
+import { Block, blockposition } from "./Block.js"
 import { Vector } from "./Vector.js"
 
 export class Graph<I, T> {
@@ -7,11 +6,8 @@ export class Graph<I, T> {
     nodes: Set<I> = new Set()
     nodesObjects: Map<I, T> = new Map()
     links: Map<I, Set<I>> = new Map()
-    positionGetter: (object: T) => Vector = null
 
-    constructor(positionGetter: (object: T) => Vector = null) {
-
-        this.positionGetter = positionGetter
+    constructor() {
 
     }
 
@@ -64,7 +60,7 @@ export class Graph<I, T> {
 
             if (!this.hasNode(link[0]) || !this.hasNode(link[1])) continue
 
-            this.links.get(link[0]).add(link[1])
+            this.links.get(link[0])!.add(link[1])
 
         }
 
@@ -79,13 +75,13 @@ export class Graph<I, T> {
         for (let link of links)
             if (this.hasLink(link[0], link[1])) {
 
-                this.links.get(link[0]).delete(link[1])
+                this.links.get(link[0])!.delete(link[1])
 
             }
 
     }
 
-    hasLink(source: I, target: I) { return this.links.has(source) && this.links.get(source).has(target) }
+    hasLink(source: I, target: I): boolean { return this.links.has(source) && this.links.get(source)!.has(target) }
 
     isConnectedTo(source: I, target: I): boolean {
 
@@ -101,7 +97,7 @@ export class Graph<I, T> {
             currentSet = new Set(nodeSet)
 
             for (let node of nodeSet)
-                for (let target of this.links.get(node).keys())
+                for (let target of this.links.get(node)!.keys())
                     currentSet.add(target)
 
         } while (nodeSet.size != currentSet.size)
@@ -122,7 +118,7 @@ export class Graph<I, T> {
             currentSet = new Set(nodeSet)
 
             for (let node of nodeSet)
-                for (let target of this.links.get(node).keys())
+                for (let target of this.links.get(node)!.keys())
                     currentSet.add(target)
 
         } while (nodeSet.size != currentSet.size)
@@ -140,23 +136,23 @@ export class Graph<I, T> {
 
     }
 
-    getShortestPathBetween(source: I, target: I, estimateDistance: (nodeA: T, nodeB: T) => number): I[] {
+    getShortestPathBetween(source: I, target: I, estimateDistance: (nodeA: T, nodeB: T) => number): I[] | null {
 
         if (!this.hasNode(source) || !this.hasNode(target)) return null
 
         let nodes: Map<I, Node<I>> = new Map()
         this.nodes.forEach(id => nodes.set(id, new Node(id)))
 
-        let start = nodes.get(source)
-        let end = nodes.get(target)
+        let start: Node<I> = nodes.get(source)!
+        let end: Node<I> = nodes.get(target)!
 
-        let closed = []
-        let opened = [start]
+        let closed: Node<I>[] = []
+        let opened: Node<I>[] = [start]
 
         while (opened.length) {
 
-            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.heuristic < b.heuristic ? a : b)), 1)[0]
-            let currentObject = this.nodesObjects.get(current.id)
+            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.heuristic < b.heuristic ? a : b)), 1)[0]!
+            let currentObject = this.nodesObjects.get(current.id)!
 
             if (current == end) {
 
@@ -174,15 +170,15 @@ export class Graph<I, T> {
 
             }
 
-            for (let neighbour of this.links.get(current.id)) {
+            for (let neighbour of this.links.get(current.id)!) {
 
-                let node = nodes.get(neighbour)
-                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id))
+                let node = nodes.get(neighbour)!
+                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id)!)
 
                 if (!(closed.includes(node) || (opened.includes(node) && node.cost <= cost))) {
 
                     node.cost = cost
-                    node.heuristic = node.cost + estimateDistance(this.nodesObjects.get(node.id), this.nodesObjects.get(end.id))
+                    node.heuristic = node.cost + estimateDistance(this.nodesObjects.get(node.id)!, this.nodesObjects.get(end.id)!)
                     node.previous = current
                     opened.push(node)
 
@@ -198,14 +194,14 @@ export class Graph<I, T> {
 
     }
 
-    getFlood(source: I, maxDistance: number = Number.MAX_SAFE_INTEGER, estimateDistance: (nodeA: T, nodeB: T) => number): Map<I, I[]> {
+    getFlood(source: I, maxDistance: number = Number.MAX_SAFE_INTEGER, estimateDistance: (nodeA: T, nodeB: T) => number): Map<I, I[]> | null {
 
         if (!this.hasNode(source)) return null
 
         let nodes: Map<I, Node<I>> = new Map()
         this.nodes.forEach(id => nodes.set(id, new Node(id)))
 
-        let start = nodes.get(source)
+        let start: Node<I> = nodes.get(source)!
 
         let closed: Node<I>[] = []
         let opened: Node<I>[] = [start]
@@ -213,17 +209,17 @@ export class Graph<I, T> {
         while (opened.length) {
 
             // Get the nearest path
-            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.cost < b.cost ? a : b)), 1)[0]
-            let currentObject = this.nodesObjects.get(current.id)
+            let current = opened.splice(opened.indexOf(opened.reduce((a, b) => a.cost < b.cost ? a : b)), 1)[0]!
+            let currentObject = this.nodesObjects.get(current.id)!
             closed.push(current)
 
-            for (let neighbour of this.links.get(current.id)) {
+            for (let neighbour of this.links.get(current.id)!) {
 
-                let node = nodes.get(neighbour)
+                let node: Node<I> = nodes.get(neighbour)!
 
                 if (node === start) continue
 
-                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id))
+                let cost = current.cost + estimateDistance(currentObject, this.nodesObjects.get(node.id)!)
 
                 if (node.previous) {
 
@@ -280,49 +276,11 @@ export class Graph<I, T> {
         return paths
     }
 
-    populate(nodes: I[]): T[] { return nodes.map(id => this.nodesObjects.get(id)) }
-
-    draw(ctx: CanvasRenderingContext2D): boolean {
-
-        if (this.positionGetter) {
-
-            ctx.save()
-            ctx.restore()
-
-            let positions: Map<I, Vector> = new Map()
-
-            for (let [node, object] of this.nodesObjects) {
-                positions.set(node, this.positionGetter(object))
-            }
-
-            ctx.strokeStyle = 'blue'
-            ctx.lineWidth = .1
-            for (let nodeA of this.links) {
-
-                for (let nodeB of nodeA[1]) {
-
-                    let p1 = positions.get(nodeA[0])
-                    let p2 = positions.get(nodeB)
-
-                    ctx.beginPath()
-                    ctx.moveTo(p1.x, p1.y)
-                    ctx.lineTo(p2.x, p2.y)
-                    ctx.stroke()
-
-                }
-
-            }
-
-
-        }
-
-        return true
-
-    }
+    populate(nodes: I[]): T[] { return nodes.map(id => this.nodesObjects.get(id)!) }
 
     clone(): Graph<I, T> {
 
-        let graph = new Graph<I, T>(this.positionGetter)
+        let graph = new Graph<I, T>()
 
         graph.addNode(...this.nodesObjects.entries())
         graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => [source, target] as [I, I])).flat())
@@ -335,11 +293,10 @@ export class Graph<I, T> {
         data: DATA[],
         dataToId: (DATA: DATA) => ID,
         dataToObj: (DATA: DATA) => OBJ,
-        getIdNeighbors: (ID: ID, OBJ: OBJ) => ID[],
-        objectToPosition?: (OBJ: OBJ) => Vector
+        getIdNeighbors: (ID: ID, OBJ: OBJ) => ID[]
     ): Graph<ID, OBJ> {
 
-        let graph: Graph<ID, OBJ> = new Graph(objectToPosition)
+        let graph: Graph<ID, OBJ> = new Graph()
 
         let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]) as [ID, OBJ][]
 
@@ -351,13 +308,23 @@ export class Graph<I, T> {
 
     }
 
+    static generateFromBlock<T>(block: Block<T>, linkExtractor: (position: [number, number, number], object: T) => blockposition[]): Graph<string, T> {
+
+        return this.generate([...block.cells.entries()],
+            ([index, cell]) => Block.blockPositionToId(block.indexToPosition(index)),
+            ([index, cell]) => cell,
+            (id, obj) => linkExtractor(Block.idToBlockPosition(id), obj).map(Block.blockPositionToId)
+        )
+
+    }
+
 }
 
 export class Node<I> {
 
     cost: number = 0
     heuristic: number = 0
-    previous: Node<I> = null
+    previous: Node<I> | null = null
     id: I
 
     constructor(id: I) { this.id = id }
@@ -370,9 +337,9 @@ export class Path {
     currentPosition: Vector = new Vector()
     currentSegment = 1
 
-    constructor(vectors: Vector[]) {
+    constructor(Vectors3: Vector[]) {
 
-        this.points = vectors
+        this.points = Vectors3
         this.currentPosition.copy(this.points[0])
 
     }
@@ -422,66 +389,6 @@ export class Path {
         this.currentPosition.add(next.clone().sub(this.currentPosition).normalize().multS(length))
 
         return this.currentPosition.clone()
-
-    }
-
-    draw(ctx: CanvasRenderingContext2D): void {
-
-        ctx.lineWidth = .1
-        ctx.strokeStyle = 'lime'
-
-        ctx.beginPath()
-        ctx.moveTo(this.points[0].x, this.points[0].y)
-
-        for (let index = 1; index < this.points.length; index++)
-            ctx.lineTo(this.points[index].x, this.points[index].y)
-
-        ctx.stroke()
-
-    }
-
-}
-
-
-export interface HexagonGraphInterface {
-
-    id: number
-    hexVector: HexVector
-
-}
-
-export class HexagonGraph {
-
-    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<number, T> {
-
-        return Graph.generate<T, number, T>(
-            HexagonGraphObjects,
-            data => data.id,
-            data => data,
-            (id, object) => object.hexVector.neighbors().map(neighbor => HexagonGraphObjects.find(object => object.hexVector.equal(neighbor))).filter(value => value).map(neighbor => neighbor.id),
-            object => object.hexVector.clone().vector
-        )
-
-    }
-
-}
-
-export class SquareGraph {
-
-    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals: boolean = false): Graph<number, T> {
-        let graph = new Graph<number, T>(object => object.transform.translation.clone())
-
-        for (let object of gameObjects)
-            graph.addNode([object.id, object])
-
-        for (let object of gameObjects)
-            for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
-                let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor))
-                if (neighborObject)
-                    graph.addLink([object.id, neighborObject.id])
-            }
-
-        return graph
 
     }
 

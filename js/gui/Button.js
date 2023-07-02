@@ -20,7 +20,7 @@ export class Button extends GameObject {
         this.position.set(options.posX ?? 0, options.posY ?? 0);
         options.posX = 0;
         options.posY = 0;
-        this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.size * 1.1 + margin);
+        this.rect.transform.scale.set((options.maxWidth ?? 100) * 1.1 + margin, (options.size ?? 16) * 1.1 + margin);
         if (options.align === 'right')
             this.rect.x = -this.rect.w / 2;
         if (options.align === 'left')

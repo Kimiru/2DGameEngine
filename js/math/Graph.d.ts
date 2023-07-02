@@ -1,12 +1,10 @@
-import { GameObject } from "../2DGameEngine.js";
-import { HexVector } from "./HexVector.js";
+import { Block, blockposition } from "./Block.js";
 import { Vector } from "./Vector.js";
 export declare class Graph<I, T> {
     nodes: Set<I>;
     nodesObjects: Map<I, T>;
     links: Map<I, Set<I>>;
-    positionGetter: (object: T) => Vector;
-    constructor(positionGetter?: (object: T) => Vector);
+    constructor();
     addNode(...nodes: [I, T][]): void;
     removeNode(...nodes: I[]): void;
     /**
@@ -29,17 +27,17 @@ export declare class Graph<I, T> {
     isConnectedTo(source: I, target: I): boolean;
     isConnected(node: I): boolean;
     isFullyConnected(): boolean;
-    getShortestPathBetween(source: I, target: I, estimateDistance: (nodeA: T, nodeB: T) => number): I[];
-    getFlood(source: I, maxDistance: number, estimateDistance: (nodeA: T, nodeB: T) => number): Map<I, I[]>;
+    getShortestPathBetween(source: I, target: I, estimateDistance: (nodeA: T, nodeB: T) => number): I[] | null;
+    getFlood(source: I, maxDistance: number | undefined, estimateDistance: (nodeA: T, nodeB: T) => number): Map<I, I[]> | null;
     populate(nodes: I[]): T[];
-    draw(ctx: CanvasRenderingContext2D): boolean;
     clone(): Graph<I, T>;
-    static generate<DATA, ID, OBJ>(data: DATA[], dataToId: (DATA: DATA) => ID, dataToObj: (DATA: DATA) => OBJ, getIdNeighbors: (ID: ID, OBJ: OBJ) => ID[], objectToPosition?: (OBJ: OBJ) => Vector): Graph<ID, OBJ>;
+    static generate<DATA, ID, OBJ>(data: DATA[], dataToId: (DATA: DATA) => ID, dataToObj: (DATA: DATA) => OBJ, getIdNeighbors: (ID: ID, OBJ: OBJ) => ID[]): Graph<ID, OBJ>;
+    static generateFromBlock<T>(block: Block<T>, linkExtractor: (position: [number, number, number], object: T) => blockposition[]): Graph<string, T>;
 }
 export declare class Node<I> {
     cost: number;
     heuristic: number;
-    previous: Node<I>;
+    previous: Node<I> | null;
     id: I;
     constructor(id: I);
 }
@@ -47,21 +45,10 @@ export declare class Path {
     points: Vector[];
     currentPosition: Vector;
     currentSegment: number;
-    constructor(vectors: Vector[]);
+    constructor(Vectors3: Vector[]);
     get endPosition(): Vector;
     length(): number;
     reset(): void;
     end(): boolean;
     follow(length: number): Vector;
-    draw(ctx: CanvasRenderingContext2D): void;
-}
-export interface HexagonGraphInterface {
-    id: number;
-    hexVector: HexVector;
-}
-export declare class HexagonGraph {
-    static buildGraph<T extends HexagonGraphInterface>(HexagonGraphObjects: T[]): Graph<number, T>;
-}
-export declare class SquareGraph {
-    static buildGraph<T extends GameObject>(gameObjects: T[], includeDiagonals?: boolean): Graph<number, T>;
 }

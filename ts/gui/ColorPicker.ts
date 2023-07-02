@@ -1,7 +1,7 @@
 import { Color, GameObject, map, minmax, Rectangle, Segment, TextBox, TransformMatrix, Vector } from '../2DGameEngine.js'
 import { textoptions } from './Utils.js'
 
-const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')
+const ctx = (document.createElement('canvas') as HTMLCanvasElement).getContext('2d')!
 
 const rainbow = ctx.createLinearGradient(-1, 0, .5, 0)
 rainbow.addColorStop(0, 'hsl(0, 100%, 50%')
@@ -81,7 +81,7 @@ export class ColorPicker extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.input.mouse
+        let mouse = this.input!.mouse
 
         let rect = new Rectangle(0, 0, 2.5, 1)
         rect.parent = this

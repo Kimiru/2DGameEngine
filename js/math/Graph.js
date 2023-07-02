@@ -1,11 +1,10 @@
+import { Block } from "./Block.js";
 import { Vector } from "./Vector.js";
 export class Graph {
     nodes = new Set();
     nodesObjects = new Map();
     links = new Map();
-    positionGetter = null;
-    constructor(positionGetter = null) {
-        this.positionGetter = positionGetter;
+    constructor() {
     }
     addNode(...nodes) {
         for (let [node, object] of nodes) {
@@ -182,41 +181,21 @@ export class Graph {
         return paths;
     }
     populate(nodes) { return nodes.map(id => this.nodesObjects.get(id)); }
-    draw(ctx) {
-        if (this.positionGetter) {
-            ctx.save();
-            ctx.restore();
-            let positions = new Map();
-            for (let [node, object] of this.nodesObjects) {
-                positions.set(node, this.positionGetter(object));
-            }
-            ctx.strokeStyle = 'blue';
-            ctx.lineWidth = .1;
-            for (let nodeA of this.links) {
-                for (let nodeB of nodeA[1]) {
-                    let p1 = positions.get(nodeA[0]);
-                    let p2 = positions.get(nodeB);
-                    ctx.beginPath();
-                    ctx.moveTo(p1.x, p1.y);
-                    ctx.lineTo(p2.x, p2.y);
-                    ctx.stroke();
-                }
-            }
-        }
-        return true;
-    }
     clone() {
-        let graph = new Graph(this.positionGetter);
+        let graph = new Graph();
         graph.addNode(...this.nodesObjects.entries());
         graph.addLink(...[...this.links.entries()].map(([source, targets]) => [...targets].map((target) => [source, target])).flat());
         return graph;
     }
-    static generate(data, dataToId, dataToObj, getIdNeighbors, objectToPosition) {
-        let graph = new Graph(objectToPosition);
+    static generate(data, dataToId, dataToObj, getIdNeighbors) {
+        let graph = new Graph();
         let dataEntries = data.map(dataEntry => [dataToId(dataEntry), dataToObj(dataEntry)]);
         graph.addNode(...dataEntries);
         dataEntries.forEach(entry => graph.addLink(...getIdNeighbors(...entry).map(id => [entry[0], id])));
         return graph;
+    }
+    static generateFromBlock(block, linkExtractor) {
+        return this.generate([...block.cells.entries()], ([index, cell]) => Block.blockPositionToId(block.indexToPosition(index)), ([index, cell]) => cell, (id, obj) => linkExtractor(Block.idToBlockPosition(id), obj).map(Block.blockPositionToId));
     }
 }
 export class Node {
@@ -230,8 +209,8 @@ export class Path {
     points = [];
     currentPosition = new Vector();
     currentSegment = 1;
-    constructor(vectors) {
-        this.points = vectors;
+    constructor(Vectors3) {
+        this.points = Vectors3;
         this.currentPosition.copy(this.points[0]);
     }
     get endPosition() {
@@ -263,33 +242,5 @@ export class Path {
         }
         this.currentPosition.add(next.clone().sub(this.currentPosition).normalize().multS(length));
         return this.currentPosition.clone();
-    }
-    draw(ctx) {
-        ctx.lineWidth = .1;
-        ctx.strokeStyle = 'lime';
-        ctx.beginPath();
-        ctx.moveTo(this.points[0].x, this.points[0].y);
-        for (let index = 1; index < this.points.length; index++)
-            ctx.lineTo(this.points[index].x, this.points[index].y);
-        ctx.stroke();
-    }
-}
-export class HexagonGraph {
-    static buildGraph(HexagonGraphObjects) {
-        return Graph.generate(HexagonGraphObjects, data => data.id, data => data, (id, object) => object.hexVector.neighbors().map(neighbor => HexagonGraphObjects.find(object => object.hexVector.equal(neighbor))).filter(value => value).map(neighbor => neighbor.id), object => object.hexVector.clone().vector);
-    }
-}
-export class SquareGraph {
-    static buildGraph(gameObjects, includeDiagonals = false) {
-        let graph = new Graph(object => object.transform.translation.clone());
-        for (let object of gameObjects)
-            graph.addNode([object.id, object]);
-        for (let object of gameObjects)
-            for (let neighbor of object.transform.translation.neighbors(includeDiagonals)) {
-                let neighborObject = gameObjects.find(obj => obj.transform.translation.equal(neighbor));
-                if (neighborObject)
-                    graph.addLink([object.id, neighborObject.id]);
-            }
-        return graph;
     }
 }

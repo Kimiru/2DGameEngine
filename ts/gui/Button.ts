@@ -17,9 +17,9 @@ export class Button extends GameObject {
 
     color: stringable = 'white'
     activeColor: stringable = 'gray'
-    onSound: string
+    onSound: string | null
 
-    constructor(text: stringable, options: textoptions = {}, onSound: string = null, margin = 0) {
+    constructor(text: stringable, options: textoptions = {}, onSound: string | null = null, margin = 0) {
 
         super()
 
@@ -31,7 +31,7 @@ export class Button extends GameObject {
         options.posX = 0
         options.posY = 0
 
-        this.rect.transform.scale.set(options.maxWidth * 1.1 + margin, options.size * 1.1 + margin)
+        this.rect.transform.scale.set((options.maxWidth ?? 100) * 1.1 + margin, (options.size ?? 16) * 1.1 + margin)
 
         if (options.align === 'right')
             this.rect.x = -this.rect.w / 2
@@ -48,7 +48,7 @@ export class Button extends GameObject {
 
     update(dt: number): void {
 
-        let mouse = this.input.mouse
+        let mouse = this.input!.mouse
 
         if (mouse.leftClick) {
 
@@ -57,7 +57,7 @@ export class Button extends GameObject {
                 this.#active.reset()
                 this.onClick()
 
-                if (this.onSound) this.engine.soundBank.get(this.onSound)?.play()
+                if (this.onSound) this.engine!.soundBank.get(this.onSound)?.play()
 
             }
 
