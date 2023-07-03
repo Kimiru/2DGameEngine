@@ -296,6 +296,9 @@ export class Vector {
     normal() {
         return new Vector(-this.y, this.x);
     }
+    to(vector) {
+        return vector.clone().sub(this);
+    }
     arrayXY() { return [this.x, this.y]; }
     arrayXYZ() { return [this.x, this.y, this.z]; }
     neighbors(_8 = false) {

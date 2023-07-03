@@ -1,3 +1,5 @@
+import { Vector } from "./Vector.js"
+
 export function lerp(a: number, b: number, t: number): number { return (1 - t) * a + t * b }
 
 export function invLerp(a: number, b: number, v: number): number { return (v - a) / (b - a) }
@@ -66,6 +68,23 @@ export function cubicBezier(p0: number[], p1: number[], p2: number[], p3: number
 
     for (let index = 0; index < p0.length; index++)
         result.push(w0 * p0[index] + w1 * p1[index] + w2 * p2[index] + w3 * p3[index])
+
+    return result
+
+}
+
+export function quadBezier(p0: number[], p1: number[], p2: number[], t: number) {
+
+    let mt = (1 - t)
+
+    let w0 = mt * mt
+    let w1 = 2 * mt * t
+    let w2 = t * t
+
+    let result: number[] = []
+
+    for (let index = 0; index < p0.length; index++)
+        result.push(w0 * p0[index] + w1 * p1[index] + w2 * p2[index])
 
     return result
 

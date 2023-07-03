@@ -396,6 +396,12 @@ export class Vector {
 
     }
 
+    to(vector: Vector): Vector {
+
+        return vector.clone().sub(this)
+
+    }
+
     arrayXY(): [number, number] { return [this.x, this.y] }
 
     arrayXYZ(): [number, number, number] { return [this.x, this.y, this.z] }

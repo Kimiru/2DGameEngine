@@ -192,6 +192,7 @@ export declare class Vector {
     abs(): this;
     projectOn(vector: Vector): Vector;
     normal(): Vector;
+    to(vector: Vector): Vector;
     arrayXY(): [number, number];
     arrayXYZ(): [number, number, number];
     neighbors(_8?: boolean): Vector[];

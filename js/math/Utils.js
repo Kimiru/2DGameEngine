@@ -39,3 +39,13 @@ export function cubicBezier(p0, p1, p2, p3, t) {
         result.push(w0 * p0[index] + w1 * p1[index] + w2 * p2[index] + w3 * p3[index]);
     return result;
 }
+export function quadBezier(p0, p1, p2, t) {
+    let mt = (1 - t);
+    let w0 = mt * mt;
+    let w1 = 2 * mt * t;
+    let w2 = t * t;
+    let result = [];
+    for (let index = 0; index < p0.length; index++)
+        result.push(w0 * p0[index] + w1 * p1[index] + w2 * p2[index]);
+    return result;
+}

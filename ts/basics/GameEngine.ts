@@ -330,7 +330,7 @@ export class GameEngine {
         let time: number = Date.now()
         this.#dt = (time - this.#lastTime) / 1000
         this.#lastTime = time
-        this.#dt = Math.min(this.#dt, 0.2)
+        this.#dt = Math.min(this.#dt, 0.05)
         this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
         this.ctx.save()
         this.ctx.translate(this.trueWidth / 2, this.trueHeight / 2)
