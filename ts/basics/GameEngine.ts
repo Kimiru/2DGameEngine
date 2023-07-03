@@ -87,6 +87,8 @@ export class GameEngine {
     #soundToLoadCount: number = 0
     #ressourcesLoadedCallbacks: (() => void)[] = []
 
+    #resume: boolean = false
+
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
      * 
@@ -158,6 +160,26 @@ export class GameEngine {
 
             }
         )
+
+        document.addEventListener('visibilitychange', () => {
+
+            if (document.visibilityState === 'hidden') {
+                if (this.#run) {
+                    this.#resume = true
+                    this.stop()
+                } else
+                    this.#resume = false
+            } else {
+
+                if (this.#resume) {
+                    this.#resume = false
+                    this.#lastTime = Date.now()
+                    this.start()
+                }
+
+            }
+
+        })
 
     }
 

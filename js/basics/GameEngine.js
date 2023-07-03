@@ -66,6 +66,7 @@ export class GameEngine {
     #loadedSoundCount = 0;
     #soundToLoadCount = 0;
     #ressourcesLoadedCallbacks = [];
+    #resume = false;
     /**
      * Create a new game engine using the given argument list, filling the gap with default value
      *
@@ -103,6 +104,23 @@ export class GameEngine {
         this.svgBank = loadSVGs(args.svgs ?? [], (n) => { this.#loadedSVGCount = n; }, () => {
             this.#locks[2] = false;
             this.#checkLocks();
+        });
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                if (this.#run) {
+                    this.#resume = true;
+                    this.stop();
+                }
+                else
+                    this.#resume = false;
+            }
+            else {
+                if (this.#resume) {
+                    this.#resume = false;
+                    this.#lastTime = Date.now();
+                    this.start();
+                }
+            }
         });
     }
     get trueWidth() { return this.#trueWidth; }

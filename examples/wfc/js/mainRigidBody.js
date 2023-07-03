@@ -37,8 +37,8 @@ let g3 = new SoftBody.Point(new Vector(5, -5))
 let g4 = new SoftBody.Point(new Vector(5, -2))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let leftLockSpring = new SoftBody.Spring(leftLock, g0)
-let rightLockSpring = new SoftBody.Spring(rightLock, g4)
+let leftLockSpring = new SoftBody.Spring(leftLock, g0, 250, 20, 0)
+let rightLockSpring = new SoftBody.Spring(rightLock, g4, 250, 20, 0)
 
 let s0 = new SoftBody.Spring(g0, g1, undefined, 2)
 let s1 = new SoftBody.Spring(g1, g2, undefined, 2)
@@ -67,7 +67,6 @@ let ts2 = new SoftBody.Spring(t2, t0, 1000, 50)
 
 solver.addConstraint(s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, leftLockSpring, rightLockSpring, ts0, ts1, ts2)
 
-console.log(solver.constraints)
 solver.addIntegrableBody(brick, triangle)
 
 solver.addCollidableBody(brick)

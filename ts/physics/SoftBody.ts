@@ -232,7 +232,7 @@ export namespace SoftBody {
             let closestSegment_1: number = -1
             let percentage: number = 0
             let minLength: number = -1
-            console.log('closedge')
+
             for (let index = 0; index < this.points.length; index++) {
 
                 let index_0 = index
@@ -312,6 +312,8 @@ export namespace SoftBody {
         applyConstraint() {
 
             if (this.point_0.freeze && this.point_1.freeze) return
+            if (this.point_0.position.distanceTo(this.point_1.position) === 0) return
+
             let dir = this.point_1.position.clone().sub(this.point_0.position).normalize()
 
             let currentLength = this.point_0.position.distanceTo(this.point_1.position)
