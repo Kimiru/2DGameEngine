@@ -41,10 +41,12 @@ export declare namespace SoftBody {
         absorption: number;
         constructor(points: Point[], frixion?: number, absorption?: number);
         getPoints(): Point[];
+        getPointsCenter(): Vector;
         integrate(dt: any): void;
         containsPoint(point: Point): boolean;
         distancePointToEdge(point: Vector, [A, B]: [Vector, Vector]): number;
         closestEdgeOfPoint(point: Point): [Point, Point];
+        addForce(force: Vector): void;
     }
     interface Constraint {
         applyConstraint: () => void;
@@ -67,6 +69,7 @@ export declare namespace SoftBody {
         springs: Spring[];
         constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number, frixion?: number, absorption?: number);
         applyConstraint(): void;
+        getFrameCenter(): Vector;
         update(dt: number): void;
     }
 }

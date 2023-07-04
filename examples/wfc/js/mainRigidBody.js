@@ -41,20 +41,21 @@ let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 0, 1)
 
 console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 
+let triangle = new SoftBody.Frame([new SoftBody.Point(new Vector(0, 6.5)), new SoftBody.Point(new Vector(-2, 3)), new SoftBody.Point(new Vector(2, 3))], false, 50, 5)
 
-let t0 = new SoftBody.Point(new Vector(0, 6.5))
-let t1 = new SoftBody.Point(new Vector(-2, 3))
-let t2 = new SoftBody.Point(new Vector(2, 3))
+// let t0 = new SoftBody.Point(new Vector(0, 6.5))
+// let t1 = new SoftBody.Point(new Vector(-2, 3))
+// let t2 = new SoftBody.Point(new Vector(2, 3))
 
-let triangle = new SoftBody.Shape([t0, t1, t2])
+// let triangle = new SoftBody.Shape([t0, t1, t2])
 
-let ts0 = new SoftBody.Spring(t0, t1, 500, 10)
-let ts1 = new SoftBody.Spring(t1, t2, 500, 10)
-let ts2 = new SoftBody.Spring(t2, t0, 500, 10)
+// let ts0 = new SoftBody.Spring(t0, t1, 500, 10)
+// let ts1 = new SoftBody.Spring(t1, t2, 500, 10)
+// let ts2 = new SoftBody.Spring(t2, t0, 500, 10)
 
-solver.addConstraint(ts0, ts1, ts2, frame)
+solver.addConstraint(frame, triangle)
 
-solver.addIntegrableBody(triangle, frame)
+solver.addIntegrableBody(frame, triangle)
 
 solver.addCollidableBody(frame, triangle)
 
@@ -76,9 +77,17 @@ scene.update = (dt) => {
     }
     let input = scene.engine.input
 
+    if (input.isDown('Space')) {
+
+        triangle.points[1].velocity.set(1, 2)
+
+    }
+
     if (dt > 1 / 30) console.log(dt)
 
 }
+
+scene.add(triangle)
 
 scene.draw = (ctx) => {
 

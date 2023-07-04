@@ -142,6 +142,9 @@ export var SoftBody;
         getPoints() {
             return this.points;
         }
+        getPointsCenter() {
+            return computeCenter(this.points);
+        }
         integrate(dt) {
             for (let point of this.points)
                 point.integrate(dt);
@@ -178,6 +181,10 @@ export var SoftBody;
                 }
             }
             return [this.points[closestSegment_0], this.points[closestSegment_1]];
+        }
+        addForce(force) {
+            for (let point of this.points)
+                point.acceleration.add(force);
         }
     }
     SoftBody.Shape = Shape;
@@ -252,11 +259,36 @@ export var SoftBody;
             for (let spring of this.springs)
                 spring.applyConstraint();
         }
+        getFrameCenter() {
+            return computeCenter(this.structure);
+        }
         update(dt) {
             if (!this.freeze) {
-                // Move Frame toward points
+                let pointsCenter = this.getPointsCenter();
+                let frameCenter = this.getFrameCenter();
+                let delta = frameCenter.to(pointsCenter);
+                for (let point of this.structure)
+                    point.position.add(delta);
+                let angle = 0;
+                for (let [index, point] of this.points.entries()) {
+                    let structPoint = this.structure[index];
+                    let pointAngle = pointsCenter.to(point.position).rotate(-pointsCenter.to(structPoint.position).angle()).angle();
+                    angle += pointAngle;
+                }
+                angle /= this.points.length;
+                for (let point of this.structure)
+                    point.position.rotateAround(pointsCenter, angle);
             }
         }
     }
     SoftBody.Frame = Frame;
+    function computeCenter(points) {
+        let center = new Vector();
+        if (points.length === 0)
+            return center;
+        for (let point of points)
+            center.add(point.position);
+        center.divS(points.length);
+        return center;
+    }
 })(SoftBody = SoftBody || (SoftBody = {}));
