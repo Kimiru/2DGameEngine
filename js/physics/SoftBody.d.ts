@@ -11,6 +11,7 @@ export declare namespace SoftBody {
         addCollidableBody(...collidableBodies: CollidableBody[]): void;
         removeCollidableBody(...collidableBodies: CollidableBody[]): void;
         physics(dt: number): void;
+        resolveCollision(point: Point, collidableBody: CollidableBody): void;
     }
     interface IntegrableBody {
         integrate: (dt: number) => void;

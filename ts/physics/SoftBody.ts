@@ -94,33 +94,37 @@ export namespace SoftBody {
                 for (let integrableBody of this.integrableBodies)
                     if (collidableBody as any !== integrableBody)
                         for (let point of integrableBody.getPoints())
-                            if (collidableBody.containsPoint(point)) {
+                            this.resolveCollision(point, collidableBody)
 
-                                let [point_0, point_1, percentage] = collidableBody.closestEdgeOfPoint(point)
+        }
 
-                                let normal = point_0.position.to(point_1.position).normal()
+        resolveCollision(point: Point, collidableBody: CollidableBody) {
+            if (collidableBody.containsPoint(point)) {
 
-                                point_0.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([.5], [.4], [0], percentage)[0]))
+                let [point_0, point_1, percentage] = collidableBody.closestEdgeOfPoint(point)
 
-                                point_1.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([0], [.4], [.5], percentage)[0]))
+                let normal = point_0.position.to(point_1.position).normal()
 
-                                point.position.copy(point.position.clone().add(point.position.to(point_0.position).projectOn(normal)))
+                point_0.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([.5], [.4], [0], percentage)[0]))
 
-                                let segmentAverageVelocity = point_0.velocity.clone().add(point_1.velocity).divS(-2).projectOn(normal)
+                point_1.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([0], [.4], [.5], percentage)[0]))
 
-                                let pointVelocity = point.velocity.clone().projectOn(normal).multS(-1)
+                point.position.copy(point.position.clone().add(point.position.to(point_0.position).projectOn(normal)))
 
-                                let segmentFix = segmentAverageVelocity.clone().add(pointVelocity.clone().divS(2))
+                let segmentAverageVelocity = point_0.velocity.clone().add(point_1.velocity).divS(-2).projectOn(normal)
 
-                                let pointFix = pointVelocity.clone().add(segmentAverageVelocity.clone().divS(2))
+                let pointVelocity = point.velocity.clone().projectOn(normal).multS(-1)
 
-                                point_0.velocity.add(segmentFix)
-                                point_1.velocity.add(segmentFix)
+                let segmentFix = segmentAverageVelocity.clone().add(pointVelocity.clone().divS(2))
 
-                                point.velocity.add(pointFix)
+                let pointFix = pointVelocity.clone().add(segmentAverageVelocity.clone().divS(2))
 
-                            }
+                point_0.velocity.add(segmentFix)
+                point_1.velocity.add(segmentFix)
 
+                point.velocity.add(pointFix)
+
+            }
         }
 
     }

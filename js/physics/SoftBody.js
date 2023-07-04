@@ -56,20 +56,23 @@ export var SoftBody;
                 for (let integrableBody of this.integrableBodies)
                     if (collidableBody !== integrableBody)
                         for (let point of integrableBody.getPoints())
-                            if (collidableBody.containsPoint(point)) {
-                                let [point_0, point_1, percentage] = collidableBody.closestEdgeOfPoint(point);
-                                let normal = point_0.position.to(point_1.position).normal();
-                                point_0.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([.5], [.4], [0], percentage)[0]));
-                                point_1.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([0], [.4], [.5], percentage)[0]));
-                                point.position.copy(point.position.clone().add(point.position.to(point_0.position).projectOn(normal)));
-                                let segmentAverageVelocity = point_0.velocity.clone().add(point_1.velocity).divS(-2).projectOn(normal);
-                                let pointVelocity = point.velocity.clone().projectOn(normal).multS(-1);
-                                let segmentFix = segmentAverageVelocity.clone().add(pointVelocity.clone().divS(2));
-                                let pointFix = pointVelocity.clone().add(segmentAverageVelocity.clone().divS(2));
-                                point_0.velocity.add(segmentFix);
-                                point_1.velocity.add(segmentFix);
-                                point.velocity.add(pointFix);
-                            }
+                            this.resolveCollision(point, collidableBody);
+        }
+        resolveCollision(point, collidableBody) {
+            if (collidableBody.containsPoint(point)) {
+                let [point_0, point_1, percentage] = collidableBody.closestEdgeOfPoint(point);
+                let normal = point_0.position.to(point_1.position).normal();
+                point_0.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([.5], [.4], [0], percentage)[0]));
+                point_1.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([0], [.4], [.5], percentage)[0]));
+                point.position.copy(point.position.clone().add(point.position.to(point_0.position).projectOn(normal)));
+                let segmentAverageVelocity = point_0.velocity.clone().add(point_1.velocity).divS(-2).projectOn(normal);
+                let pointVelocity = point.velocity.clone().projectOn(normal).multS(-1);
+                let segmentFix = segmentAverageVelocity.clone().add(pointVelocity.clone().divS(2));
+                let pointFix = pointVelocity.clone().add(segmentAverageVelocity.clone().divS(2));
+                point_0.velocity.add(segmentFix);
+                point_1.velocity.add(segmentFix);
+                point.velocity.add(pointFix);
+            }
         }
     }
     SoftBody.Solver = Solver;
