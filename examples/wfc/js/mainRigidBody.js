@@ -35,7 +35,7 @@ let g3 = new SoftBody.Point(new Vector(5, -5))
 let g4 = new SoftBody.Point(new Vector(5, -2))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 10, 10)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 10, 50)
 
 
 let t0 = new SoftBody.Point(new Vector(0, 5))

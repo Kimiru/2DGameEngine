@@ -206,10 +206,12 @@ export var SoftBody;
     }
     SoftBody.Spring = Spring;
     class Frame extends Shape {
+        freeze = false;
         structure = [];
         springs = [];
         constructor(points, freeze = false, springStiffness, springDamping) {
             super(points);
+            this.freeze = freeze;
             for (let point of this.points) {
                 let framePoint = new Point(point.position.clone());
                 framePoint.freeze = freeze;
@@ -221,6 +223,11 @@ export var SoftBody;
         applyConstraint() {
             for (let spring of this.springs)
                 spring.applyConstraint();
+        }
+        update(dt) {
+            if (!this.freeze) {
+                // Move Frame toward points
+            }
         }
     }
     SoftBody.Frame = Frame;

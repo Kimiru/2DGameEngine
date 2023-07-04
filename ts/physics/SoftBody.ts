@@ -357,12 +357,16 @@ export namespace SoftBody {
 
     export class Frame extends Shape implements IntegrableBody, Constraint, CollidableBody {
 
+        freeze: boolean = false
+
         structure: Point[] = []
         springs: Spring[] = []
 
         constructor(points: Point[], freeze: boolean = false, springStiffness?: number, springDamping?: number) {
 
             super(points)
+
+            this.freeze = freeze
 
             for (let point of this.points) {
 
@@ -382,6 +386,16 @@ export namespace SoftBody {
 
             for (let spring of this.springs)
                 spring.applyConstraint()
+
+        }
+
+        update(dt: number): void {
+
+            if (!this.freeze) {
+
+                // Move Frame toward points
+
+            }
 
         }
 

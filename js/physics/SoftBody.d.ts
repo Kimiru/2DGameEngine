@@ -55,9 +55,11 @@ export declare namespace SoftBody {
         applyConstraint(): void;
     }
     class Frame extends Shape implements IntegrableBody, Constraint, CollidableBody {
+        freeze: boolean;
         structure: Point[];
         springs: Spring[];
         constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number);
         applyConstraint(): void;
+        update(dt: number): void;
     }
 }
