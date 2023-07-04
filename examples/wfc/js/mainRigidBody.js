@@ -7,6 +7,8 @@ let engine = new GameEngine({
     canvas: document.querySelector('canvas'),
 })
 
+// engine.timeScale = .1
+
 fullScreen(engine)
 
 let scene = new GameScene()
@@ -24,8 +26,8 @@ let solver = new SoftBody.Solver()
 
 scene.add(solver)
 
-SoftBody.Spring.stiffness = 150
-SoftBody.Spring.damping = 10
+SoftBody.Spring.stiffness = 100
+SoftBody.Spring.damping = 1
 
 
 let g0 = new SoftBody.Point(new Vector(-5, -2))
@@ -35,7 +37,9 @@ let g3 = new SoftBody.Point(new Vector(5, -5))
 let g4 = new SoftBody.Point(new Vector(5, -2))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 10, 50)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 100, 10)
+
+console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 
 
 let t0 = new SoftBody.Point(new Vector(0, 5))
@@ -56,13 +60,20 @@ solver.addCollidableBody(frame, triangle)
 
 scene.update = (dt) => {
 
-    for (let integrable of solver.integrableBodies)
+    for (let integrable of solver.integrableBodies) {
+        for (let point of integrable.getPoints()) {
+
+            point.acceleration.set(0, 0)
+
+        }
         for (let point of integrable.getPoints()) {
 
             point.acceleration.set(0, -10)
 
         }
 
+
+    }
     let input = scene.engine.input
 
     if (dt > 1 / 30) console.log(dt)
@@ -71,9 +82,24 @@ scene.update = (dt) => {
 
 scene.draw = (ctx) => {
 
+    // for (let index = 0; index < frame.structure.length; index++) {
+
+    //     ctx.strokeStyle = 'gray'
+    //     ctx.lineWidth = .15
+
+    //     let p0 = frame.structure[index]
+    //     let p1 = frame.structure[(index + 1) % frame.structure.length]
+
+    //     ctx.beginPath()
+    //     ctx.moveTo(...p0.position.arrayXY())
+    //     ctx.lineTo(...p1.position.arrayXY())
+    //     ctx.stroke()
+
+    // }
+
     ctx.strokeStyle = 'yellow'
     ctx.lineWidth = .1
-    for (let constraint of solver.constraints)
+    for (let constraint of solver.constraints) {
         if (constraint instanceof SoftBody.Spring) {
 
             ctx.beginPath()
@@ -83,41 +109,37 @@ scene.draw = (ctx) => {
 
         }
 
+        if (constraint instanceof SoftBody.Frame) {
 
+            for (let spring of constraint.springs) {
+
+                ctx.beginPath()
+                ctx.moveTo(...spring.point_0.position.arrayXY())
+                ctx.lineTo(...spring.point_1.position.arrayXY())
+                ctx.stroke()
+
+            }
+
+        }
+
+    }
 
     for (let integrable of solver.integrableBodies)
         for (let point of integrable.getPoints()) {
             ctx.fillStyle = 'blue'
 
-            if (point === t1) {
-                let body
-                if (body = solver.collidableBodies.find(body => body.containsPoint(t1))) {
-
-                    ctx.strokeStyle = 'green'
-                    ctx.lineWidth = .3
-
-                    let [p0, p1] = body.closestEdgeOfPoint(point)
-
-                    ctx.beginPath()
-                    ctx.moveTo(...p0.position.arrayXY())
-                    ctx.lineTo(...p1.position.arrayXY())
-                    ctx.stroke()
-
-                    ctx.fillStyle = 'orange'
-                    ctx.lineWidth = .1
-
-                }
-            }
             ctx.strokeStyle = 'blue'
 
 
             ctx.beginPath()
             ctx.arc(point.position.x, point.position.y, .2, 0, Math.PI * 2)
             ctx.fill()
+
             ctx.beginPath()
             ctx.moveTo(...point.position.arrayXY())
             ctx.lineTo(...point.position.clone().add(point.velocity).arrayXY())
             ctx.stroke()
+
 
         }
 
@@ -141,6 +163,7 @@ scene.draw = (ctx) => {
             }
 
         }
+
 
 
 }

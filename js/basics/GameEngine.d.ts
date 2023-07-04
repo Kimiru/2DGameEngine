@@ -22,6 +22,7 @@ export declare class GameEngine {
      * The input is here to query the keyboard inputs and the mouse inputs.
      */
     input: Input;
+    timeScale: number;
     /**
      * Contains all the images loaded at the engine contruction.
      */

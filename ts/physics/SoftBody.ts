@@ -101,30 +101,53 @@ export namespace SoftBody {
         resolveCollision(point: Point, collidableBody: CollidableBody) {
             if (collidableBody.containsPoint(point)) {
 
-                let [point_0, point_1, percentage] = collidableBody.closestEdgeOfPoint(point)
+                let AB = collidableBody.closestEdgeOfPoint(point)
 
-                let normal = point_0.position.to(point_1.position).normal()
+                this.resolveEdgeCollision(point, AB)
 
-                point_0.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([.5], [.4], [0], percentage)[0]))
-
-                point_1.position.add(point_0.position.to(point.position).projectOn(normal).multS(quadBezier([0], [.4], [.5], percentage)[0]))
-
-                point.position.copy(point.position.clone().add(point.position.to(point_0.position).projectOn(normal)))
-
-                let segmentAverageVelocity = point_0.velocity.clone().add(point_1.velocity).divS(-2).projectOn(normal)
-
-                let pointVelocity = point.velocity.clone().projectOn(normal).multS(-1)
-
-                let segmentFix = segmentAverageVelocity.clone().add(pointVelocity.clone().divS(2))
-
-                let pointFix = pointVelocity.clone().add(segmentAverageVelocity.clone().divS(2))
-
-                point_0.velocity.add(segmentFix)
-                point_1.velocity.add(segmentFix)
-
-                point.velocity.add(pointFix)
+                this.resolveEdgeCollisionVelocity(point, AB)
 
             }
+        }
+
+        resolveEdgeCollision(P: Point, [A, B]: [Point, Point]) {
+
+            this.resolveEdgeCollisionPosition(P, [A, B])
+
+        }
+
+        resolveEdgeCollisionPosition({ position: P }: Point, [{ position: A }, { position: B }]: [Point, Point]) {
+
+            let normal = A.to(B).normal()
+
+            let dir = P.to(B).projectOn(normal)
+
+            P.add(dir.clone().multS(2.1 / 3))
+            dir.multS(-1 / 3)
+            A.add(dir)
+            B.add(dir)
+
+        }
+
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], absorpsion = 0, frixion = 1) {
+
+            let tangent = A.position.to(B.position)
+            let normal = tangent.normal()
+
+            let edgeVelocity = A.velocity.clone().add(B.velocity).divS(2)
+            let edgeTangentVelocity = tangent.projectOn(tangent)
+            let edgeNormalVelocity = edgeVelocity.projectOn(normal)
+
+            let pointTangentVelocity = P.velocity.projectOn(tangent)
+            let pointNormalVelocity = P.velocity.projectOn(normal)
+
+            P.velocity.copy(edgeNormalVelocity.multS(1 - absorpsion))
+                .add(pointTangentVelocity.multS(1 - frixion))
+
+            A.velocity.copy(pointNormalVelocity.multS(1 - absorpsion))
+                .add(edgeTangentVelocity.multS(1 - frixion))
+            B.velocity.copy(A.velocity)
+
         }
 
     }
@@ -141,7 +164,7 @@ export namespace SoftBody {
 
         containsPoint(point: Point): boolean
 
-        closestEdgeOfPoint(point: Point): [Point, Point, number]
+        closestEdgeOfPoint(point: Point): [Point, Point]
 
     }
 
@@ -174,6 +197,8 @@ export namespace SoftBody {
                 .add(this.acceleration.clone().multS(dt * dt * .5))
 
             this.velocity.add(this.acceleration.clone().multS(dt))
+
+            this.acceleration.set(0, 0)
 
         }
 
@@ -230,11 +255,10 @@ export namespace SoftBody {
 
         }
 
-        closestEdgeOfPoint(point: Point): [Point, Point, number] {
+        closestEdgeOfPoint(point: Point): [Point, Point] {
 
             let closestSegment_0: number = -1
             let closestSegment_1: number = -1
-            let percentage: number = 0
             let minLength: number = -1
 
             for (let index = 0; index < this.points.length; index++) {
@@ -252,21 +276,13 @@ export namespace SoftBody {
                     closestSegment_0 = index_0
                     closestSegment_1 = index_1
 
-                    let dirVector = point.position.to(p0.position).projectOn(p0.position.to(p1.position).normal())
-
-                    let intersection = point.position.clone().add(dirVector)
-
-                    let l0 = this.points[closestSegment_0].position.distanceTo(intersection)
-                    let l1 = this.points[closestSegment_0].position.distanceTo(this.points[closestSegment_1].position)
-
-                    percentage = l1 === 0 ? 0 : l0 / l1
                     minLength = dist
 
                 }
 
             }
 
-            return [this.points[closestSegment_0], this.points[closestSegment_1], percentage]
+            return [this.points[closestSegment_0], this.points[closestSegment_1]]
 
         }
 
@@ -318,15 +334,14 @@ export namespace SoftBody {
             if (this.point_0.freeze && this.point_1.freeze) return
             if (this.point_0.position.distanceTo(this.point_1.position) === 0) return
 
-            let dir = this.point_1.position.clone().sub(this.point_0.position).normalize()
+            let dir = this.point_0.position.to(this.point_1.position).normalize()
 
             let currentLength = this.point_0.position.distanceTo(this.point_1.position)
             let deltaLength = currentLength - this.restLength
 
             let force = this.stiffness * deltaLength
 
-            let damping = this.point_1.velocity.clone().projectOn(dir).sub(this.point_0.velocity.clone().projectOn(dir)).multS(this.damping)
-
+            let damping = this.point_0.velocity.to(this.point_1.velocity).projectOn(dir).multS(this.damping)
 
             let forceVector = dir.clone().multS(force).add(damping)
 

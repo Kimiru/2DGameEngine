@@ -63,6 +63,8 @@ export class GameEngine {
     #currentScene: GameScene | null = null
     #nextScene: GameScene | null | undefined = undefined
 
+    timeScale: number = 1
+
     /**
      * Contains all the images loaded at the engine contruction.
      */
@@ -352,7 +354,7 @@ export class GameEngine {
         let time: number = Date.now()
         this.#dt = (time - this.#lastTime) / 1000
         this.#lastTime = time
-        this.#dt = Math.min(this.#dt, 0.05)
+        this.#dt = Math.min(this.#dt, 0.05) * this.timeScale
         this.ctx.clearRect(0, 0, this.#trueWidth, this.trueHeight)
         this.ctx.save()
         this.ctx.translate(this.trueWidth / 2, this.trueHeight / 2)

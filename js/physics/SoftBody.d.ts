@@ -12,6 +12,9 @@ export declare namespace SoftBody {
         removeCollidableBody(...collidableBodies: CollidableBody[]): void;
         physics(dt: number): void;
         resolveCollision(point: Point, collidableBody: CollidableBody): void;
+        resolveEdgeCollision(P: Point, [A, B]: [Point, Point]): void;
+        resolveEdgeCollisionPosition({ position: P }: Point, [{ position: A }, { position: B }]: [Point, Point]): void;
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], absorpsion?: number, frixion?: number): void;
     }
     interface IntegrableBody {
         integrate: (dt: number) => void;
@@ -19,7 +22,7 @@ export declare namespace SoftBody {
     }
     interface CollidableBody {
         containsPoint(point: Point): boolean;
-        closestEdgeOfPoint(point: Point): [Point, Point, number];
+        closestEdgeOfPoint(point: Point): [Point, Point];
     }
     class Point implements IntegrableBody {
         position: Vector;
@@ -37,7 +40,7 @@ export declare namespace SoftBody {
         integrate(dt: any): void;
         containsPoint(point: Point): boolean;
         distancePointToEdge(point: Vector, [A, B]: [Vector, Vector]): number;
-        closestEdgeOfPoint(point: Point): [Point, Point, number];
+        closestEdgeOfPoint(point: Point): [Point, Point];
     }
     interface Constraint {
         applyConstraint: () => void;
