@@ -54,15 +54,26 @@ export var SoftBody;
                 integrableBody.integrate(dt);
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
-                    if (collidableBody !== integrableBody)
+                    if (collidableBody !== integrableBody) {
+                        let frixion;
+                        let absorption;
+                        if ('frixion' in integrableBody && 'absorption' in integrableBody) {
+                            frixion = Math.min(integrableBody.frixion, collidableBody.frixion);
+                            absorption = Math.max(integrableBody.absorption, collidableBody.absorption);
+                        }
+                        else {
+                            frixion = collidableBody.frixion;
+                            absorption = collidableBody.absorption;
+                        }
                         for (let point of integrableBody.getPoints())
-                            this.resolveCollision(point, collidableBody);
+                            this.resolveCollision(point, collidableBody, frixion, absorption);
+                    }
         }
-        resolveCollision(point, collidableBody) {
+        resolveCollision(point, collidableBody, frixion = collidableBody.frixion, absorption = collidableBody.absorption) {
             if (collidableBody.containsPoint(point)) {
                 let AB = collidableBody.closestEdgeOfPoint(point);
                 this.resolveEdgeCollision(point, AB);
-                this.resolveEdgeCollisionVelocity(point, AB);
+                this.resolveEdgeCollisionVelocity(point, AB, frixion, absorption);
             }
         }
         resolveEdgeCollision(P, [A, B]) {
@@ -76,17 +87,17 @@ export var SoftBody;
             A.add(dir);
             B.add(dir);
         }
-        resolveEdgeCollisionVelocity(P, [A, B], absorpsion = 0, frixion = 1) {
+        resolveEdgeCollisionVelocity(P, [A, B], frixion, absorption) {
             let tangent = A.position.to(B.position);
             let normal = tangent.normal();
             let edgeVelocity = A.velocity.clone().add(B.velocity).divS(2);
-            let edgeTangentVelocity = tangent.projectOn(tangent);
+            let edgeTangentVelocity = edgeVelocity.projectOn(tangent);
             let edgeNormalVelocity = edgeVelocity.projectOn(normal);
             let pointTangentVelocity = P.velocity.projectOn(tangent);
             let pointNormalVelocity = P.velocity.projectOn(normal);
-            P.velocity.copy(edgeNormalVelocity.multS(1 - absorpsion))
+            P.velocity.copy(edgeNormalVelocity.multS(1 - absorption))
                 .add(pointTangentVelocity.multS(1 - frixion));
-            A.velocity.copy(pointNormalVelocity.multS(1 - absorpsion))
+            A.velocity.copy(pointNormalVelocity.multS(1 - absorption))
                 .add(edgeTangentVelocity.multS(1 - frixion));
             B.velocity.copy(A.velocity);
         }
@@ -117,12 +128,16 @@ export var SoftBody;
     SoftBody.Point = Point;
     class Shape extends GameObject {
         points;
-        constructor(points) {
+        frixion = 1;
+        absorption = 0;
+        constructor(points, frixion = 1, absorption = 0) {
             super();
             if (points.length < 3)
                 throw 'Shape cannot have less than 3 points';
             this.addTag('SB.Shape');
             this.points = points;
+            this.frixion = frixion;
+            this.absorption = absorption;
         }
         getPoints() {
             return this.points;
@@ -220,9 +235,11 @@ export var SoftBody;
         freeze = false;
         structure = [];
         springs = [];
-        constructor(points, freeze = false, springStiffness, springDamping) {
+        constructor(points, freeze = false, springStiffness, springDamping, frixion = 1, absorption = 0) {
             super(points);
             this.freeze = freeze;
+            this.frixion = frixion;
+            this.absorption = absorption;
             for (let point of this.points) {
                 let framePoint = new Point(point.position.clone());
                 framePoint.freeze = freeze;

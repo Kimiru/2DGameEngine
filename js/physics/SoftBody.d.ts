@@ -11,16 +11,18 @@ export declare namespace SoftBody {
         addCollidableBody(...collidableBodies: CollidableBody[]): void;
         removeCollidableBody(...collidableBodies: CollidableBody[]): void;
         physics(dt: number): void;
-        resolveCollision(point: Point, collidableBody: CollidableBody): void;
+        resolveCollision(point: Point, collidableBody: CollidableBody, frixion?: number, absorption?: number): void;
         resolveEdgeCollision(P: Point, [A, B]: [Point, Point]): void;
         resolveEdgeCollisionPosition({ position: P }: Point, [{ position: A }, { position: B }]: [Point, Point]): void;
-        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], absorpsion?: number, frixion?: number): void;
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion: any, absorption: any): void;
     }
     interface IntegrableBody {
         integrate: (dt: number) => void;
         getPoints(): Point[];
     }
     interface CollidableBody {
+        absorption: number;
+        frixion: number;
         containsPoint(point: Point): boolean;
         closestEdgeOfPoint(point: Point): [Point, Point];
     }
@@ -35,7 +37,9 @@ export declare namespace SoftBody {
     }
     class Shape extends GameObject implements IntegrableBody, CollidableBody {
         points: Point[];
-        constructor(points: Point[]);
+        frixion: number;
+        absorption: number;
+        constructor(points: Point[], frixion?: number, absorption?: number);
         getPoints(): Point[];
         integrate(dt: any): void;
         containsPoint(point: Point): boolean;
@@ -61,7 +65,7 @@ export declare namespace SoftBody {
         freeze: boolean;
         structure: Point[];
         springs: Spring[];
-        constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number);
+        constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number, frixion?: number, absorption?: number);
         applyConstraint(): void;
         update(dt: number): void;
     }

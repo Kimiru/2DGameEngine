@@ -92,20 +92,44 @@ export namespace SoftBody {
 
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
-                    if (collidableBody as any !== integrableBody)
+                    if (collidableBody as any !== integrableBody) {
+                        let frixion: number
+                        let absorption: number
+
+                        if ('frixion' in integrableBody && 'absorption' in integrableBody) {
+
+                            frixion = Math.min(
+                                integrableBody.frixion as number,
+                                collidableBody.frixion
+                            )
+
+                            absorption = Math.max(
+                                integrableBody.absorption as number,
+                                collidableBody.absorption
+                            )
+
+                        } else {
+
+                            frixion = collidableBody.frixion
+                            absorption = collidableBody.absorption
+
+                        }
+
                         for (let point of integrableBody.getPoints())
-                            this.resolveCollision(point, collidableBody)
+                            this.resolveCollision(point, collidableBody, frixion, absorption)
+
+                    }
 
         }
 
-        resolveCollision(point: Point, collidableBody: CollidableBody) {
+        resolveCollision(point: Point, collidableBody: CollidableBody, frixion: number = collidableBody.frixion, absorption: number = collidableBody.absorption) {
             if (collidableBody.containsPoint(point)) {
 
                 let AB = collidableBody.closestEdgeOfPoint(point)
 
                 this.resolveEdgeCollision(point, AB)
 
-                this.resolveEdgeCollisionVelocity(point, AB)
+                this.resolveEdgeCollisionVelocity(point, AB, frixion, absorption)
 
             }
         }
@@ -129,22 +153,22 @@ export namespace SoftBody {
 
         }
 
-        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], absorpsion = 0, frixion = 1) {
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion, absorption) {
 
             let tangent = A.position.to(B.position)
             let normal = tangent.normal()
 
             let edgeVelocity = A.velocity.clone().add(B.velocity).divS(2)
-            let edgeTangentVelocity = tangent.projectOn(tangent)
+            let edgeTangentVelocity = edgeVelocity.projectOn(tangent)
             let edgeNormalVelocity = edgeVelocity.projectOn(normal)
 
             let pointTangentVelocity = P.velocity.projectOn(tangent)
             let pointNormalVelocity = P.velocity.projectOn(normal)
 
-            P.velocity.copy(edgeNormalVelocity.multS(1 - absorpsion))
+            P.velocity.copy(edgeNormalVelocity.multS(1 - absorption))
                 .add(pointTangentVelocity.multS(1 - frixion))
 
-            A.velocity.copy(pointNormalVelocity.multS(1 - absorpsion))
+            A.velocity.copy(pointNormalVelocity.multS(1 - absorption))
                 .add(edgeTangentVelocity.multS(1 - frixion))
             B.velocity.copy(A.velocity)
 
@@ -161,6 +185,9 @@ export namespace SoftBody {
     }
 
     export interface CollidableBody {
+
+        absorption: number
+        frixion: number
 
         containsPoint(point: Point): boolean
 
@@ -208,7 +235,10 @@ export namespace SoftBody {
 
         points: Point[]
 
-        constructor(points: Point[]) {
+        frixion: number = 1
+        absorption: number = 0
+
+        constructor(points: Point[], frixion: number = 1, absorption: number = 0) {
 
             super()
 
@@ -218,6 +248,9 @@ export namespace SoftBody {
             this.addTag('SB.Shape')
 
             this.points = points
+
+            this.frixion = frixion
+            this.absorption = absorption
 
         }
 
@@ -377,11 +410,13 @@ export namespace SoftBody {
         structure: Point[] = []
         springs: Spring[] = []
 
-        constructor(points: Point[], freeze: boolean = false, springStiffness?: number, springDamping?: number) {
+        constructor(points: Point[], freeze: boolean = false, springStiffness?: number, springDamping?: number, frixion: number = 1, absorption: number = 0) {
 
             super(points)
 
             this.freeze = freeze
+            this.frixion = frixion
+            this.absorption = absorption
 
             for (let point of this.points) {
 

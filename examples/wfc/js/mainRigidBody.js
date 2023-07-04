@@ -34,23 +34,23 @@ let g0 = new SoftBody.Point(new Vector(-5, -2))
 let g1 = new SoftBody.Point(new Vector(-5, -5))
 let g2 = new SoftBody.Point(new Vector(0, -5))
 let g3 = new SoftBody.Point(new Vector(5, -5))
-let g4 = new SoftBody.Point(new Vector(5, -2))
+let g4 = new SoftBody.Point(new Vector(5, -2.5))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 100, 10)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 0, 1)
 
 console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 
 
-let t0 = new SoftBody.Point(new Vector(0, 5))
+let t0 = new SoftBody.Point(new Vector(0, 6.5))
 let t1 = new SoftBody.Point(new Vector(-2, 3))
 let t2 = new SoftBody.Point(new Vector(2, 3))
 
 let triangle = new SoftBody.Shape([t0, t1, t2])
 
-let ts0 = new SoftBody.Spring(t0, t1, 1000, 50)
-let ts1 = new SoftBody.Spring(t1, t2, 1000, 50)
-let ts2 = new SoftBody.Spring(t2, t0, 1000, 50)
+let ts0 = new SoftBody.Spring(t0, t1, 500, 10)
+let ts1 = new SoftBody.Spring(t1, t2, 500, 10)
+let ts2 = new SoftBody.Spring(t2, t0, 500, 10)
 
 solver.addConstraint(ts0, ts1, ts2, frame)
 
@@ -132,7 +132,7 @@ scene.draw = (ctx) => {
 
 
             ctx.beginPath()
-            ctx.arc(point.position.x, point.position.y, .2, 0, Math.PI * 2)
+            ctx.arc(point.position.x, point.position.y, .11, 0, Math.PI * 2)
             ctx.fill()
 
             ctx.beginPath()
