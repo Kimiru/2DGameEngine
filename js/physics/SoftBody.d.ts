@@ -41,7 +41,7 @@ export declare namespace SoftBody {
     interface Constraint {
         applyConstraint: () => void;
     }
-    class Spring {
+    class Spring implements Constraint {
         static stiffness: number;
         static damping: number;
         point_0: Point;
@@ -51,6 +51,12 @@ export declare namespace SoftBody {
         restLength: number;
         constructor(point_0: Point, point_1: Point, stiffness?: number, damping?: number, restLength?: number);
         relaxSpring(): void;
+        applyConstraint(): void;
+    }
+    class Frame extends Shape implements IntegrableBody, Constraint, CollidableBody {
+        structure: Point[];
+        springs: Spring[];
+        constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number);
         applyConstraint(): void;
     }
 }

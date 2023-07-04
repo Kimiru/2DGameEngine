@@ -202,4 +202,23 @@ export var SoftBody;
         }
     }
     SoftBody.Spring = Spring;
+    class Frame extends Shape {
+        structure = [];
+        springs = [];
+        constructor(points, freeze = false, springStiffness, springDamping) {
+            super(points);
+            for (let point of this.points) {
+                let framePoint = new Point(point.position.clone());
+                framePoint.freeze = freeze;
+                this.structure.push(framePoint);
+                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0);
+                this.springs.push(spring);
+            }
+        }
+        applyConstraint() {
+            for (let spring of this.springs)
+                spring.applyConstraint();
+        }
+    }
+    SoftBody.Frame = Frame;
 })(SoftBody = SoftBody || (SoftBody = {}));

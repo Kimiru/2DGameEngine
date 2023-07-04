@@ -27,8 +27,6 @@ scene.add(solver)
 SoftBody.Spring.stiffness = 150
 SoftBody.Spring.damping = 10
 
-let leftLock = new SoftBody.Point(new Vector(-5, 0))
-let rightLock = new SoftBody.Point(new Vector(5, 0))
 
 let g0 = new SoftBody.Point(new Vector(-5, -2))
 let g1 = new SoftBody.Point(new Vector(-5, -5))
@@ -37,23 +35,8 @@ let g3 = new SoftBody.Point(new Vector(5, -5))
 let g4 = new SoftBody.Point(new Vector(5, -2))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let leftLockSpring = new SoftBody.Spring(leftLock, g0, 250, 20, 0)
-let rightLockSpring = new SoftBody.Spring(rightLock, g4, 250, 20, 0)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4, g5], true, 10, 10)
 
-let s0 = new SoftBody.Spring(g0, g1, undefined, 2)
-let s1 = new SoftBody.Spring(g1, g2, undefined, 2)
-let s2 = new SoftBody.Spring(g2, g3, undefined, 2)
-let s3 = new SoftBody.Spring(g3, g4, undefined, 2)
-let s4 = new SoftBody.Spring(g4, g5, undefined, 2)
-let s5 = new SoftBody.Spring(g5, g0, undefined, 2)
-
-let s6 = new SoftBody.Spring(g0, g2, undefined, 2)
-let s7 = new SoftBody.Spring(g2, g4, undefined, 2)
-let s8 = new SoftBody.Spring(g1, g5, undefined, 2)
-let s9 = new SoftBody.Spring(g3, g5, undefined, 2)
-let s10 = new SoftBody.Spring(g2, g5, undefined, 2)
-
-let brick = new SoftBody.Shape([g0, g1, g2, g3, g4, g5])
 
 let t0 = new SoftBody.Point(new Vector(0, 5))
 let t1 = new SoftBody.Point(new Vector(-2, 3))
@@ -65,11 +48,11 @@ let ts0 = new SoftBody.Spring(t0, t1, 1000, 50)
 let ts1 = new SoftBody.Spring(t1, t2, 1000, 50)
 let ts2 = new SoftBody.Spring(t2, t0, 1000, 50)
 
-solver.addConstraint(s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, leftLockSpring, rightLockSpring, ts0, ts1, ts2)
+solver.addConstraint(ts0, ts1, ts2, frame)
 
-solver.addIntegrableBody(brick, triangle)
+solver.addIntegrableBody(triangle, frame)
 
-solver.addCollidableBody(brick)
+solver.addCollidableBody(frame, triangle)
 
 scene.update = (dt) => {
 

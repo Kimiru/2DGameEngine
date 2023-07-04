@@ -274,7 +274,7 @@ export namespace SoftBody {
 
     }
 
-    export class Spring {
+    export class Spring implements Constraint {
 
         static stiffness: number = 100
         static damping: number = 1
@@ -346,6 +346,38 @@ export namespace SoftBody {
                 this.point_0.acceleration.add(forceVector)
 
             }
+
+        }
+
+    }
+
+    export class Frame extends Shape implements IntegrableBody, Constraint, CollidableBody {
+
+        structure: Point[] = []
+        springs: Spring[] = []
+
+        constructor(points: Point[], freeze: boolean = false, springStiffness?: number, springDamping?: number) {
+
+            super(points)
+
+            for (let point of this.points) {
+
+                let framePoint = new Point(point.position.clone())
+                framePoint.freeze = freeze
+
+                this.structure.push(framePoint)
+
+                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0)
+                this.springs.push(spring)
+
+            }
+
+        }
+
+        applyConstraint() {
+
+            for (let spring of this.springs)
+                spring.applyConstraint()
 
         }
 
