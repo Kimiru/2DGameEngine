@@ -82,6 +82,7 @@ export var SoftBody;
         resolveEdgeCollisionPosition({ position: P }, [{ position: A }, { position: B }]) {
             let normal = A.to(B).normal();
             let dir = P.to(B).projectOn(normal);
+            // TODO edge change should be proportional to point proximity
             P.add(dir.clone().multS(2.1 / 3));
             dir.multS(-1 / 3);
             A.add(dir);
