@@ -1,4 +1,4 @@
-import { GameObject, Polygon, Vector } from "../2DGameEngine.js";
+import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGameEngine.js";
 export var SoftBody;
 (function (SoftBody) {
     class Solver extends GameObject {
@@ -80,13 +80,16 @@ export var SoftBody;
             this.resolveEdgeCollisionPosition(P, [A, B]);
         }
         resolveEdgeCollisionPosition({ position: P }, [{ position: A }, { position: B }]) {
-            let normal = A.to(B).normal();
-            let dir = P.to(B).projectOn(normal);
-            // TODO edge change should be proportional to point proximity
-            P.add(dir.clone().multS(2.1 / 3));
-            dir.multS(-1 / 3);
-            A.add(dir);
-            B.add(dir);
+            let AB = A.to(B);
+            let AP = A.to(P);
+            let normal = AB.normal();
+            let dir = AP.projectOn(normal);
+            let percent = AP.dot(AB) / AB.normSquared();
+            let pA = quadBezier([.5], [.4], [0], percent)[0];
+            let pB = quadBezier([0], [.4], [.5], percent)[0];
+            A.add(dir.clone().multS(pA));
+            B.add(dir.clone().multS(pB));
+            P.copy(new Ray(P, dir.multS(-1)).intersect(new Segment(A, B)) ?? P);
         }
         resolveEdgeCollisionVelocity(P, [A, B], frixion, absorption) {
             let tangent = A.position.to(B.position);
@@ -192,18 +195,21 @@ export var SoftBody;
     class Spring {
         static stiffness = 100;
         static damping = 1;
+        static angularDamping = 0;
         point_0;
         point_1;
         stiffness;
         damping;
+        angularDamping;
         restLength;
-        constructor(point_0, point_1, stiffness = Spring.stiffness, damping = Spring.damping, restLength) {
+        constructor(point_0, point_1, stiffness = Spring.stiffness, damping = Spring.damping, restLength, angularDamping = Spring.angularDamping) {
             if (point_0 === point_1)
                 throw ('Springs cannot have both end attached to the same point');
             this.point_0 = point_0;
             this.point_1 = point_1;
             this.stiffness = stiffness;
             this.damping = damping;
+            this.angularDamping = angularDamping;
             if (restLength === undefined)
                 this.relaxSpring();
             else
@@ -221,8 +227,10 @@ export var SoftBody;
             let currentLength = this.point_0.position.distanceTo(this.point_1.position);
             let deltaLength = currentLength - this.restLength;
             let force = this.stiffness * deltaLength;
-            let damping = this.point_0.velocity.to(this.point_1.velocity).projectOn(dir).multS(this.damping);
-            let forceVector = dir.clone().multS(force).add(damping);
+            let p01 = this.point_0.velocity.to(this.point_1.velocity);
+            let damping = p01.projectOn(dir).multS(this.damping);
+            let angularDamping = p01.projectOn(dir.normal()).multS(this.angularDamping);
+            let forceVector = dir.clone().multS(force).add(damping).add(angularDamping);
             if (!this.point_0.freeze && !this.point_1.freeze) {
                 forceVector.divS(2);
                 this.point_0.acceleration.add(forceVector);
@@ -252,18 +260,11 @@ export var SoftBody;
                 let framePoint = new Point(point.position.clone());
                 framePoint.freeze = freeze;
                 this.structure.push(framePoint);
-                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0);
+                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0, (springDamping ?? Spring.damping) / 2);
                 this.springs.push(spring);
             }
         }
         applyConstraint() {
-            for (let spring of this.springs)
-                spring.applyConstraint();
-        }
-        getFrameCenter() {
-            return computeCenter(this.structure);
-        }
-        update(dt) {
             if (!this.freeze) {
                 let pointsCenter = this.getPointsCenter();
                 let frameCenter = this.getFrameCenter();
@@ -280,6 +281,16 @@ export var SoftBody;
                 for (let point of this.structure)
                     point.position.rotateAround(pointsCenter, angle);
             }
+            for (let spring of this.springs) {
+                if (!this.freeze)
+                    spring.point_1.velocity.copy(spring.point_0.velocity).divS(2);
+                spring.applyConstraint();
+            }
+        }
+        getFrameCenter() {
+            return computeCenter(this.structure);
+        }
+        update(dt) {
         }
     }
     SoftBody.Frame = Frame;

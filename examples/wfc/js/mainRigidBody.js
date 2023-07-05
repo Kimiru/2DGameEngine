@@ -37,7 +37,7 @@ let g3 = new SoftBody.Point(new Vector(6, -4))
 let g4 = new SoftBody.Point(new Vector(5, -3))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 1, 1)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 0, 0)
 
 console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 
@@ -46,6 +46,10 @@ console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 let t0 = new SoftBody.Point(new Vector(0, 6.5))
 let t1 = new SoftBody.Point(new Vector(-2, 3))
 let t2 = new SoftBody.Point(new Vector(2, 3))
+
+let ts = [t0, t1, t2]
+
+ts.forEach(p => p.position.addS(-2, 0))
 
 let triangle = new SoftBody.Shape([t0, t1, t2])
 

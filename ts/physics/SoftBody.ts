@@ -142,15 +142,21 @@ export namespace SoftBody {
 
         resolveEdgeCollisionPosition({ position: P }: Point, [{ position: A }, { position: B }]: [Point, Point]) {
 
-            let normal = A.to(B).normal()
+            let AB = A.to(B)
+            let AP = A.to(P)
+            let normal = AB.normal()
 
-            let dir = P.to(B).projectOn(normal)
-            // TODO edge change should be proportional to point proximity
+            let dir = AP.projectOn(normal)
 
-            P.add(dir.clone().multS(2.1 / 3))
-            dir.multS(-1 / 3)
-            A.add(dir)
-            B.add(dir)
+            let percent = AP.dot(AB) / AB.normSquared()
+
+            let pA = quadBezier([.5], [.4], [0], percent)[0]
+            let pB = quadBezier([0], [.4], [.5], percent)[0]
+
+            A.add(dir.clone().multS(pA))
+            B.add(dir.clone().multS(pB))
+
+            P.copy(new Ray(P, dir.multS(-1)).intersect(new Segment(A, B)) ?? P)
 
         }
 
@@ -202,13 +208,19 @@ export namespace SoftBody {
         velocity: Vector = new Vector()
         acceleration: Vector = new Vector()
 
+        frixion: number = 1
+        absorption: number = 0
+
         freeze: boolean = false
 
-        constructor(position: Vector = new Vector, velocity: Vector = new Vector, acceleration: Vector = new Vector, freeze: boolean = false) {
+        constructor(position: Vector = new Vector, velocity: Vector = new Vector, acceleration: Vector = new Vector, frixion: number = 1, absorption: number = 0, freeze: boolean = false) {
 
             this.position = position
             this.velocity = velocity
             this.acceleration = acceleration
+
+            this.frixion = frixion
+            this.absorption = absorption
 
             this.freeze = freeze
 
@@ -345,15 +357,17 @@ export namespace SoftBody {
 
         static stiffness: number = 100
         static damping: number = 1
+        static angularDamping: number = 0
 
         point_0: Point
         point_1: Point
 
         stiffness: number
         damping: number
+        angularDamping: number
         restLength: number
 
-        constructor(point_0: Point, point_1: Point, stiffness: number = Spring.stiffness, damping: number = Spring.damping, restLength?: number) {
+        constructor(point_0: Point, point_1: Point, stiffness: number = Spring.stiffness, damping: number = Spring.damping, restLength?: number, angularDamping: number = Spring.angularDamping) {
 
             if (point_0 === point_1) throw ('Springs cannot have both end attached to the same point')
 
@@ -362,6 +376,7 @@ export namespace SoftBody {
 
             this.stiffness = stiffness
             this.damping = damping
+            this.angularDamping = angularDamping
 
             if (restLength === undefined)
                 this.relaxSpring()
@@ -388,9 +403,12 @@ export namespace SoftBody {
 
             let force = this.stiffness * deltaLength
 
-            let damping = this.point_0.velocity.to(this.point_1.velocity).projectOn(dir).multS(this.damping)
+            let p01 = this.point_0.velocity.to(this.point_1.velocity)
 
-            let forceVector = dir.clone().multS(force).add(damping)
+            let damping = p01.projectOn(dir).multS(this.damping)
+            let angularDamping = p01.projectOn(dir.normal()).multS(this.angularDamping)
+
+            let forceVector = dir.clone().multS(force).add(damping).add(angularDamping)
 
             if (!this.point_0.freeze && !this.point_1.freeze) {
 
@@ -439,7 +457,7 @@ export namespace SoftBody {
 
                 this.structure.push(framePoint)
 
-                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0)
+                let spring = new Spring(point, framePoint, springStiffness, springDamping, 0, (springDamping ?? Spring.damping) / 2)
                 this.springs.push(spring)
 
             }
@@ -447,19 +465,6 @@ export namespace SoftBody {
         }
 
         applyConstraint() {
-
-            for (let spring of this.springs)
-                spring.applyConstraint()
-
-        }
-
-        getFrameCenter() {
-
-            return computeCenter(this.structure)
-
-        }
-
-        update(dt: number): void {
 
             if (!this.freeze) {
 
@@ -489,6 +494,24 @@ export namespace SoftBody {
                     point.position.rotateAround(pointsCenter, angle)
 
             }
+
+            for (let spring of this.springs) {
+                if (!this.freeze)
+                    spring.point_1.velocity.copy(spring.point_0.velocity).divS(2)
+                spring.applyConstraint()
+            }
+
+        }
+
+        getFrameCenter() {
+
+            return computeCenter(this.structure)
+
+        }
+
+        update(dt: number): void {
+
+
 
         }
 

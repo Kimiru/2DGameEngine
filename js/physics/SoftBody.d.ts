@@ -54,12 +54,14 @@ export declare namespace SoftBody {
     class Spring implements Constraint {
         static stiffness: number;
         static damping: number;
+        static angularDamping: number;
         point_0: Point;
         point_1: Point;
         stiffness: number;
         damping: number;
+        angularDamping: number;
         restLength: number;
-        constructor(point_0: Point, point_1: Point, stiffness?: number, damping?: number, restLength?: number);
+        constructor(point_0: Point, point_1: Point, stiffness?: number, damping?: number, restLength?: number, angularDamping?: number);
         relaxSpring(): void;
         applyConstraint(): void;
     }

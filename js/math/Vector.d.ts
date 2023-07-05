@@ -96,6 +96,7 @@ export declare class Vector {
      * @returns {number}
      */
     length(): number;
+    normSquared(): number;
     /**
      * Returns true if the length of this vector is 0
      *

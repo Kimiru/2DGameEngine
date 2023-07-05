@@ -188,6 +188,8 @@ export class Vector {
      */
     length(): number { return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z) }
 
+    normSquared(): number { return this.x * this.x + this.y * this.y + this.z * this.z }
+
     /**
      * Returns true if the length of this vector is 0
      * 
