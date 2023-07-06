@@ -277,7 +277,7 @@ export namespace SoftBody {
 
         }
 
-        integrate(dt) {
+        integrate(dt: number) {
 
             for (let point of this.points)
                 point.integrate(dt)
@@ -439,6 +439,7 @@ export namespace SoftBody {
 
         freeze: boolean = false
 
+        falseStructure: Point[] = []
         structure: Point[] = []
         springs: Spring[] = []
 
@@ -456,6 +457,7 @@ export namespace SoftBody {
                 framePoint.freeze = freeze
 
                 this.structure.push(framePoint)
+                this.falseStructure.push(new Point(point.position.clone()))
 
                 let spring = new Spring(point, framePoint, springStiffness, springDamping, 0, (springDamping ?? Spring.damping) / 2)
                 this.springs.push(spring)
@@ -509,9 +511,18 @@ export namespace SoftBody {
 
         }
 
-        update(dt: number): void {
+        integrate(dt: number): void {
 
+            if (this.freeze)
+                for (let [index, falsePoint] of this.falseStructure.entries()) {
 
+                    let truePoint = this.structure[index]
+
+                    truePoint.position.copy(this.position.clone().add(falsePoint.position.clone().rotate(this.rotation)))
+
+                }
+
+            super.integrate(dt)
 
         }
 

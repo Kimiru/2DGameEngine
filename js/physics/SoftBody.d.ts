@@ -30,8 +30,10 @@ export declare namespace SoftBody {
         position: Vector;
         velocity: Vector;
         acceleration: Vector;
+        frixion: number;
+        absorption: number;
         freeze: boolean;
-        constructor(position?: Vector, velocity?: Vector, acceleration?: Vector, freeze?: boolean);
+        constructor(position?: Vector, velocity?: Vector, acceleration?: Vector, frixion?: number, absorption?: number, freeze?: boolean);
         getPoints(): Point[];
         integrate(dt: number): void;
     }
@@ -42,7 +44,7 @@ export declare namespace SoftBody {
         constructor(points: Point[], frixion?: number, absorption?: number);
         getPoints(): Point[];
         getPointsCenter(): Vector;
-        integrate(dt: any): void;
+        integrate(dt: number): void;
         containsPoint(point: Point): boolean;
         distancePointToEdge(point: Vector, [A, B]: [Vector, Vector]): number;
         closestEdgeOfPoint(point: Point): [Point, Point];
@@ -67,11 +69,12 @@ export declare namespace SoftBody {
     }
     class Frame extends Shape implements IntegrableBody, Constraint, CollidableBody {
         freeze: boolean;
+        falseStructure: Point[];
         structure: Point[];
         springs: Spring[];
         constructor(points: Point[], freeze?: boolean, springStiffness?: number, springDamping?: number, frixion?: number, absorption?: number);
         applyConstraint(): void;
         getFrameCenter(): Vector;
-        update(dt: number): void;
+        integrate(dt: number): void;
     }
 }

@@ -111,11 +111,15 @@ export var SoftBody;
         position = new Vector();
         velocity = new Vector();
         acceleration = new Vector();
+        frixion = 1;
+        absorption = 0;
         freeze = false;
-        constructor(position = new Vector, velocity = new Vector, acceleration = new Vector, freeze = false) {
+        constructor(position = new Vector, velocity = new Vector, acceleration = new Vector, frixion = 1, absorption = 0, freeze = false) {
             this.position = position;
             this.velocity = velocity;
             this.acceleration = acceleration;
+            this.frixion = frixion;
+            this.absorption = absorption;
             this.freeze = freeze;
         }
         getPoints() {
@@ -249,6 +253,7 @@ export var SoftBody;
     SoftBody.Spring = Spring;
     class Frame extends Shape {
         freeze = false;
+        falseStructure = [];
         structure = [];
         springs = [];
         constructor(points, freeze = false, springStiffness, springDamping, frixion = 1, absorption = 0) {
@@ -260,6 +265,7 @@ export var SoftBody;
                 let framePoint = new Point(point.position.clone());
                 framePoint.freeze = freeze;
                 this.structure.push(framePoint);
+                this.falseStructure.push(new Point(point.position.clone()));
                 let spring = new Spring(point, framePoint, springStiffness, springDamping, 0, (springDamping ?? Spring.damping) / 2);
                 this.springs.push(spring);
             }
@@ -290,7 +296,13 @@ export var SoftBody;
         getFrameCenter() {
             return computeCenter(this.structure);
         }
-        update(dt) {
+        integrate(dt) {
+            if (this.freeze)
+                for (let [index, falsePoint] of this.falseStructure.entries()) {
+                    let truePoint = this.structure[index];
+                    truePoint.position.copy(this.position.clone().add(falsePoint.position.clone().rotate(this.rotation)));
+                }
+            super.integrate(dt);
         }
     }
     SoftBody.Frame = Frame;
