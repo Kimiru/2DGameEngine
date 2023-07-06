@@ -4,6 +4,16 @@ export namespace SoftBody {
 
     export class Solver extends GameObject {
 
+        resetAcceleration: boolean
+
+        constructor(resetAcceleration: boolean = true) {
+
+            super()
+
+            this.resetAcceleration = resetAcceleration
+
+        }
+
         constraints: Constraint[] = []
 
         addConstraint(...constraints: Constraint[]) {
@@ -87,8 +97,12 @@ export namespace SoftBody {
             for (let constraint of this.constraints)
                 constraint.applyConstraint()
 
-            for (let integrableBody of this.integrableBodies)
+            for (let integrableBody of this.integrableBodies) {
                 integrableBody.integrate(dt)
+                if (this.resetAcceleration)
+                    for (let point of integrableBody.getPoints())
+                        point.acceleration.set(0, 0)
+            }
 
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)

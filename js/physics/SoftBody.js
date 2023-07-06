@@ -2,6 +2,11 @@ import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGame
 export var SoftBody;
 (function (SoftBody) {
     class Solver extends GameObject {
+        resetAcceleration;
+        constructor(resetAcceleration = true) {
+            super();
+            this.resetAcceleration = resetAcceleration;
+        }
         constraints = [];
         addConstraint(...constraints) {
             for (let constraint of constraints) {
@@ -50,8 +55,12 @@ export var SoftBody;
         physics(dt) {
             for (let constraint of this.constraints)
                 constraint.applyConstraint();
-            for (let integrableBody of this.integrableBodies)
+            for (let integrableBody of this.integrableBodies) {
                 integrableBody.integrate(dt);
+                if (this.resetAcceleration)
+                    for (let point of integrableBody.getPoints())
+                        point.acceleration.set(0, 0);
+            }
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
                     if (collidableBody !== integrableBody) {

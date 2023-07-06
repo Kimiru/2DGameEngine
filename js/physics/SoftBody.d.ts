@@ -1,6 +1,8 @@
 import { GameObject, Vector } from "../2DGameEngine.js";
 export declare namespace SoftBody {
     class Solver extends GameObject {
+        resetAcceleration: boolean;
+        constructor(resetAcceleration?: boolean);
         constraints: Constraint[];
         addConstraint(...constraints: Constraint[]): void;
         removeConstraint(...constraints: Constraint[]): void;
