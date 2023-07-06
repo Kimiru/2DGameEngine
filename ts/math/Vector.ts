@@ -265,7 +265,7 @@ export class Vector {
     angle(): number {
 
         let vec = this.clone().normalize()
-        return Math.acos(vec.x) * Math.sign(vec.y)
+        return Math.acos(vec.x) * (Math.sign(vec.y) || 1)
 
     }
 

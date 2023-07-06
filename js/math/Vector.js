@@ -204,7 +204,7 @@ export class Vector {
      */
     angle() {
         let vec = this.clone().normalize();
-        return Math.acos(vec.x) * Math.sign(vec.y);
+        return Math.acos(vec.x) * (Math.sign(vec.y) || 1);
     }
     /**
      * Returns the distance from this Vector position to the given Vector position
