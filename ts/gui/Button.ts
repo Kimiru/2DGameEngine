@@ -40,8 +40,6 @@ export class Button extends GameObject {
 
         this.add(this.rect)
 
-        this.drawAfterChildren()
-
     }
 
     get currentColor(): string { return resolveStringable(this.active ? this.activeColor : this.color) }
@@ -70,7 +68,7 @@ export class Button extends GameObject {
 
     onClick() { }
 
-    draw(ctx: CanvasRenderingContext2D): void {
+    postDraw(ctx: CanvasRenderingContext2D): void {
 
         drawText(ctx, this.text, this.options)
 

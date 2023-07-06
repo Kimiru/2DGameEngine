@@ -15,5 +15,5 @@ export declare class Label extends GameObject {
      * @param {number} maxWidth
      */
     constructor(text: stringable, options?: textoptions);
-    draw(ctx: CanvasRenderingContext2D): void;
+    postDraw(ctx: CanvasRenderingContext2D): void;
 }

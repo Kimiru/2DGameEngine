@@ -68,12 +68,14 @@ export class GameScene {
         for (let child of [...this.children])
             if (child instanceof GameObject)
                 child.executeUpdate(dt);
+        this.postUpdate(dt);
     }
     executePhysics(dt) {
         this.physics(dt);
         for (let child of [...this.children])
             if (child instanceof GameObject)
                 child.executePhysics(dt);
+        this.postPhysics(dt);
     }
     childrenDrawFilter(children) { return children; }
     getDrawRange() {
@@ -114,6 +116,7 @@ export class GameScene {
                     child.executeDraw(ctx, drawRange, cameraPosition);
             }
         }
+        this.postDraw(ctx);
     }
     /**
      * Add one or more object to the scene sorting them out by their tages, removing them from previous parent/scene if needed
@@ -234,6 +237,7 @@ export class GameScene {
      * @param {number} dt
      */
     update(dt) { }
+    postUpdate(dt) { }
     /**
      * Update the scene physics specific operation
      *
@@ -244,6 +248,7 @@ export class GameScene {
      * @param {number} dt
      */
     physics(dt) { }
+    postPhysics(dt) { }
     /**
      * Draw the scene specific element
      *
@@ -254,4 +259,5 @@ export class GameScene {
      * @param {CanvasRenderingContext2D} ctx
      */
     draw(ctx) { }
+    postDraw(ctx) { }
 }

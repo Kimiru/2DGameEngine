@@ -64,8 +64,6 @@ export class TextBox extends GameObject {
             }
         })
 
-        this.drawAfterChildren()
-
     }
 
     #addStr(str) {
@@ -134,7 +132,7 @@ export class TextBox extends GameObject {
 
     }
 
-    draw(ctx: CanvasRenderingContext2D): void {
+    postDraw(ctx: CanvasRenderingContext2D): void {
 
         ctx.save()
 

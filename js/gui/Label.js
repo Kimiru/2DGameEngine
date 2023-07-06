@@ -17,9 +17,8 @@ export class Label extends GameObject {
         super();
         this.text = text;
         this.options = options;
-        this.drawAfterChildren();
     }
-    draw(ctx) {
+    postDraw(ctx) {
         drawText(ctx, this.text, this.options);
     }
 }

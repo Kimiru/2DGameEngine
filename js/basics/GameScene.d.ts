@@ -126,6 +126,7 @@ export declare class GameScene {
      * @param {number} dt
      */
     update(dt: number): void;
+    postUpdate(dt: number): void;
     /**
      * Update the scene physics specific operation
      *
@@ -136,6 +137,7 @@ export declare class GameScene {
      * @param {number} dt
      */
     physics(dt: number): void;
+    postPhysics(dt: number): void;
     /**
      * Draw the scene specific element
      *
@@ -146,4 +148,5 @@ export declare class GameScene {
      * @param {CanvasRenderingContext2D} ctx
      */
     draw(ctx: CanvasRenderingContext2D): void;
+    postDraw(ctx: CanvasRenderingContext2D): void;
 }

@@ -123,6 +123,7 @@ export declare class GameObject {
      * @param {number} dt
      */
     update(dt: number): void;
+    postUpdate(dt: number): void;
     /**
      * Update the physics of the object
      *
@@ -133,6 +134,7 @@ export declare class GameObject {
      * @param {number} dt
      */
     physics(dt: number): void;
+    postPhysics(dt: number): void;
     /**
       * Draw the object specific element
       *
@@ -143,14 +145,11 @@ export declare class GameObject {
       * @param {CanvasRenderingContext2D} ctx
       */
     draw(ctx: CanvasRenderingContext2D): void;
+    postDraw(ctx: CanvasRenderingContext2D): void;
     /**
      * Remove the object from its scene/parent
      */
     kill(): void;
-    /**
-     * Postpone the drawing of the object to after its children drawing
-     */
-    drawAfterChildren(): void;
     /**
      * Return the world position of this object, thus taking into account all parent object
      *

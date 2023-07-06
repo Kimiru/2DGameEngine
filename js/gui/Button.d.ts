@@ -15,5 +15,5 @@ export declare class Button extends GameObject {
     get currentColor(): string;
     update(dt: number): void;
     onClick(): void;
-    draw(ctx: CanvasRenderingContext2D): void;
+    postDraw(ctx: CanvasRenderingContext2D): void;
 }

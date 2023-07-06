@@ -20,7 +20,6 @@ export class GameObject {
     childrenDrawEnabled = true;
     parent = null;
     #scene = null;
-    #drawBeforeChild = true;
     transform = new Transform();
     zIndex = 0;
     drawRange = 0; // If set to infinity, will always be rendered no matter the rendering style
@@ -159,6 +158,8 @@ export class GameObject {
             for (let child of [...this.children])
                 if (child instanceof GameObject)
                     child.executeUpdate(dt);
+        if (this.updateEnabled)
+            this.postUpdate(dt);
     }
     #physicsPredicate = [];
     physicsIf(predicate) {
@@ -173,6 +174,8 @@ export class GameObject {
             for (let child of [...this.children])
                 if (child instanceof GameObject)
                     child.executePhysics(dt);
+        if (this.physicsEnabled)
+            this.postPhysics(dt);
     }
     childrenDrawFilter(children) { return children; }
     #drawPredicate = [];
@@ -191,7 +194,7 @@ export class GameObject {
             return;
         ctx.save();
         ctx.transform(...this.transform.getMatrix());
-        if (this.#drawBeforeChild && this.drawEnabled)
+        if (this.drawEnabled)
             this.draw(ctx);
         if (this.childrenDrawEnabled) {
             let children = this.childrenDrawFilter(this.children).sort((a, b) => a.zIndex != b.zIndex ? a.zIndex - b.zIndex : b.transform.translation.y - a.transform.translation.y);
@@ -210,8 +213,8 @@ export class GameObject {
                 }
             }
         }
-        if (!this.#drawBeforeChild && this.drawEnabled)
-            this.draw(ctx);
+        if (this.drawEnabled)
+            this.postDraw(ctx);
         ctx.restore();
     }
     /**
@@ -224,6 +227,7 @@ export class GameObject {
      * @param {number} dt
      */
     update(dt) { }
+    postUpdate(dt) { }
     /**
      * Update the physics of the object
      *
@@ -234,6 +238,7 @@ export class GameObject {
      * @param {number} dt
      */
     physics(dt) { }
+    postPhysics(dt) { }
     /**
       * Draw the object specific element
       *
@@ -244,6 +249,7 @@ export class GameObject {
       * @param {CanvasRenderingContext2D} ctx
       */
     draw(ctx) { }
+    postDraw(ctx) { }
     /**
      * Remove the object from its scene/parent
      */
@@ -253,10 +259,6 @@ export class GameObject {
         if (this.scene !== null)
             this.scene.remove(this);
     }
-    /**
-     * Postpone the drawing of the object to after its children drawing
-     */
-    drawAfterChildren() { this.#drawBeforeChild = false; }
     /**
      * Return the world position of this object, thus taking into account all parent object
      *

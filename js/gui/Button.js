@@ -26,7 +26,6 @@ export class Button extends GameObject {
         if (options.align === 'left')
             this.rect.x = this.rect.w / 2;
         this.add(this.rect);
-        this.drawAfterChildren();
     }
     get currentColor() { return resolveStringable(this.active ? this.activeColor : this.color); }
     update(dt) {
@@ -45,7 +44,7 @@ export class Button extends GameObject {
             this.rect.displayColor = 'red';
     }
     onClick() { }
-    draw(ctx) {
+    postDraw(ctx) {
         drawText(ctx, this.text, this.options);
     }
 }

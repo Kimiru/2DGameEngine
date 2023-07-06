@@ -24,11 +24,9 @@ export class Label extends GameObject {
         this.text = text
         this.options = options
 
-        this.drawAfterChildren()
-
     }
 
-    draw(ctx: CanvasRenderingContext2D): void {
+    postDraw(ctx: CanvasRenderingContext2D): void {
 
         drawText(ctx, this.text, this.options)
 

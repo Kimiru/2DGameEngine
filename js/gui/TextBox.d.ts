@@ -20,5 +20,5 @@ export declare class TextBox extends GameObject {
     toggle(): void;
     onChange(text: string): void;
     update(dt: number): void;
-    draw(ctx: CanvasRenderingContext2D): void;
+    postDraw(ctx: CanvasRenderingContext2D): void;
 }

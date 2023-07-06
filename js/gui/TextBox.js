@@ -49,7 +49,6 @@ export class TextBox extends GameObject {
                     this.cursorPosition = Math.min(this.cursorPosition + 1, this.text.length);
             }
         });
-        this.drawAfterChildren();
     }
     #addStr(str) {
         this.text = this.text.slice(0, this.cursorPosition) + str + this.text.slice(this.cursorPosition);
@@ -95,7 +94,7 @@ export class TextBox extends GameObject {
                 this.toggleOff();
         }
     }
-    draw(ctx) {
+    postDraw(ctx) {
         ctx.save();
         if (this.options.align === 'left')
             ctx.translate(-(this.options.maxWidth ?? 100) / 2, 0);

@@ -99,6 +99,8 @@ export class GameScene {
             if (child instanceof GameObject)
                 child.executeUpdate(dt)
 
+        this.postUpdate(dt)
+
     }
 
     executePhysics(dt: number) {
@@ -108,6 +110,8 @@ export class GameScene {
         for (let child of [...this.children])
             if (child instanceof GameObject)
                 child.executePhysics(dt)
+
+        this.postPhysics(dt)
 
     }
 
@@ -169,6 +173,8 @@ export class GameScene {
             }
 
         }
+
+        this.postDraw(ctx)
 
     }
 
@@ -335,6 +341,8 @@ export class GameScene {
      */
     update(dt: number): void { }
 
+    postUpdate(dt: number): void { }
+
     /**
      * Update the scene physics specific operation
      * 
@@ -346,6 +354,8 @@ export class GameScene {
      */
     physics(dt: number): void { }
 
+    postPhysics(dt: number): void { }
+
     /**
      * Draw the scene specific element
      * 
@@ -356,5 +366,7 @@ export class GameScene {
      * @param {CanvasRenderingContext2D} ctx 
      */
     draw(ctx: CanvasRenderingContext2D): void { }
+
+    postDraw(ctx: CanvasRenderingContext2D): void { }
 
 }

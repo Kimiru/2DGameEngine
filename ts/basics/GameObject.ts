@@ -23,7 +23,6 @@ export class GameObject {
     childrenDrawEnabled: boolean = true
     parent: GameObject | null = null
     #scene: GameScene | null = null
-    #drawBeforeChild: boolean = true
 
     transform: Transform = new Transform()
     zIndex: number = 0
@@ -220,6 +219,8 @@ export class GameObject {
                 if (child instanceof GameObject)
                     child.executeUpdate(dt)
 
+        if (this.updateEnabled) this.postUpdate(dt)
+
     }
 
     #physicsPredicate: (() => boolean)[] = []
@@ -239,6 +240,8 @@ export class GameObject {
             for (let child of [...this.children])
                 if (child instanceof GameObject)
                     child.executePhysics(dt)
+
+        if (this.physicsEnabled) this.postPhysics(dt)
 
     }
 
@@ -266,7 +269,7 @@ export class GameObject {
 
         ctx.transform(...this.transform.getMatrix())
 
-        if (this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
+        if (this.drawEnabled) this.draw(ctx)
 
         if (this.childrenDrawEnabled) {
 
@@ -296,7 +299,7 @@ export class GameObject {
 
         }
 
-        if (!this.#drawBeforeChild && this.drawEnabled) this.draw(ctx)
+        if (this.drawEnabled) this.postDraw(ctx)
 
         ctx.restore()
 
@@ -313,6 +316,8 @@ export class GameObject {
      */
     update(dt: number): void { }
 
+    postUpdate(dt: number): void { }
+
     /**
      * Update the physics of the object
      * 
@@ -325,6 +330,8 @@ export class GameObject {
 
     physics(dt: number): void { }
 
+    postPhysics(dt: number): void { }
+
     /**
       * Draw the object specific element
       * 
@@ -335,6 +342,8 @@ export class GameObject {
       * @param {CanvasRenderingContext2D} ctx 
       */
     draw(ctx: CanvasRenderingContext2D): void { }
+
+    postDraw(ctx: CanvasRenderingContext2D): void { }
 
     /**
      * Remove the object from its scene/parent
@@ -348,11 +357,6 @@ export class GameObject {
             this.scene.remove(this)
 
     }
-
-    /**
-     * Postpone the drawing of the object to after its children drawing
-     */
-    drawAfterChildren(): void { this.#drawBeforeChild = false }
 
     /**
      * Return the world position of this object, thus taking into account all parent object
