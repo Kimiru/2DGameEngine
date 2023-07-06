@@ -108,10 +108,12 @@ export var SoftBody;
             let edgeNormalVelocity = edgeVelocity.projectOn(normal);
             let pointTangentVelocity = P.velocity.projectOn(tangent);
             let pointNormalVelocity = P.velocity.projectOn(normal);
-            P.velocity.copy(edgeNormalVelocity.multS(1 - absorption))
-                .add(pointTangentVelocity.multS(1 - frixion));
-            A.velocity.copy(pointNormalVelocity.multS(1 - absorption))
-                .add(edgeTangentVelocity.multS(1 - frixion));
+            let relativeNormalVelocity = edgeNormalVelocity.clone().sub(pointNormalVelocity).multS(absorption * .5);
+            let relativeTangentVelocity = edgeTangentVelocity.clone().sub(pointTangentVelocity).multS(frixion * .5);
+            P.velocity.copy(edgeNormalVelocity.sub(relativeNormalVelocity))
+                .add(pointTangentVelocity.add(relativeTangentVelocity));
+            A.velocity.copy(pointNormalVelocity.add(relativeNormalVelocity))
+                .add(edgeTangentVelocity.sub(relativeTangentVelocity));
             B.velocity.copy(A.velocity);
         }
     }

@@ -37,7 +37,7 @@ let g3 = new SoftBody.Point(new Vector(6, -4))
 let g4 = new SoftBody.Point(new Vector(5, -3))
 let g5 = new SoftBody.Point(new Vector(0, -2))
 
-let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 0, 0)
+let frame = new SoftBody.Frame([g0, g1, g2, g3, g4], true, 100, 20, 1, 1)
 
 console.log(frame.springs.map(e => [e.stiffness, e.damping]))
 
