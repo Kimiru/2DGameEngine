@@ -35,6 +35,7 @@ export * from './images/Utils.js';
 export * from './math/Color.js';
 export * from './math/Graph.js';
 export * from './math/HexVector.js';
+export * from './math/PID.js';
 export * from './math/PositionIntegrator.js';
 export * from './math/Random.js';
 export * from './math/Timer.js';
