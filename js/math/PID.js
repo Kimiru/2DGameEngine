@@ -1,9 +1,12 @@
 export class PID {
-    p;
-    i;
-    d;
-    setpoint;
+    p = 0;
+    i = 0;
+    d = 0;
+    setpoint = 0;
     constructor(p, i, d) {
+        this.p = p;
+        this.i = i;
+        this.d = d;
     }
     error = 0;
     cumulatedError = 0;

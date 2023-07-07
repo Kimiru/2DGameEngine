@@ -1,15 +1,17 @@
 export class PID {
 
-    p: number
-    i: number
-    d: number
+    p: number = 0
+    i: number = 0
+    d: number = 0
 
-    setpoint: number
+    setpoint: number = 0
 
 
     constructor(p: number, i: number, d: number) {
 
-
+        this.p = p
+        this.i = i
+        this.d = d
 
     }
 
