@@ -3,12 +3,15 @@ export declare class PID {
     p: number;
     i: number;
     d: number;
-    setpoint: number;
-    constructor(p: number, i: number, d: number);
-    error: number;
-    cumulatedError: number;
-    errorVariation: number;
+    tau: number;
+    limitMin: number;
+    limitMax: number;
+    integrator: number;
+    previousError: number;
+    differentiator: number;
+    previousValue: number;
     get value(): number;
+    constructor(p: number, i: number, d: number, limitMin?: number, limitMax?: number);
     reset(): void;
-    update(dt: number, currentValue: number): void;
+    update(dt: number, setpoint: number, currentValue: number): number;
 }
