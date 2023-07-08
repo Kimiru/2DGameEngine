@@ -25,6 +25,7 @@ export declare namespace SoftBody {
     interface CollidableBody {
         absorption: number;
         frixion: number;
+        predicateCollision(integrableBody: IntegrableBody): boolean;
         containsPoint(point: Point): boolean;
         closestEdgeOfPoint(point: Point): [Point, Point];
     }
@@ -44,6 +45,7 @@ export declare namespace SoftBody {
         frixion: number;
         absorption: number;
         constructor(points: Point[], frixion?: number, absorption?: number);
+        predicateCollision(integrableBody: IntegrableBody): boolean;
         getPoints(): Point[];
         getPointsCenter(): Vector;
         integrate(dt: number): void;

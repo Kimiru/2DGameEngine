@@ -63,7 +63,7 @@ export var SoftBody;
             }
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
-                    if (collidableBody !== integrableBody) {
+                    if (collidableBody !== integrableBody && collidableBody.predicateCollision(integrableBody)) {
                         let frixion;
                         let absorption;
                         if ('frixion' in integrableBody && 'absorption' in integrableBody) {
@@ -157,6 +157,9 @@ export var SoftBody;
             this.points = points;
             this.frixion = frixion;
             this.absorption = absorption;
+        }
+        predicateCollision(integrableBody) {
+            return true;
         }
         getPoints() {
             return this.points;

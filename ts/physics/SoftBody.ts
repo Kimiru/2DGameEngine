@@ -106,7 +106,7 @@ export namespace SoftBody {
 
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
-                    if (collidableBody as any !== integrableBody) {
+                    if (collidableBody as any !== integrableBody && collidableBody.predicateCollision(integrableBody)) {
                         let frixion: number
                         let absorption: number
 
@@ -213,6 +213,8 @@ export namespace SoftBody {
         absorption: number
         frixion: number
 
+        predicateCollision(integrableBody: IntegrableBody): boolean;
+
         containsPoint(point: Point): boolean
 
         closestEdgeOfPoint(point: Point): [Point, Point]
@@ -282,6 +284,9 @@ export namespace SoftBody {
             this.frixion = frixion
             this.absorption = absorption
 
+        }
+        predicateCollision(integrableBody: IntegrableBody): boolean {
+            return true
         }
 
         getPoints(): Point[] {
