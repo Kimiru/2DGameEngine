@@ -2,20 +2,25 @@ import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGame
 
 export namespace SoftBody {
 
+    /**
+     * Create a soft body physics solver
+     */
     export class Solver extends GameObject {
 
-        resetAcceleration: boolean
-
-        constructor(resetAcceleration: boolean = true) {
+        constructor() {
 
             super()
-
-            this.resetAcceleration = resetAcceleration
 
         }
 
         constraints: Constraint[] = []
 
+        /**
+         * Add a constraint to the system.
+         * Contraints are used to alter the force arround the system
+         * 
+         * @param constraints 
+         */
         addConstraint(...constraints: Constraint[]) {
 
             for (let constraint of constraints) {
@@ -28,6 +33,11 @@ export namespace SoftBody {
 
         }
 
+        /**
+         * Remove a constraint from the system
+         * 
+         * @param constraints 
+         */
         removeConstraint(...constraints: Constraint[]) {
 
             for (let constraint of constraints) {
@@ -42,6 +52,12 @@ export namespace SoftBody {
 
         integrableBodies: IntegrableBody[] = []
 
+        /**
+         * Add an integrable body to the system.
+         * Integrable body are points or groups of points that can move in the system
+         * 
+         * @param integrableBodies 
+         */
         addIntegrableBody(...integrableBodies: IntegrableBody[]) {
 
             for (let integrableBody of integrableBodies) {
@@ -54,6 +70,11 @@ export namespace SoftBody {
 
         }
 
+        /**
+         * Remove an integrable body from the system.
+         * 
+         * @param integrableBodies 
+         */
         removeIntegrableBody(...integrableBodies: IntegrableBody[]) {
 
             for (let IntegrableBody of integrableBodies) {
@@ -68,6 +89,12 @@ export namespace SoftBody {
 
         collidableBodies: CollidableBody[] = []
 
+        /**
+         * Add a collidable body to the system.
+         * Integrable body will not penetrate through collidable body unless predicate says otherwise
+         * 
+         * @param collidableBodies 
+         */
         addCollidableBody(...collidableBodies: CollidableBody[]) {
 
             for (let collidableBody of collidableBodies) {
@@ -80,6 +107,11 @@ export namespace SoftBody {
 
         }
 
+        /**
+         * Remove a collidable body to the system.
+         * 
+         * @param collidableBodies 
+         */
         removeCollidableBody(...collidableBodies: CollidableBody[]) {
 
             for (let collidableBody of collidableBodies) {
@@ -92,17 +124,21 @@ export namespace SoftBody {
 
         }
 
+        /**
+         * Apply the physics of the system in order:
+         * - contraints
+         * - integrations
+         * - collisions
+         * 
+         * @param dt 
+         */
         physics(dt: number): void {
 
             for (let constraint of this.constraints)
                 constraint.applyConstraint()
 
-            for (let integrableBody of this.integrableBodies) {
+            for (let integrableBody of this.integrableBodies)
                 integrableBody.integrate(dt)
-                if (this.resetAcceleration)
-                    for (let point of integrableBody.getPoints())
-                        point.acceleration.set(0, 0)
-            }
 
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)

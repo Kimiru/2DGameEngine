@@ -1,17 +1,60 @@
 import { GameObject, Vector } from "../2DGameEngine.js";
 export declare namespace SoftBody {
+    /**
+     * Create a soft body physics solver
+     */
     class Solver extends GameObject {
-        resetAcceleration: boolean;
-        constructor(resetAcceleration?: boolean);
+        constructor();
         constraints: Constraint[];
+        /**
+         * Add a constraint to the system.
+         * Contraints are used to alter the force arround the system
+         *
+         * @param constraints
+         */
         addConstraint(...constraints: Constraint[]): void;
+        /**
+         * Remove a constraint from the system
+         *
+         * @param constraints
+         */
         removeConstraint(...constraints: Constraint[]): void;
         integrableBodies: IntegrableBody[];
+        /**
+         * Add an integrable body to the system.
+         * Integrable body are points or groups of points that can move in the system
+         *
+         * @param integrableBodies
+         */
         addIntegrableBody(...integrableBodies: IntegrableBody[]): void;
+        /**
+         * Remove an integrable body from the system.
+         *
+         * @param integrableBodies
+         */
         removeIntegrableBody(...integrableBodies: IntegrableBody[]): void;
         collidableBodies: CollidableBody[];
+        /**
+         * Add a collidable body to the system.
+         * Integrable body will not penetrate through collidable body unless predicate says otherwise
+         *
+         * @param collidableBodies
+         */
         addCollidableBody(...collidableBodies: CollidableBody[]): void;
+        /**
+         * Remove a collidable body to the system.
+         *
+         * @param collidableBodies
+         */
         removeCollidableBody(...collidableBodies: CollidableBody[]): void;
+        /**
+         * Apply the physics of the system in order:
+         * - contraints
+         * - integrations
+         * - collisions
+         *
+         * @param dt
+         */
         physics(dt: number): void;
         resolveCollision(point: Point, collidableBody: CollidableBody, frixion?: number, absorption?: number): void;
         resolveEdgeCollision(P: Point, [A, B]: [Point, Point]): void;

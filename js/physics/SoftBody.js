@@ -1,13 +1,20 @@
 import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGameEngine.js";
 export var SoftBody;
 (function (SoftBody) {
+    /**
+     * Create a soft body physics solver
+     */
     class Solver extends GameObject {
-        resetAcceleration;
-        constructor(resetAcceleration = true) {
+        constructor() {
             super();
-            this.resetAcceleration = resetAcceleration;
         }
         constraints = [];
+        /**
+         * Add a constraint to the system.
+         * Contraints are used to alter the force arround the system
+         *
+         * @param constraints
+         */
         addConstraint(...constraints) {
             for (let constraint of constraints) {
                 if (this.constraints.indexOf(constraint) !== -1)
@@ -15,6 +22,11 @@ export var SoftBody;
                 this.constraints.push(constraint);
             }
         }
+        /**
+         * Remove a constraint from the system
+         *
+         * @param constraints
+         */
         removeConstraint(...constraints) {
             for (let constraint of constraints) {
                 if (this.constraints.indexOf(constraint) === -1)
@@ -23,6 +35,12 @@ export var SoftBody;
             }
         }
         integrableBodies = [];
+        /**
+         * Add an integrable body to the system.
+         * Integrable body are points or groups of points that can move in the system
+         *
+         * @param integrableBodies
+         */
         addIntegrableBody(...integrableBodies) {
             for (let integrableBody of integrableBodies) {
                 if (this.integrableBodies.indexOf(integrableBody) !== -1)
@@ -30,6 +48,11 @@ export var SoftBody;
                 this.integrableBodies.push(integrableBody);
             }
         }
+        /**
+         * Remove an integrable body from the system.
+         *
+         * @param integrableBodies
+         */
         removeIntegrableBody(...integrableBodies) {
             for (let IntegrableBody of integrableBodies) {
                 if (this.integrableBodies.indexOf(IntegrableBody) === -1)
@@ -38,6 +61,12 @@ export var SoftBody;
             }
         }
         collidableBodies = [];
+        /**
+         * Add a collidable body to the system.
+         * Integrable body will not penetrate through collidable body unless predicate says otherwise
+         *
+         * @param collidableBodies
+         */
         addCollidableBody(...collidableBodies) {
             for (let collidableBody of collidableBodies) {
                 if (this.collidableBodies.indexOf(collidableBody) !== -1)
@@ -45,6 +74,11 @@ export var SoftBody;
                 this.collidableBodies.push(collidableBody);
             }
         }
+        /**
+         * Remove a collidable body to the system.
+         *
+         * @param collidableBodies
+         */
         removeCollidableBody(...collidableBodies) {
             for (let collidableBody of collidableBodies) {
                 if (this.collidableBodies.indexOf(collidableBody) === -1)
@@ -52,15 +86,19 @@ export var SoftBody;
                 this.collidableBodies.splice(this.collidableBodies.indexOf(collidableBody), 1);
             }
         }
+        /**
+         * Apply the physics of the system in order:
+         * - contraints
+         * - integrations
+         * - collisions
+         *
+         * @param dt
+         */
         physics(dt) {
             for (let constraint of this.constraints)
                 constraint.applyConstraint();
-            for (let integrableBody of this.integrableBodies) {
+            for (let integrableBody of this.integrableBodies)
                 integrableBody.integrate(dt);
-                if (this.resetAcceleration)
-                    for (let point of integrableBody.getPoints())
-                        point.acceleration.set(0, 0);
-            }
             for (let collidableBody of this.collidableBodies)
                 for (let integrableBody of this.integrableBodies)
                     if (collidableBody !== integrableBody && collidableBody.predicateCollision(integrableBody)) {
