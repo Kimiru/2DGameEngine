@@ -1,7 +1,8 @@
 import { Drawable } from "./Drawable.js"
 
-const SpriteSheetOptions = {
+const SpriteSheetOptions: { images: Array<HTMLImageElement>, cellWidth: number, cellHeight: number } = {
 
+    images: [],
     cellWidth: 16,
     cellHeight: 16,
 
@@ -20,11 +21,11 @@ export class SpriteSheet extends Drawable {
     savedLoop: Map<string, [number, number]> = new Map()
 
 
-    constructor(image: HTMLImageElement, options: typeof SpriteSheetOptions = SpriteSheetOptions) {
+    constructor(options: typeof SpriteSheetOptions = SpriteSheetOptions) {
 
-        super(image)
+        super(...options.images)
 
-        this.options = { ...SpriteSheetOptions, ...options }
+        this.options = { ...options }
 
         this.horizontalCount = this.images[0].width / this.options.cellWidth
         this.imageSize.set(this.options.cellWidth, this.options.cellHeight)
@@ -51,7 +52,12 @@ export class SpriteSheet extends Drawable {
 
     useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index) }
 
-    isLoop(name: string): boolean { return this.loopOrigin == this.savedLoop.get(name)?.[0] ?? false }
+    isLoop(name: string): boolean {
+        let loop = this.savedLoop.get(name)
+        if (!loop) return false
+
+        return this.loopOrigin == loop[0]
+    }
 
     setLoop(loopOrigin: number, tileInLoop: number, startIndex: number = 0) {
 
@@ -75,8 +81,11 @@ export class SpriteSheet extends Drawable {
         x *= this.imageSize.x
         y *= this.imageSize.y
 
+        ctx.imageSmoothingEnabled = this.imageSmoothing
+
         ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y)
-        ctx.drawImage(this.images[0], x, y, this.imageSize.x, this.imageSize.y, -this.halfSize.x, -this.halfSize.y, this.imageSize.x, this.imageSize.y)
+        for (let image of this.images)
+            ctx.drawImage(image, x, y, this.imageSize.x, this.imageSize.y, -this.halfSize.x, -this.halfSize.y, this.imageSize.x, this.imageSize.y)
 
         ctx.restore()
 
