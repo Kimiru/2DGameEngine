@@ -41,24 +41,24 @@ export declare class GameEngine {
      * @param {width: number, height: number, verticalPixels: number, scaling: number, images: Image[]} args
      */
     constructor(args?: {
-        width?: number;
-        height?: number;
+        width?: number | undefined;
+        height?: number | undefined;
         verticalPixels: number;
-        scaling?: number;
-        canvas?: HTMLCanvasElement | null;
+        scaling?: number | undefined;
+        canvas?: HTMLCanvasElement | null | undefined;
         images?: {
             name: string;
             src: string;
-        }[];
+        }[] | undefined;
         svgs?: {
             name: string;
             src: string;
-        }[];
+        }[] | undefined;
         sounds?: {
             name: string;
             srcs: string[];
-            backup?: number;
-        }[];
+            backup?: number | undefined;
+        }[] | undefined;
     });
     get trueWidth(): number;
     get trueHeight(): number;

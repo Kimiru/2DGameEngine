@@ -10,6 +10,8 @@ export class SpriteSheet extends Drawable {
     cursor = 0;
     loopOrigin = 0;
     tileInLoop = 1;
+    fps = 0;
+    lastFps = Date.now();
     savedLoop = new Map();
     constructor(options = SpriteSheetOptions) {
         super(...options.images);
@@ -26,21 +28,32 @@ export class SpriteSheet extends Drawable {
         let y = Math.floor(index / this.horizontalCount);
         return [x, y];
     }
-    saveLoop(name, loopOrigin, tileInLoop) { this.savedLoop.set(name, [loopOrigin, tileInLoop]); }
-    useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index); }
+    saveLoop(name, loopOrigin, tileInLoop, fps) { this.savedLoop.set(name, [loopOrigin, tileInLoop, fps]); }
+    useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0, 0], index); }
     isLoop(name) {
         let loop = this.savedLoop.get(name);
         if (!loop)
             return false;
         return this.loopOrigin == loop[0];
     }
-    setLoop(loopOrigin, tileInLoop, startIndex = 0) {
+    setLoop(loopOrigin, tileInLoop, fps, startIndex = 0) {
         this.loopOrigin = loopOrigin;
         this.tileInLoop = tileInLoop;
         this.cursor = this.loopOrigin + startIndex % tileInLoop;
+        this.fps = fps;
+        this.lastFps = Date.now();
     }
     getLoopIndex() { return this.cursor - this.loopOrigin; }
     next() { this.cursor = this.loopOrigin + (this.getLoopIndex() + 1) % this.tileInLoop; }
+    update(dt) {
+        if (this.fps === 0)
+            return;
+        let now = Date.now();
+        if (now - this.lastFps > 1000 / this.fps) {
+            this.next();
+            this.lastFps = now;
+        }
+    }
     draw(ctx) {
         ctx.save();
         let x = this.cursor % this.horizontalCount;

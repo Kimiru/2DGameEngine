@@ -5,7 +5,7 @@ export var TrackingCameraDisableMode;
     TrackingCameraDisableMode[TrackingCameraDisableMode["DISABLE"] = 0] = "DISABLE";
     TrackingCameraDisableMode[TrackingCameraDisableMode["DISABLE_ONCE"] = 1] = "DISABLE_ONCE";
     TrackingCameraDisableMode[TrackingCameraDisableMode["DONT_DISABLE"] = 2] = "DONT_DISABLE";
-})(TrackingCameraDisableMode || (TrackingCameraDisableMode = {}));
+})(TrackingCameraDisableMode = TrackingCameraDisableMode || (TrackingCameraDisableMode = {}));
 export class TrackingCamera extends Camera {
     /**
      * The object the camera should track, if null, stops tracking

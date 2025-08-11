@@ -26,7 +26,7 @@ export var GamepadControl;
     GamepadControl[GamepadControl["button_back"] = 22] = "button_back";
     GamepadControl[GamepadControl["button_start"] = 23] = "button_start";
     GamepadControl[GamepadControl["button_home"] = 24] = "button_home";
-})(GamepadControl || (GamepadControl = {}));
+})(GamepadControl = GamepadControl || (GamepadControl = {}));
 /**
  * The Input class is used to register keyboard input, and mouse input if linked to an element
  */

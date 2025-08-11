@@ -4,7 +4,7 @@ export var ColorFormat;
     ColorFormat[ColorFormat["HSL"] = 0] = "HSL";
     ColorFormat[ColorFormat["RGB"] = 1] = "RGB";
     ColorFormat[ColorFormat["Hex"] = 2] = "Hex";
-})(ColorFormat || (ColorFormat = {}));
+})(ColorFormat = ColorFormat || (ColorFormat = {}));
 export class Color {
     h;
     s;

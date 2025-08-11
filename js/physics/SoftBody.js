@@ -367,4 +367,4 @@ export var SoftBody;
         center.divS(points.length);
         return center;
     }
-})(SoftBody || (SoftBody = {}));
+})(SoftBody = SoftBody || (SoftBody = {}));

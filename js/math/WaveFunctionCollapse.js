@@ -234,4 +234,4 @@ export var WFC;
         }
     }
     WFC.Solution = Solution;
-})(WFC || (WFC = {}));
+})(WFC = WFC || (WFC = {}));

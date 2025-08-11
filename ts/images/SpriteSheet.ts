@@ -17,8 +17,10 @@ export class SpriteSheet extends Drawable {
     cursor: number = 0
     loopOrigin: number = 0
     tileInLoop: number = 1
+    fps: number = 0
+    lastFps: number = Date.now()
 
-    savedLoop: Map<string, [number, number]> = new Map()
+    savedLoop: Map<string, [number, number, number]> = new Map()
 
 
     constructor(options: typeof SpriteSheetOptions = SpriteSheetOptions) {
@@ -48,9 +50,9 @@ export class SpriteSheet extends Drawable {
 
     }
 
-    saveLoop(name: string, loopOrigin: number, tileInLoop: number) { this.savedLoop.set(name, [loopOrigin, tileInLoop]) }
+    saveLoop(name: string, loopOrigin: number, tileInLoop: number, fps: number) { this.savedLoop.set(name, [loopOrigin, tileInLoop, fps]) }
 
-    useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index) }
+    useLoop(name: string, index: number = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0, 0], index) }
 
     isLoop(name: string): boolean {
         let loop = this.savedLoop.get(name)
@@ -59,17 +61,31 @@ export class SpriteSheet extends Drawable {
         return this.loopOrigin == loop[0]
     }
 
-    setLoop(loopOrigin: number, tileInLoop: number, startIndex: number = 0) {
+    setLoop(loopOrigin: number, tileInLoop: number, fps: number, startIndex: number = 0) {
 
         this.loopOrigin = loopOrigin
         this.tileInLoop = tileInLoop
         this.cursor = this.loopOrigin + startIndex % tileInLoop
+
+        this.fps = fps
+        this.lastFps = Date.now()
 
     }
 
     getLoopIndex(): number { return this.cursor - this.loopOrigin }
 
     next() { this.cursor = this.loopOrigin + (this.getLoopIndex() + 1) % this.tileInLoop }
+
+    update(dt: number): void {
+        if (this.fps === 0) return
+
+        let now = Date.now()
+
+        if (now - this.lastFps > 1000 / this.fps) {
+            this.next()
+            this.lastFps = now
+        }
+    }
 
     draw(ctx: CanvasRenderingContext2D): void {
 

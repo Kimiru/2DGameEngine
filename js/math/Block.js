@@ -102,4 +102,4 @@ export class Block {
         return Side.UP;
     }
     Block.dirToSide = dirToSide;
-})(Block || (Block = {}));
+})(Block = Block || (Block = {}));
