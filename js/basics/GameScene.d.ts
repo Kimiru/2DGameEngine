@@ -3,7 +3,7 @@ import { Vector } from "../math/Vector.js";
 import { GameEngine } from "./GameEngine.js";
 import { GameObject } from "./GameObject.js";
 export declare enum RenderingType {
-    INFINITY = 0,
+    INFINITY = 0,// DEFAULT // Render all object no matter the distance // No extra computation // Recommended with small amount of object
     IN_VIEW = 1
 }
 /**

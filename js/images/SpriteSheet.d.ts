@@ -1,5 +1,6 @@
 import { Drawable } from "./Drawable.js";
 declare const SpriteSheetOptions: {
+    images: Array<HTMLImageElement>;
     cellWidth: number;
     cellHeight: number;
 };
@@ -10,7 +11,7 @@ export declare class SpriteSheet extends Drawable {
     loopOrigin: number;
     tileInLoop: number;
     savedLoop: Map<string, [number, number]>;
-    constructor(image: HTMLImageElement, options?: typeof SpriteSheetOptions);
+    constructor(options?: typeof SpriteSheetOptions);
     XYToIndex(x: number, y: number): number;
     indexToXY(index: any): [number, number];
     saveLoop(name: string, loopOrigin: number, tileInLoop: number): void;

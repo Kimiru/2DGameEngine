@@ -1,5 +1,6 @@
 import { Drawable } from "./Drawable.js";
 const SpriteSheetOptions = {
+    images: [],
     cellWidth: 16,
     cellHeight: 16,
 };
@@ -10,9 +11,9 @@ export class SpriteSheet extends Drawable {
     loopOrigin = 0;
     tileInLoop = 1;
     savedLoop = new Map();
-    constructor(image, options = SpriteSheetOptions) {
-        super(image);
-        this.options = { ...SpriteSheetOptions, ...options };
+    constructor(options = SpriteSheetOptions) {
+        super(...options.images);
+        this.options = { ...options };
         this.horizontalCount = this.images[0].width / this.options.cellWidth;
         this.imageSize.set(this.options.cellWidth, this.options.cellHeight);
         this.halfSize.copy(this.imageSize).divS(2);
@@ -27,7 +28,12 @@ export class SpriteSheet extends Drawable {
     }
     saveLoop(name, loopOrigin, tileInLoop) { this.savedLoop.set(name, [loopOrigin, tileInLoop]); }
     useLoop(name, index = 0) { this.setLoop(...this.savedLoop.get(name) ?? [0, 0], index); }
-    isLoop(name) { return this.loopOrigin == this.savedLoop.get(name)?.[0] ?? false; }
+    isLoop(name) {
+        let loop = this.savedLoop.get(name);
+        if (!loop)
+            return false;
+        return this.loopOrigin == loop[0];
+    }
     setLoop(loopOrigin, tileInLoop, startIndex = 0) {
         this.loopOrigin = loopOrigin;
         this.tileInLoop = tileInLoop;
@@ -41,8 +47,10 @@ export class SpriteSheet extends Drawable {
         let y = Math.floor(this.cursor / this.horizontalCount);
         x *= this.imageSize.x;
         y *= this.imageSize.y;
+        ctx.imageSmoothingEnabled = this.imageSmoothing;
         ctx.scale(1 / this.imageSize.x, -1 / this.imageSize.y);
-        ctx.drawImage(this.images[0], x, y, this.imageSize.x, this.imageSize.y, -this.halfSize.x, -this.halfSize.y, this.imageSize.x, this.imageSize.y);
+        for (let image of this.images)
+            ctx.drawImage(image, x, y, this.imageSize.x, this.imageSize.y, -this.halfSize.x, -this.halfSize.y, this.imageSize.x, this.imageSize.y);
         ctx.restore();
     }
 }
