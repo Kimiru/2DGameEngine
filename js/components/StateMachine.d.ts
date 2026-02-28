@@ -9,7 +9,7 @@ export interface StateActions<T> {
     update?: UpdateCallback<T>;
     physics?: PhysicsCallback<T>;
     draw?: DrawCallback<T>;
-    [x: string | number | symbol]: unknown;
+    [x: string | number | symbol]: any;
 }
 export declare class StateMachine<T> {
     #private;

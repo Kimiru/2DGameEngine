@@ -207,7 +207,7 @@ export type RawLargeImageManipulator = {
 
 export class LargeImageManipulator extends GameObject {
 
-    canvases: { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, position: Vector }[]
+    canvases: { canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, position: Vector }[] = []
 
     fullSize: Vector = new Vector()
     gridSize: Vector = new Vector()

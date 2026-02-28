@@ -114,7 +114,7 @@ export class ImageManipulator extends GameObject {
 }
 export const CANVAS_RESOLUTION = 2048;
 export class LargeImageManipulator extends GameObject {
-    canvases;
+    canvases = [];
     fullSize = new Vector();
     gridSize = new Vector();
     smooth = true;

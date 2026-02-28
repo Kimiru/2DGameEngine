@@ -10,11 +10,11 @@ export interface StateActions<T> {
     physics?: PhysicsCallback<T>
     draw?: DrawCallback<T>
 
-    [x: string | number | symbol]: unknown
+    [x: string | number | symbol]: any
 }
 
 
-export class StateMachine<T>  {
+export class StateMachine<T> {
 
     unique: boolean = true
 
