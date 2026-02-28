@@ -379,7 +379,7 @@ export class GameEngine {
 
     }
 
-    onResourcesLoaded(callback) {
+    onResourcesLoaded(callback: () => void) {
         if (this.#lock0) {
 
             this.#ressourcesLoadedCallbacks.push(callback)

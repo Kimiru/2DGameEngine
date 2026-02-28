@@ -333,12 +333,12 @@ export class Input {
 
         this.#trueMousePosition = this.positionAdapter(this.#mousePosition
             .clone()
-            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight))
+            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1))
         )
 
         this.#trueDelta = this.#delta
             .clone()
-            .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight))
+            .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight, 1))
         this.#delta.set(0, 0)
 
     }
@@ -458,7 +458,7 @@ export class Input {
             button_home: this.#gamepad.button_home,
             is_calibrating: this.isGamepadCalibrating,
             is_calibrated: this.#calibrated,
-            has_gamepad: navigator.getGamepads?.().length != 0 ?? false
+            has_gamepad: navigator.getGamepads?.().length != 0
         }
 
     }

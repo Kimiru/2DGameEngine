@@ -97,7 +97,7 @@ export declare class GameEngine {
      * Stop the engine, stopping the gameloop
      */
     stop(): void;
-    onResourcesLoaded(callback: any): void;
+    onResourcesLoaded(callback: () => void): void;
 }
 export declare function fullScreen(engine: GameEngine): () => void;
 export declare function fillCanvasParent(engine: GameEngine): () => void;
