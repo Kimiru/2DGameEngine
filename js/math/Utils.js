@@ -30,10 +30,10 @@ export function cubicBezier(p0, p1, p2, p3, t) {
     const tt = t * t;
     const mt = (1 - t);
     const mtt = mt * mt;
-    const w0 = tt * t;
+    const w0 = mtt * mt;
     const w1 = 3 * mtt * t;
     const w2 = 3 * mt * tt;
-    const w3 = mtt * mt;
+    const w3 = tt * t;
     let result = [];
     for (let index = 0; index < p0.length; index++)
         result.push(w0 * p0[index] + w1 * p1[index] + w2 * p2[index] + w3 * p3[index]);

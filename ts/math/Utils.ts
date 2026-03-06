@@ -59,10 +59,10 @@ export function cubicBezier(p0: number[], p1: number[], p2: number[], p3: number
     const tt = t * t
     const mt = (1 - t)
     const mtt = mt * mt
-    const w0 = tt * t
+    const w0 = mtt * mt
     const w1 = 3 * mtt * t
     const w2 = 3 * mt * tt
-    const w3 = mtt * mt
+    const w3 = tt * t
 
     let result: number[] = []
 
