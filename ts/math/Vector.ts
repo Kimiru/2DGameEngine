@@ -1,3 +1,5 @@
+import { lerp } from "./Utils.js"
+
 /**
  * class Vector represent a 3 dimentional vector
  * it also contains function that are used in 2d context for practical purposes
@@ -410,6 +412,10 @@ export class Vector {
 
     neighbors(_8: boolean = false): Vector[] {
         return (_8 ? this.units8() : this.units()).map((vector: Vector) => vector.add(this))
+    }
+
+    lerp(v: Vector, t: number) {
+        return new Vector(lerp(this.x, v.x, t), lerp(this.y, v.y, t))
     }
 
     units(): Vector[] { return Vector.units() }

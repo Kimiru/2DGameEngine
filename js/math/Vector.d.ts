@@ -197,6 +197,7 @@ export declare class Vector {
     arrayXY(): [number, number];
     arrayXYZ(): [number, number, number];
     neighbors(_8?: boolean): Vector[];
+    lerp(v: Vector, t: number): Vector;
     units(): Vector[];
     static units(): Vector[];
     units8(): Vector[];
