@@ -51,6 +51,7 @@ export declare class GameObject {
     get rotation(): number;
     set rotation(rotation: number);
     get size(): Vector;
+    get ready(): boolean;
     /**
      * Adds one or more tag to the object
      *
@@ -89,6 +90,8 @@ export declare class GameObject {
      * Should not be called by the user
      */
     onRemove(): void;
+    makeReady(): void;
+    onReady(): void;
     getComponent<T extends GameComponent>(componentTag: string): T | null;
     getComponents<T extends GameComponent>(componentTag: string): T[];
     doIf(predicate: () => boolean): void;

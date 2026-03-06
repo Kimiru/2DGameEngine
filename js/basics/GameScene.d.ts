@@ -14,6 +14,7 @@ export declare enum RenderingType {
  * It is recommended to instanciate all your scene at the beginning if possible
  */
 export declare class GameScene {
+    #private;
     static list: Map<string, GameScene>;
     id: string;
     tags: Map<string, GameObject[]>;
@@ -26,6 +27,7 @@ export declare class GameScene {
      * Create a new empty GameScene
      */
     constructor(parentScene?: GameScene | null);
+    get ready(): boolean;
     store(): void;
     exit(): void;
     /**
@@ -107,6 +109,8 @@ export declare class GameScene {
      * Should not be called by the user
      */
     onUnSet(): void;
+    makeReady(): void;
+    onReady(): void;
     /**
      * Is called when the canvas viewport changes when used by a GameEngine
      * Is to be modified by the user

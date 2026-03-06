@@ -32,6 +32,7 @@ export class GameScene {
     parentScene: GameScene | null = null
 
     renderingType: RenderingType = RenderingType.INFINITY
+    #ready: boolean = false
 
     /**
      * Create a new empty GameScene
@@ -41,6 +42,9 @@ export class GameScene {
         this.parentScene = parentScene
 
     }
+
+    get ready(): boolean { return this.#ready }
+
 
     store(): void { GameScene.list.set(this.id, this) }
 
@@ -196,6 +200,9 @@ export class GameScene {
 
             this.addTags(obj)
 
+            if (this.engine)
+                obj.makeReady()
+
             obj.onAdd()
 
         }
@@ -317,6 +324,20 @@ export class GameScene {
     onUnSet(): void {
 
     }
+
+    makeReady(): void {
+        if (!this.#ready) {
+            this.onReady()
+            this.#ready = true
+        }
+
+        for (let child of this.children) {
+            child.makeReady()
+        }
+
+    }
+
+    onReady(): void { }
 
     /**
      * Is called when the canvas viewport changes when used by a GameEngine

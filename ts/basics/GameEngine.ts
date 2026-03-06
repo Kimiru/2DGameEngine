@@ -292,6 +292,7 @@ export class GameEngine {
             if (this.#currentScene) {
 
                 this.#currentScene.engine = this
+                this.#currentScene.makeReady()
                 this.#currentScene.onSet()
 
             }

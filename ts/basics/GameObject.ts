@@ -30,6 +30,8 @@ export class GameObject {
     drawRange: number = 0 // If set to infinity, will always be rendered no matter the rendering style
     renderingType: RenderingType = RenderingType.INFINITY
 
+    #ready: boolean = false
+
     /**
      * Create a new raw GameObject
      */
@@ -67,6 +69,8 @@ export class GameObject {
     get rotation(): number { return this.transform.rotation }
     set rotation(rotation: number) { this.transform.rotation = rotation }
     get size(): Vector { return this.transform.scale }
+
+    get ready(): boolean { return this.#ready }
 
     /**
      * Adds one or more tag to the object
@@ -117,6 +121,9 @@ export class GameObject {
             this.children.push(obj)
             this.scene?.addTags(obj)
 
+            if (this.engine)
+                obj.makeReady()
+
             obj.onAdd()
 
         }
@@ -165,6 +172,20 @@ export class GameObject {
      * Should not be called by the user
      */
     onRemove(): void { }
+
+    makeReady(): void {
+        if (!this.#ready) {
+            this.onReady()
+            this.#ready = true
+        }
+
+        for (let child of this.children) {
+            child.makeReady()
+        }
+
+    }
+
+    onReady(): void { }
 
     getComponent<T extends GameComponent>(componentTag: string): T | null {
 

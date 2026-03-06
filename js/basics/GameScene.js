@@ -22,12 +22,14 @@ export class GameScene {
     engine = null;
     parentScene = null;
     renderingType = RenderingType.INFINITY;
+    #ready = false;
     /**
      * Create a new empty GameScene
      */
     constructor(parentScene = null) {
         this.parentScene = parentScene;
     }
+    get ready() { return this.#ready; }
     store() { GameScene.list.set(this.id, this); }
     exit() {
         if (!this.engine)
@@ -132,6 +134,8 @@ export class GameScene {
                 obj.scene = this;
                 this.children.push(obj);
                 this.addTags(obj);
+                if (this.engine)
+                    obj.makeReady();
                 obj.onAdd();
             }
         return this;
@@ -217,6 +221,16 @@ export class GameScene {
      */
     onUnSet() {
     }
+    makeReady() {
+        if (!this.#ready) {
+            this.onReady();
+            this.#ready = true;
+        }
+        for (let child of this.children) {
+            child.makeReady();
+        }
+    }
+    onReady() { }
     /**
      * Is called when the canvas viewport changes when used by a GameEngine
      * Is to be modified by the user

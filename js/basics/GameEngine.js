@@ -195,6 +195,7 @@ export class GameEngine {
             this.resize(this.#width, this.#height, this.#scaling);
             if (this.#currentScene) {
                 this.#currentScene.engine = this;
+                this.#currentScene.makeReady();
                 this.#currentScene.onSet();
             }
         }
