@@ -254,8 +254,7 @@ export class Vector {
      * @returns {number}
      */
     angle() {
-        let vec = this.clone().normalizeSelf();
-        return Math.acos(vec.x) * (Math.sign(vec.y) || 1);
+        return Math.atan2(this.x, this.y);
     }
     /**
      * Returns the distance from this Vector position to the given Vector position

@@ -338,8 +338,7 @@ export class Vector {
      */
     angle(): number {
 
-        let vec = this.clone().normalizeSelf()
-        return Math.acos(vec.x) * (Math.sign(vec.y) || 1)
+        return Math.atan2(this.x, this.y)
 
     }
 
