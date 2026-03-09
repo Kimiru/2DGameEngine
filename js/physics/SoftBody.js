@@ -176,9 +176,9 @@ export var SoftBody;
         }
         integrate(dt) {
             this.position
-                .add(this.velocity.multS(dt))
-                .add(this.acceleration.multS(dt * dt * .5));
-            this.velocity.add(this.acceleration.multS(dt));
+                .addSelf(this.velocity.multS(dt))
+                .addSelf(this.acceleration.multS(dt * dt * .5));
+            this.velocity.addSelf(this.acceleration.multS(dt));
             this.acceleration.set(0, 0);
         }
     }
@@ -275,11 +275,12 @@ export var SoftBody;
             this.restLength = this.point_0.position.distanceTo(this.point_1.position);
         }
         applyConstraint() {
+            console.log("const");
             if (this.point_0.freeze && this.point_1.freeze)
                 return;
             if (this.point_0.position.distanceTo(this.point_1.position) === 0)
                 return;
-            let dir = this.point_0.position.to(this.point_1.position).normalizeSelf();
+            let dir = this.point_0.position.to(this.point_1.position).normalized();
             let currentLength = this.point_0.position.distanceTo(this.point_1.position);
             let deltaLength = currentLength - this.restLength;
             let force = this.stiffness * deltaLength;
@@ -288,17 +289,17 @@ export var SoftBody;
             let angularDamping = p01.projectOn(dir.normal()).multS(this.angularDamping);
             let forceVector = dir.multS(force).add(damping).add(angularDamping);
             if (!this.point_0.freeze && !this.point_1.freeze) {
-                forceVector.divS(2);
-                this.point_0.acceleration.add(forceVector);
-                forceVector.multS(-1);
-                this.point_1.acceleration.add(forceVector);
+                forceVector.divSSelf(2);
+                this.point_0.acceleration.addSelf(forceVector);
+                forceVector.multSSelf(-1);
+                this.point_1.acceleration.addSelf(forceVector);
             }
             else if (!this.point_1.freeze) {
-                forceVector.multS(-1);
-                this.point_1.acceleration.add(forceVector);
+                forceVector.multSSelf(-1);
+                this.point_1.acceleration.addSelf(forceVector);
             }
             else {
-                this.point_0.acceleration.add(forceVector);
+                this.point_0.acceleration.addSelf(forceVector);
             }
         }
     }
@@ -328,16 +329,16 @@ export var SoftBody;
                 let frameCenter = this.getFrameCenter();
                 let delta = frameCenter.to(pointsCenter);
                 for (let point of this.structure)
-                    point.position.add(delta);
+                    point.position = point.position.add(delta);
                 let angle = 0;
                 for (let [index, point] of this.points.entries()) {
                     let structPoint = this.structure[index];
-                    let pointAngle = pointsCenter.to(point.position).rotateSelf(-pointsCenter.to(structPoint.position).angle()).angle();
+                    let pointAngle = pointsCenter.to(point.position).rotated(-pointsCenter.to(structPoint.position).angle()).angle();
                     angle += pointAngle;
                 }
                 angle /= this.points.length;
                 for (let point of this.structure)
-                    point.position.rotateAroundSelf(pointsCenter, angle);
+                    point.position = point.position.rotateAround(pointsCenter, angle);
             }
             for (let spring of this.springs) {
                 if (!this.freeze)

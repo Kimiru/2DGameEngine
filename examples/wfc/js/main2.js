@@ -1,4 +1,4 @@
-import { Camera, GameEngine, GameObject, GameScene, Vector, fullScreen, } from "../../../js/2DGameEngine.js"
+import { Camera, CameraDragComponent, GameEngine, GameObject, GameScene, Vector, fullScreen, } from "../../../js/2DGameEngine.js"
 
 let width = 30
 let height = 30
@@ -16,13 +16,9 @@ fullScreen(engine)
 
 let scene = new GameScene()
 
-scene.add()
-
-
 engine.setScene(scene)
 engine.start()
 
-scene.camera = new Camera()
 globalThis.engine = engine
 
 

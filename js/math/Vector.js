@@ -42,6 +42,12 @@ export class Vector {
     add(vector) {
         return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
     }
+    addSelf(vector) {
+        this.x += vector.x;
+        this.y += vector.y;
+        this.z += vector.z;
+        return this;
+    }
     /**
      * Return a new Vector, Sum of this vector and the given numbers
      *
@@ -53,6 +59,12 @@ export class Vector {
     addS(x = 0, y = 0, z = 0) {
         return new Vector(this.x + x, this.y + y, this.z + z);
     }
+    addSSelf(x = 0, y = 0, z = 0) {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+        return this;
+    }
     /**
      * Return a new Vector, Sub of this vector by the given vector
      *
@@ -61,6 +73,12 @@ export class Vector {
      */
     sub(vector) {
         return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
+    }
+    subSelf(vector) {
+        this.x -= vector.x;
+        this.y -= vector.y;
+        this.z -= vector.z;
+        return this;
     }
     /**
     * Return a new Vector, Sub of this vector by the given numbers
@@ -73,6 +91,12 @@ export class Vector {
     subS(x = 0, y = 0, z = 0) {
         return new Vector(this.x - x, this.y - y, this.z - z);
     }
+    subSSelf(x = 0, y = 0, z = 0) {
+        this.x -= x;
+        this.y -= y;
+        this.z -= z;
+        return this;
+    }
     /**
      * Return a new Vector, Mult of this vector by each member of the given vector
      *
@@ -81,6 +105,12 @@ export class Vector {
      */
     mult(vector) {
         return new Vector(this.x * vector.x, this.y * vector.y, this.z * vector.z);
+    }
+    multSelf(vector) {
+        this.x *= vector.x;
+        this.y *= vector.y;
+        this.z *= vector.z;
+        return this;
     }
     /**
      * Return a new Vector, Mult of this vector by a given number
@@ -91,6 +121,12 @@ export class Vector {
     multS(n) {
         return new Vector(this.x * n, this.y * n, this.z * n);
     }
+    multSSelf(n) {
+        this.x *= n;
+        this.y *= n;
+        this.z *= n;
+        return this;
+    }
     /**
     * Return a new Vector, Div of this vector by each member of the given vector
     *
@@ -100,6 +136,12 @@ export class Vector {
     div(vector) {
         return new Vector(this.x / vector.x, this.y / vector.y, this.z / vector.z);
     }
+    divSelf(vector) {
+        this.x /= vector.x;
+        this.y /= vector.y;
+        this.z /= vector.z;
+        return this;
+    }
     /**
      * Return a new Vector, Div of this vector by a given number
      *
@@ -108,6 +150,12 @@ export class Vector {
      */
     divS(n) {
         return new Vector(this.x / n, this.y / n, this.z / n);
+    }
+    divSSelf(n) {
+        this.x /= n;
+        this.y /= n;
+        this.z /= n;
+        return this;
     }
     /**
      * Returns the result of the dot product between this vector and the given vector
@@ -144,7 +192,7 @@ export class Vector {
      *
      * @returns {Vector}
      */
-    normalised() {
+    normalized() {
         return this.clone().normalizeSelf();
     }
     /**

@@ -210,7 +210,7 @@ export namespace SoftBody {
 
         }
 
-        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion, absorption) {
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion: number, absorption: number) {
 
             let tangent = A.position.to(B.position)
             let normal = tangent.normal()
@@ -288,10 +288,10 @@ export namespace SoftBody {
         integrate(dt: number) {
 
             this.position
-                .add(this.velocity.multS(dt))
-                .add(this.acceleration.multS(dt * dt * .5))
+                .addSelf(this.velocity.multS(dt))
+                .addSelf(this.acceleration.multS(dt * dt * .5))
 
-            this.velocity.add(this.acceleration.multS(dt))
+            this.velocity.addSelf(this.acceleration.multS(dt))
 
             this.acceleration.set(0, 0)
 
@@ -423,7 +423,7 @@ export namespace SoftBody {
         stiffness: number
         damping: number
         angularDamping: number
-        restLength: number
+        restLength!: number
 
         constructor(point_0: Point, point_1: Point, stiffness: number = Spring.stiffness, damping: number = Spring.damping, restLength?: number, angularDamping: number = Spring.angularDamping) {
 
@@ -451,10 +451,12 @@ export namespace SoftBody {
 
         applyConstraint() {
 
+            console.log("const")
+
             if (this.point_0.freeze && this.point_1.freeze) return
             if (this.point_0.position.distanceTo(this.point_1.position) === 0) return
 
-            let dir = this.point_0.position.to(this.point_1.position).normalizeSelf()
+            let dir = this.point_0.position.to(this.point_1.position).normalized()
 
             let currentLength = this.point_0.position.distanceTo(this.point_1.position)
             let deltaLength = currentLength - this.restLength
@@ -470,22 +472,22 @@ export namespace SoftBody {
 
             if (!this.point_0.freeze && !this.point_1.freeze) {
 
-                forceVector.divS(2)
+                forceVector.divSSelf(2)
 
-                this.point_0.acceleration.add(forceVector)
-                forceVector.multS(-1)
-                this.point_1.acceleration.add(forceVector)
+                this.point_0.acceleration.addSelf(forceVector)
+                forceVector.multSSelf(-1)
+                this.point_1.acceleration.addSelf(forceVector)
 
             }
 
             else if (!this.point_1.freeze) {
 
-                forceVector.multS(-1)
-                this.point_1.acceleration.add(forceVector)
+                forceVector.multSSelf(-1)
+                this.point_1.acceleration.addSelf(forceVector)
 
             } else {
 
-                this.point_0.acceleration.add(forceVector)
+                this.point_0.acceleration.addSelf(forceVector)
 
             }
 
@@ -534,7 +536,7 @@ export namespace SoftBody {
                 let delta = frameCenter.to(pointsCenter)
 
                 for (let point of this.structure)
-                    point.position.add(delta)
+                    point.position = point.position.add(delta)
 
                 let angle = 0
 
@@ -542,7 +544,7 @@ export namespace SoftBody {
                     let structPoint = this.structure[index]
 
 
-                    let pointAngle = pointsCenter.to(point.position).rotateSelf(-pointsCenter.to(structPoint.position).angle()).angle()
+                    let pointAngle = pointsCenter.to(point.position).rotated(-pointsCenter.to(structPoint.position).angle()).angle()
 
                     angle += pointAngle
 
@@ -551,7 +553,7 @@ export namespace SoftBody {
                 angle /= this.points.length
 
                 for (let point of this.structure)
-                    point.position.rotateAroundSelf(pointsCenter, angle)
+                    point.position = point.position.rotateAround(pointsCenter, angle)
 
             }
 

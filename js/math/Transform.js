@@ -1,14 +1,18 @@
 import { Vector } from "./Vector.js";
 const PI2 = Math.PI * 2;
 export class Transform {
-    translation = new Vector();
+    #translation = new Vector();
     #rotation = 0;
-    scale = new Vector();
+    #scale = new Vector();
     constructor(translation = new Vector(0, 0, 0), rotation = 0, scale = new Vector(1, 1, 1)) {
-        this.translation.copy(translation);
+        this.#translation.copy(translation);
         this.rotation = rotation;
-        this.scale.copy(scale);
+        this.#scale.copy(scale);
     }
+    get translation() { return this.#translation; }
+    set translation(vector) { this.#translation.copy(vector); }
+    get scale() { return this.#scale; }
+    set scale(vector) { this.#scale.copy(vector); }
     /**
     * Return the rotation of the object
     *
@@ -25,22 +29,22 @@ export class Transform {
         this.#rotation = ((angle % PI2) + PI2) % PI2;
     }
     clear() {
-        this.translation.set(0, 0, 0);
-        this.rotation = 0;
-        this.scale.set(1, 1, 1);
+        this.#translation.set(0, 0, 0);
+        this.#rotation = 0;
+        this.#scale.set(1, 1, 1);
     }
     isDefault() {
-        return this.translation.x === 0 && this.translation.y === 0 &&
+        return this.#translation.x === 0 && this.#translation.y === 0 &&
             this.#rotation == 0 &&
-            this.scale.x === 1 && this.scale.y === 1;
+            this.#scale.x === 1 && this.#scale.y === 1;
     }
     getMatrix() {
         let cos = Math.cos(this.#rotation);
         let sin = Math.sin(this.#rotation);
-        let sx = this.scale.x;
-        let sy = this.scale.y;
-        let x = this.translation.x;
-        let y = this.translation.y;
+        let sx = this.#scale.x;
+        let sy = this.#scale.y;
+        let x = this.#translation.x;
+        let y = this.#translation.y;
         return [
             cos * sx,
             sin * sx,
@@ -53,10 +57,10 @@ export class Transform {
     getInvertMatrix() {
         let cos = Math.cos(this.#rotation);
         let sin = Math.sin(this.#rotation);
-        let sx = this.scale.x;
-        let sy = this.scale.y;
-        let x = (-this.translation.x * cos + -this.translation.y * sin) / sx;
-        let y = (this.translation.x * sin + -this.translation.y * cos) / sy;
+        let sx = this.#scale.x;
+        let sy = this.#scale.y;
+        let x = (-this.#translation.x * cos + -this.#translation.y * sin) / sx;
+        let y = (this.#translation.x * sin + -this.#translation.y * cos) / sy;
         return [
             cos / sx,
             -sin / sy,
@@ -68,12 +72,12 @@ export class Transform {
     }
     toString() {
         let str = 'Transform( ';
-        if (this.translation.x !== 0 || this.translation.y !== 0)
-            str += this.translation.toString() + ' ';
+        if (this.#translation.x !== 0 || this.#translation.y !== 0)
+            str += this.#translation.toString() + ' ';
         if (this.rotation !== 0)
             str += this.rotation + ' ';
-        if (this.scale.x !== 1 || this.scale.y !== 1)
-            str += this.scale.toString() + ' ';
+        if (this.#scale.x !== 1 || this.#scale.y !== 1)
+            str += this.#scale.toString() + ' ';
         str += ')';
         return str;
     }

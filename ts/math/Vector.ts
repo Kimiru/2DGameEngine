@@ -55,6 +55,14 @@ export class Vector {
 
     }
 
+    addSelf(vector: Vector): this {
+        this.x += vector.x
+        this.y += vector.y
+        this.z += vector.z
+
+        return this
+    }
+
     /**
      * Return a new Vector, Sum of this vector and the given numbers
      * 
@@ -69,6 +77,16 @@ export class Vector {
 
     }
 
+    addSSelf(x: number = 0, y: number = 0, z: number = 0): this {
+
+        this.x += x
+        this.y += y
+        this.z += z
+
+        return this
+
+    }
+
     /**
      * Return a new Vector, Sub of this vector by the given vector
      * 
@@ -79,6 +97,14 @@ export class Vector {
 
         return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z)
 
+    }
+
+    subSelf(vector: Vector): this {
+        this.x -= vector.x
+        this.y -= vector.y
+        this.z -= vector.z
+
+        return this
     }
 
     /**
@@ -96,6 +122,16 @@ export class Vector {
 
     }
 
+    subSSelf(x: number = 0, y: number = 0, z: number = 0): this {
+
+        this.x -= x
+        this.y -= y
+        this.z -= z
+
+        return this
+
+    }
+
     /**
      * Return a new Vector, Mult of this vector by each member of the given vector
      * 
@@ -107,6 +143,14 @@ export class Vector {
         return new Vector(this.x * vector.x, this.y * vector.y, this.z * vector.z)
 
 
+    }
+
+    multSelf(vector: Vector): this {
+        this.x *= vector.x
+        this.y *= vector.y
+        this.z *= vector.z
+
+        return this
     }
 
     /**
@@ -122,6 +166,16 @@ export class Vector {
 
     }
 
+    multSSelf(n: number): this {
+
+        this.x *= n
+        this.y *= n
+        this.z *= n
+
+        return this
+
+    }
+
     /**
     * Return a new Vector, Div of this vector by each member of the given vector
     * 
@@ -134,6 +188,14 @@ export class Vector {
 
     }
 
+    divSelf(vector: Vector): this {
+        this.x /= vector.x
+        this.y /= vector.y
+        this.z /= vector.z
+
+        return this
+    }
+
     /**
      * Return a new Vector, Div of this vector by a given number
      * 
@@ -143,6 +205,16 @@ export class Vector {
     divS(n: number): Vector {
 
         return new Vector(this.x / n, this.y / n, this.z / n)
+
+    }
+
+    divSSelf(n: number): this {
+
+        this.x /= n
+        this.y /= n
+        this.z /= n
+
+        return this
 
     }
 
@@ -189,7 +261,7 @@ export class Vector {
      * 
      * @returns {Vector}
      */
-    normalised(): Vector {
+    normalized(): Vector {
         return this.clone().normalizeSelf()
     }
 

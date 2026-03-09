@@ -386,7 +386,7 @@ export class Path {
 
         }
 
-        this.currentPosition.add(next.sub(this.currentPosition).normalised().multS(length))
+        this.currentPosition.addSelf(next.sub(this.currentPosition).normalized().multS(length))
 
         return this.currentPosition.clone()
 

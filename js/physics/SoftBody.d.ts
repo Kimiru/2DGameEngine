@@ -59,7 +59,7 @@ export declare namespace SoftBody {
         resolveCollision(point: Point, collidableBody: CollidableBody, frixion?: number, absorption?: number): void;
         resolveEdgeCollision(P: Point, [A, B]: [Point, Point]): void;
         resolveEdgeCollisionPosition({ position: P }: Point, [{ position: A }, { position: B }]: [Point, Point]): void;
-        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion: any, absorption: any): void;
+        resolveEdgeCollisionVelocity(P: Point, [A, B]: [Point, Point], frixion: number, absorption: number): void;
     }
     interface IntegrableBody {
         integrate: (dt: number) => void;

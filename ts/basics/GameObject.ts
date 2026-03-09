@@ -392,13 +392,13 @@ export class GameObject {
         while (currentObject) {
 
             if (!currentObject.transform.scale.equalS(1, 1))
-                currentPosition.mult(currentObject.transform.scale)
+                currentPosition = currentPosition.mult(currentObject.transform.scale)
 
             if (currentObject.transform.rotation)
-                currentPosition.rotateSelf(currentObject.transform.rotation)
+                currentPosition = currentPosition.rotated(currentObject.transform.rotation)
 
             if (!currentObject.transform.translation.nil())
-                currentPosition.add(currentObject.transform.translation)
+                currentPosition = currentPosition.add(currentObject.transform.translation)
 
 
             currentObject = currentObject.parent

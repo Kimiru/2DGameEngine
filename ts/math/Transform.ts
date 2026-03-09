@@ -5,17 +5,24 @@ const PI2 = Math.PI * 2
 
 export class Transform {
 
-    translation: Vector = new Vector()
+    #translation: Vector = new Vector()
     #rotation: number = 0
-    scale: Vector = new Vector()
+    #scale: Vector = new Vector()
 
     constructor(translation: Vector = new Vector(0, 0, 0), rotation: number = 0, scale: Vector = new Vector(1, 1, 1)) {
 
-        this.translation.copy(translation)
+        this.#translation.copy(translation)
         this.rotation = rotation
-        this.scale.copy(scale)
+        this.#scale.copy(scale)
 
     }
+
+    get translation(): Vector { return this.#translation }
+    set translation(vector: Vector) { this.#translation.copy(vector) }
+
+    get scale(): Vector { return this.#scale }
+    set scale(vector: Vector) { this.#scale.copy(vector) }
+
 
     /**
     * Return the rotation of the object
@@ -38,17 +45,17 @@ export class Transform {
 
     clear() {
 
-        this.translation.set(0, 0, 0)
-        this.rotation = 0
-        this.scale.set(1, 1, 1)
+        this.#translation.set(0, 0, 0)
+        this.#rotation = 0
+        this.#scale.set(1, 1, 1)
 
     }
 
     isDefault(): boolean {
 
-        return this.translation.x === 0 && this.translation.y === 0 &&
+        return this.#translation.x === 0 && this.#translation.y === 0 &&
             this.#rotation == 0 &&
-            this.scale.x === 1 && this.scale.y === 1
+            this.#scale.x === 1 && this.#scale.y === 1
 
     }
 
@@ -56,10 +63,10 @@ export class Transform {
 
         let cos = Math.cos(this.#rotation)
         let sin = Math.sin(this.#rotation)
-        let sx = this.scale.x
-        let sy = this.scale.y
-        let x = this.translation.x
-        let y = this.translation.y
+        let sx = this.#scale.x
+        let sy = this.#scale.y
+        let x = this.#translation.x
+        let y = this.#translation.y
 
         return [
             cos * sx,
@@ -76,10 +83,10 @@ export class Transform {
 
         let cos = Math.cos(this.#rotation)
         let sin = Math.sin(this.#rotation)
-        let sx = this.scale.x
-        let sy = this.scale.y
-        let x = (-this.translation.x * cos + -this.translation.y * sin) / sx
-        let y = (this.translation.x * sin + -this.translation.y * cos) / sy
+        let sx = this.#scale.x
+        let sy = this.#scale.y
+        let x = (-this.#translation.x * cos + -this.#translation.y * sin) / sx
+        let y = (this.#translation.x * sin + -this.#translation.y * cos) / sy
 
         return [
             cos / sx,
@@ -96,9 +103,9 @@ export class Transform {
 
         let str = 'Transform( '
 
-        if (this.translation.x !== 0 || this.translation.y !== 0) str += this.translation.toString() + ' '
+        if (this.#translation.x !== 0 || this.#translation.y !== 0) str += this.#translation.toString() + ' '
         if (this.rotation !== 0) str += this.rotation + ' '
-        if (this.scale.x !== 1 || this.scale.y !== 1) str += this.scale.toString() + ' '
+        if (this.#scale.x !== 1 || this.#scale.y !== 1) str += this.#scale.toString() + ' '
 
         str += ')'
 

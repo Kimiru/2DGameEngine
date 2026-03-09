@@ -20,6 +20,10 @@ let scene = new GameScene()
 
 scene.add(new Grid(width, height))
 
+scene.camera = new Camera()
+scene.camera.add(new CameraDragComponent())
+scene.add(scene.camera)
+
 let wfc = new WaveFunctionCollapse()
 
 wfc.addConnector({

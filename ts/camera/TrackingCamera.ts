@@ -46,6 +46,7 @@ export class TrackingCamera extends Camera {
 
                 let rawOffset = objectWorldPosition.sub(cameraWorldPosition)
                 let offset = rawOffset.divS(this.trackLag)
+
                 let len = offset.length()
                 if (len < this.minTrackSpeed) offset.normalizeSelf().multS(this.minTrackSpeed)
                 offset.multS(dt)

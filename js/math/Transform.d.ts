@@ -2,9 +2,11 @@ import { matrix } from "./TransformMatrix.js";
 import { Vector } from "./Vector.js";
 export declare class Transform {
     #private;
-    translation: Vector;
-    scale: Vector;
     constructor(translation?: Vector, rotation?: number, scale?: Vector);
+    get translation(): Vector;
+    set translation(vector: Vector);
+    get scale(): Vector;
+    set scale(vector: Vector);
     /**
     * Return the rotation of the object
     *

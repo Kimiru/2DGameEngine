@@ -30,6 +30,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     add(vector: Vector): Vector;
+    addSelf(vector: Vector): this;
     /**
      * Return a new Vector, Sum of this vector and the given numbers
      *
@@ -39,6 +40,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     addS(x?: number, y?: number, z?: number): Vector;
+    addSSelf(x?: number, y?: number, z?: number): this;
     /**
      * Return a new Vector, Sub of this vector by the given vector
      *
@@ -46,6 +48,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     sub(vector: Vector): Vector;
+    subSelf(vector: Vector): this;
     /**
     * Return a new Vector, Sub of this vector by the given numbers
     *
@@ -55,6 +58,7 @@ export declare class Vector {
     * @returns {Vector}
     */
     subS(x?: number, y?: number, z?: number): Vector;
+    subSSelf(x?: number, y?: number, z?: number): this;
     /**
      * Return a new Vector, Mult of this vector by each member of the given vector
      *
@@ -62,6 +66,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     mult(vector: Vector): Vector;
+    multSelf(vector: Vector): this;
     /**
      * Return a new Vector, Mult of this vector by a given number
      *
@@ -69,6 +74,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     multS(n: number): Vector;
+    multSSelf(n: number): this;
     /**
     * Return a new Vector, Div of this vector by each member of the given vector
     *
@@ -76,6 +82,7 @@ export declare class Vector {
     * @returns {Vector}
     */
     div(vector: Vector): Vector;
+    divSelf(vector: Vector): this;
     /**
      * Return a new Vector, Div of this vector by a given number
      *
@@ -83,6 +90,7 @@ export declare class Vector {
      * @returns {Vector}
      */
     divS(n: number): Vector;
+    divSSelf(n: number): this;
     /**
      * Returns the result of the dot product between this vector and the given vector
      *
@@ -114,7 +122,7 @@ export declare class Vector {
      *
      * @returns {Vector}
      */
-    normalised(): Vector;
+    normalized(): Vector;
     /**
      * Rotates the current vector of a given angle on the x and y values
      *

@@ -20,10 +20,10 @@ export class PositionIntegrator {
         this.previousAcceleration.copy(this.acceleration)
 
         this.position
-            .add(this.velocity.multS(t))
-            .add(this.acceleration.multS(tt * .5))
+            .addSelf(this.velocity.multS(t))
+            .addSelf(this.acceleration.multS(tt * .5))
 
-        this.velocity.add(this.acceleration.multS(t))
+        this.velocity.addSelf(this.acceleration.multS(t))
 
     }
 
