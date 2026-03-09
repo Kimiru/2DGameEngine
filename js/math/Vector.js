@@ -258,7 +258,7 @@ export class Vector {
      * @returns {number}
      */
     angle() {
-        return Math.atan2(this.x, this.y);
+        return Math.atan2(this.y, this.x);
     }
     /**
      * Returns the distance from this Vector position to the given Vector position

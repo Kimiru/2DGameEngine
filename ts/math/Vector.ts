@@ -343,7 +343,7 @@ export class Vector {
      */
     angle(): number {
 
-        return Math.atan2(this.x, this.y)
+        return Math.atan2(this.y, this.x)
 
     }
 
