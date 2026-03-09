@@ -329,7 +329,12 @@ export class Vector {
      * @param vector 
      * @returns {number}
      */
-    angleTo(vector: Vector): number { return Math.acos(this.dot(vector) / (this.length() * vector.length())) }
+    angleTo(vector: Vector): number {
+        const cross = this.x * vector.y - this.y * vector.x
+        const dot = this.dot(vector)
+
+        return Math.atan2(cross, dot)
+    }
 
     /**
      * Returns the angle on this vector on plane x, y
