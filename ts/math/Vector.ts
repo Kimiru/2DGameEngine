@@ -104,7 +104,7 @@ export class Vector {
      */
     mult(vector: Vector): Vector {
 
-        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z)
+        return new Vector(this.x * vector.x, this.y * vector.y, this.z * vector.z)
 
 
     }

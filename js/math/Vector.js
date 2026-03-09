@@ -80,7 +80,7 @@ export class Vector {
      * @returns {Vector}
      */
     mult(vector) {
-        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
+        return new Vector(this.x * vector.x, this.y * vector.y, this.z * vector.z);
     }
     /**
      * Return a new Vector, Mult of this vector by a given number
