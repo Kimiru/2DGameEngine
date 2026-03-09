@@ -44,10 +44,10 @@ export class CameraDragComponent extends GameComponent {
 
             if (!this.#target) this.#target = mouse.position.clone()
 
-            let delta: Vector = this.#target.sub(mouse.position)
+            this.#target = this.#target.sub(mouse.position)
 
-            this.parent!.transform.translation.add(delta)
 
+            this.parent!.transform.translation.add(this.#target)
         } else
             this.#target = null
 
@@ -56,9 +56,9 @@ export class CameraDragComponent extends GameComponent {
             let scale = 1.1 ** mouse.scroll
             let delta = mouse.position.sub(this.parent!.transform.translation)
 
-            this.parent!.transform.translation.add(delta)
-            this.parent!.transform.scale.multS(scale)
-            this.parent!.transform.translation.sub(delta.multS(scale))
+            this.parent!.transform.translation.copy(this.parent!.transform.translation.add(delta))
+            this.parent!.transform.scale.copy(this.parent!.transform.scale.multS(scale))
+            this.parent!.transform.translation.copy(this.parent!.transform.translation.sub(delta.multS(scale)))
 
         }
 
