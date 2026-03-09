@@ -240,7 +240,7 @@ export class Path {
             if (this.currentSegment == this.points.length)
                 return this.currentPosition.clone();
         }
-        this.currentPosition.add(next.clone().sub(this.currentPosition).normalize().multS(length));
+        this.currentPosition.add(next.sub(this.currentPosition).normalised().multS(length));
         return this.currentPosition.clone();
     }
 }

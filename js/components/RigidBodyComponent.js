@@ -20,15 +20,15 @@ export class RigitBodyComponent extends GameComponent {
             centerOfMass.add(point);
         }
         centerOfMass.divS(polygon.outer.length);
-        this.polygon = new Polygon(polygon.outer.map(point => point.clone().sub(centerOfMass)));
+        this.polygon = new Polygon(polygon.outer.map(point => point.sub(centerOfMass)));
         this.momentsOfInertia = this.polygon.outer.map(({ x, y }) => this.mass / this.polygon.outer.length * (x * x + y * y));
         this.momentOfInertia = this.momentsOfInertia.reduce((a, b) => a + b);
     }
     physics(dt) {
         let dt2 = dt * dt;
-        let delta = this.velocity.clone().multS(dt)
-            .add(this.acceleration.clone().multS(dt2 * .5));
-        this.velocity.add(this.acceleration.clone().multS(dt));
+        let delta = this.velocity.multS(dt)
+            .add(this.acceleration.multS(dt2 * .5));
+        this.velocity.add(this.acceleration.multS(dt));
         this.acceleration.set(0, 0);
         this.parent.position.copy(delta);
         let deltaAngle = this.angularVelocity * dt + this.angularAcceleration * dt2 * .5;
@@ -37,7 +37,7 @@ export class RigitBodyComponent extends GameComponent {
         this.parent.rotation += deltaAngle;
     }
     applyForce(position, force) {
-        this.acceleration.add(force.clone().divS(this.mass));
+        this.acceleration.add(force.divS(this.mass));
         this.angularAcceleration += (position.x * force.y - position.y * force.x) / this.momentOfInertia;
     }
 }

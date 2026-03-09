@@ -44,134 +44,105 @@ export class Vector {
     }
 
     /**
-     * Add the given vector to this vector
+     * Return a new Vector, Sum of this vector and the given vector
      * 
      * @param {Vector} vector 
-     * @returns {this}
+     * @returns {Vector}
      */
-    add(vector: Vector = new Vector()): this {
+    add(vector: Vector): Vector {
 
-        this.x += vector.x
-        this.y += vector.y
-        this.z += vector.z
-
-        return this
+        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z)
 
     }
 
     /**
-     * Add the given numbers to this vector
+     * Return a new Vector, Sum of this vector and the given numbers
      * 
      * @param {number} x 
      * @param {number} y 
      * @param {number} z
-     * @returns {this}
+     * @returns {Vector}
      */
-    addS(x: number = 0, y: number = 0, z: number = 0): this {
+    addS(x: number = 0, y: number = 0, z: number = 0): Vector {
 
-        this.x += x
-        this.y += y
-        this.z += z
-
-        return this
+        return new Vector(this.x + x, this.y + y, this.z + z)
 
     }
 
     /**
-     * Sub the given vector to this vector
+     * Return a new Vector, Sub of this vector by the given vector
      * 
      * @param {Vector} vector 
-     * @returns {this}
+     * @returns {Vector}
      */
-    sub(vector: Vector = new Vector()): this {
+    sub(vector: Vector): Vector {
 
-        this.x -= vector.x
-        this.y -= vector.y
-        this.z -= vector.z
-
-        return this
+        return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z)
 
     }
 
     /**
-    * Sub the given numbers to this vector
+    * Return a new Vector, Sub of this vector by the given numbers
     * 
     * @param {number} x 
     * @param {number} y 
     * @param {number} z
-    * @returns {this}
+    * @returns {Vector}
     */
-    subS(x: number = 0, y: number = 0, z: number = 0) {
+    subS(x: number = 0, y: number = 0, z: number = 0): Vector {
 
-        this.x -= x
-        this.y -= y
-        this.z -= z
+        return new Vector(this.x - x, this.y - y, this.z - z)
 
-        return this
 
     }
 
     /**
-     * Multiply each of this vector value by each of the given vector value
+     * Return a new Vector, Mult of this vector by each member of the given vector
      * 
      * @param {Vector} vector 
-     * @returns {this}
+     * @returns {Vector}
      */
-    mult(vector: Vector): this {
+    mult(vector: Vector): Vector {
 
-        this.x *= vector.x
-        this.y *= vector.y
-        this.z *= vector.z
+        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z)
 
-        return this
 
     }
 
     /**
-     * Multiply this vector by a given value
+     * Return a new Vector, Mult of this vector by a given number
      * 
      * @param {number} n 
-     * @returns {this}
+     * @returns {Vector}
      */
-    multS(n: number): this {
+    multS(n: number): Vector {
 
-        this.x *= n
-        this.y *= n
-        this.z *= n
+        return new Vector(this.x * n, this.y * n, this.z * n)
 
-        return this
 
     }
 
     /**
-    * Divide each of this vector value by each of the given vector value
+    * Return a new Vector, Div of this vector by each member of the given vector
     * 
     * @param {Vector} vector 
-    * @returns {this}
+    * @returns {Vector}
     */
-    div(vector: Vector): this {
+    div(vector: Vector): Vector {
 
-        this.x /= vector.x
-        this.y /= vector.y
-        this.z /= vector.z
-
-        return this
+        return new Vector(this.x / vector.x, this.y / vector.y, this.z / vector.z)
 
     }
 
     /**
-     * Divide this vector by a given value
+     * Return a new Vector, Div of this vector by a given number
      * 
      * @param {number} n 
-     * @returns {this} 
+     * @returns {Vector} 
      */
-    divS(n: number): this {
+    divS(n: number): Vector {
 
-        this.x /= n
-        this.y /= n
-        this.z /= n
-
-        return this
+        return new Vector(this.x / n, this.y / n, this.z / n)
 
     }
 
@@ -204,7 +175,7 @@ export class Vector {
      * 
      * @returns {this}
      */
-    normalize(): this {
+    normalizeSelf(): this {
 
         if (!this.nil())
             this.divS(this.length())
@@ -214,12 +185,21 @@ export class Vector {
     }
 
     /**
+     * Return a new vector, Normalization of this vector
+     * 
+     * @returns {Vector}
+     */
+    normalised(): Vector {
+        return this.clone().normalizeSelf()
+    }
+
+    /**
      * Rotates the current vector of a given angle on the x and y values
      * 
      * @param {number} angle 
      * @returns {this}
      */
-    rotate(angle: number): this {
+    rotateSelf(angle: number): this {
 
         let cos = Math.cos(angle)
         let sin = Math.sin(angle)
@@ -235,20 +215,40 @@ export class Vector {
     }
 
     /**
+     * Return a new vector, rotation of this vector
+     * 
+     * @param angle 
+     */
+    rotated(angle: number): Vector {
+        return this.clone().rotateSelf(angle)
+    }
+
+    /**
      * Rotate the current vector of a given angle arround a given position on the x and y values
      * 
      * @param {Vector} position 
      * @param {number} angle 
      * @returns {this}
      */
-    rotateAround(position: Vector, angle: number): this {
+    rotateAroundSelf(position: Vector, angle: number): this {
 
         this.sub(position)
-        this.rotate(angle)
+        this.rotateSelf(angle)
         this.add(position)
 
         return this
 
+    }
+
+    /**
+     * Return a vector, rotation of this vector around a given position
+     * 
+     * @param {Vector} position
+     * @param {number} angle 
+     * @returns {Vector}
+     */
+    rotateAround(position: Vector, angle: number): Vector {
+        return this.clone().rotateAroundSelf(position, angle)
     }
 
     /**
@@ -266,7 +266,7 @@ export class Vector {
      */
     angle(): number {
 
-        let vec = this.clone().normalize()
+        let vec = this.clone().normalizeSelf()
         return Math.acos(vec.x) * (Math.sign(vec.y) || 1)
 
     }
@@ -344,7 +344,7 @@ export class Vector {
 
     }
 
-    round(n: number = 1): this {
+    roundSelf(n: number = 1): this {
 
         this.x = Math.round(this.x / n) * n
         this.y = Math.round(this.y / n) * n
@@ -354,7 +354,11 @@ export class Vector {
 
     }
 
-    floor(n: number = 1): this {
+    round(n: number = 1): Vector {
+        return this.clone().roundSelf()
+    }
+
+    floorSelf(n: number = 1): this {
 
         this.x = Math.floor(this.x / n) * n
         this.y = Math.floor(this.y / n) * n
@@ -364,7 +368,12 @@ export class Vector {
 
     }
 
-    ceil(n: number = 1): this {
+    floor(n: number = 1): Vector {
+        return this.clone().floorSelf(n)
+    }
+
+
+    ceilSelf(n: number = 1): this {
 
         this.x = Math.ceil(this.x / n) * n
         this.y = Math.ceil(this.y / n) * n
@@ -374,7 +383,11 @@ export class Vector {
 
     }
 
-    abs() {
+    ceil(n: number): Vector {
+        return this.clone().ceilSelf(n)
+    }
+
+    absSelf() {
 
         this.x = Math.abs(this.x)
         this.y = Math.abs(this.y)
@@ -384,13 +397,17 @@ export class Vector {
 
     }
 
-    projectOn(vector: Vector) {
+    abs() {
+        return this.clone().absSelf()
+    }
+
+    projectOn(vector: Vector): Vector {
 
         let dot = this.dot(vector)
         let normSquared = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z
         let scalar = dot / normSquared
 
-        return vector.clone().multS(scalar)
+        return vector.multS(scalar)
 
     }
 
@@ -402,7 +419,7 @@ export class Vector {
 
     to(vector: Vector): Vector {
 
-        return vector.clone().sub(this)
+        return vector.sub(this)
 
     }
 

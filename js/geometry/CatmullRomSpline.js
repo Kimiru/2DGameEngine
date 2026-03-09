@@ -21,7 +21,7 @@ export class CatmullRomSpline extends GameObject {
             let p_0 = points[index - 1];
             let p_1 = points[index];
             let p_2 = points[index + 1];
-            let dir = p_2.clone().sub(p_0).divS(2);
+            let dir = p_2.sub(p_0).divS(2);
             nodes.push({ position: p_1.clone(), direction: dir });
         }
         return new HermiteSpline(nodes);

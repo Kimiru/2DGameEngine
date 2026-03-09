@@ -282,7 +282,7 @@ export class LargeImageManipulator extends GameObject {
 
         for (let { ctx, position } of this.canvases) {
 
-            let effectivePosition = position.clone().multS(CANVAS_RESOLUTION)
+            let effectivePosition = position.multS(CANVAS_RESOLUTION)
 
             ctx.save()
 
@@ -356,7 +356,7 @@ export class LargeImageManipulator extends GameObject {
 
         for (let { canvas, position } of this.canvases) {
 
-            let positionOnCanvas = position.clone().multS(CANVAS_RESOLUTION).subS(CANVAS_RESOLUTION / 2, -CANVAS_RESOLUTION / 2)
+            let positionOnCanvas = position.multS(CANVAS_RESOLUTION).subS(CANVAS_RESOLUTION / 2, -CANVAS_RESOLUTION / 2)
 
             ctx.drawImage(canvas, positionOnCanvas.x, -positionOnCanvas.y)
         }

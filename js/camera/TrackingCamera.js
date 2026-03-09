@@ -33,11 +33,11 @@ export class TrackingCamera extends Camera {
             let cameraWorldPosition = this.getWorldPosition();
             let objectWorldPosition = this.trackedObject instanceof Vector ? this.trackedObject.clone() : this.trackedObject.getWorldPosition();
             if (!cameraWorldPosition.equal(objectWorldPosition)) {
-                let rawOffset = objectWorldPosition.clone().sub(cameraWorldPosition);
-                let offset = rawOffset.clone().divS(this.trackLag);
+                let rawOffset = objectWorldPosition.sub(cameraWorldPosition);
+                let offset = rawOffset.divS(this.trackLag);
                 let len = offset.length();
                 if (len < this.minTrackSpeed)
-                    offset.normalize().multS(this.minTrackSpeed);
+                    offset.normalizeSelf().multS(this.minTrackSpeed);
                 offset.multS(dt);
                 if (offset.length() > cameraWorldPosition.distanceTo(objectWorldPosition))
                     this.transform.translation.add(rawOffset);

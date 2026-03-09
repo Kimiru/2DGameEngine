@@ -22,7 +22,7 @@ class InputButton extends GameObject {
             let wtm = this.getWorldTransformMatrix();
             let myPosition = TransformMatrix.multVec(wtm, new Vector());
             let range = TransformMatrix.multVec(wtm, new Vector(.5, 0)).distanceTo(myPosition);
-            let delta = mouse.position.clone().sub(myPosition);
+            let delta = mouse.position.sub(myPosition);
             let mouseToCenter = delta.length();
             if (mouseToCenter < range) {
                 if (input.getGamepadControlAccess(GamepadControl[this.button]))
@@ -91,7 +91,7 @@ class JoystickDisplay extends GameObject {
             let wtm = this.getWorldTransformMatrix();
             let myPosition = TransformMatrix.multVec(wtm, new Vector());
             let range = TransformMatrix.multVec(wtm, new Vector(.5, 0)).distanceTo(myPosition);
-            let delta = mouse.position.clone().sub(myPosition);
+            let delta = mouse.position.sub(myPosition);
             let mouseToCenter = delta.length();
             if (mouseToCenter < range) {
                 if (mouseToCenter > range * minRange) {

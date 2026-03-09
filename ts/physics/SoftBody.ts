@@ -1,4 +1,4 @@
-import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGameEngine.js";
+import { GameObject, Polygon, Ray, Segment, Vector, quadBezier } from "../2DGameEngine.js"
 
 export namespace SoftBody {
 
@@ -203,8 +203,8 @@ export namespace SoftBody {
             let pA = quadBezier([.5], [.4], [0], percent)[0]
             let pB = quadBezier([0], [.4], [.5], percent)[0]
 
-            A.add(dir.clone().multS(pA))
-            B.add(dir.clone().multS(pB))
+            A.add(dir.multS(pA))
+            B.add(dir.multS(pB))
 
             P.copy(new Ray(P, dir.multS(-1)).intersect(new Segment(A, B)) ?? P)
 
@@ -215,15 +215,15 @@ export namespace SoftBody {
             let tangent = A.position.to(B.position)
             let normal = tangent.normal()
 
-            let edgeVelocity = A.velocity.clone().add(B.velocity).divS(2)
+            let edgeVelocity = A.velocity.add(B.velocity).divS(2)
             let edgeTangentVelocity = edgeVelocity.projectOn(tangent)
             let edgeNormalVelocity = edgeVelocity.projectOn(normal)
 
             let pointTangentVelocity = P.velocity.projectOn(tangent)
             let pointNormalVelocity = P.velocity.projectOn(normal)
 
-            let relativeNormalVelocity = edgeNormalVelocity.clone().sub(pointNormalVelocity).multS(absorption * .5)
-            let relativeTangentVelocity = edgeTangentVelocity.clone().sub(pointTangentVelocity).multS(frixion * .5)
+            let relativeNormalVelocity = edgeNormalVelocity.sub(pointNormalVelocity).multS(absorption * .5)
+            let relativeTangentVelocity = edgeTangentVelocity.sub(pointTangentVelocity).multS(frixion * .5)
 
             P.velocity.copy(edgeNormalVelocity.sub(relativeNormalVelocity))
                 .add(pointTangentVelocity.add(relativeTangentVelocity))
@@ -249,7 +249,7 @@ export namespace SoftBody {
         absorption: number
         frixion: number
 
-        predicateCollision(integrableBody: IntegrableBody): boolean;
+        predicateCollision(integrableBody: IntegrableBody): boolean
 
         containsPoint(point: Point): boolean
 
@@ -288,10 +288,10 @@ export namespace SoftBody {
         integrate(dt: number) {
 
             this.position
-                .add(this.velocity.clone().multS(dt))
-                .add(this.acceleration.clone().multS(dt * dt * .5))
+                .add(this.velocity.multS(dt))
+                .add(this.acceleration.multS(dt * dt * .5))
 
-            this.velocity.add(this.acceleration.clone().multS(dt))
+            this.velocity.add(this.acceleration.multS(dt))
 
             this.acceleration.set(0, 0)
 
@@ -454,7 +454,7 @@ export namespace SoftBody {
             if (this.point_0.freeze && this.point_1.freeze) return
             if (this.point_0.position.distanceTo(this.point_1.position) === 0) return
 
-            let dir = this.point_0.position.to(this.point_1.position).normalize()
+            let dir = this.point_0.position.to(this.point_1.position).normalizeSelf()
 
             let currentLength = this.point_0.position.distanceTo(this.point_1.position)
             let deltaLength = currentLength - this.restLength
@@ -466,7 +466,7 @@ export namespace SoftBody {
             let damping = p01.projectOn(dir).multS(this.damping)
             let angularDamping = p01.projectOn(dir.normal()).multS(this.angularDamping)
 
-            let forceVector = dir.clone().multS(force).add(damping).add(angularDamping)
+            let forceVector = dir.multS(force).add(damping).add(angularDamping)
 
             if (!this.point_0.freeze && !this.point_1.freeze) {
 
@@ -542,7 +542,7 @@ export namespace SoftBody {
                     let structPoint = this.structure[index]
 
 
-                    let pointAngle = pointsCenter.to(point.position).rotate(-pointsCenter.to(structPoint.position).angle()).angle()
+                    let pointAngle = pointsCenter.to(point.position).rotateSelf(-pointsCenter.to(structPoint.position).angle()).angle()
 
                     angle += pointAngle
 
@@ -551,7 +551,7 @@ export namespace SoftBody {
                 angle /= this.points.length
 
                 for (let point of this.structure)
-                    point.position.rotateAround(pointsCenter, angle)
+                    point.position.rotateAroundSelf(pointsCenter, angle)
 
             }
 
@@ -576,7 +576,7 @@ export namespace SoftBody {
 
                     let truePoint = this.structure[index]
 
-                    truePoint.position.copy(this.position.clone().add(falsePoint.position.clone().rotate(this.rotation)))
+                    truePoint.position.copy(this.position.add(falsePoint.position.rotated(this.rotation)))
 
                 }
 

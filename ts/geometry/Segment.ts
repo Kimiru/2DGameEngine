@@ -52,7 +52,7 @@ export class Segment extends GameObject {
 
     directionVector() {
 
-        return this.b.clone().sub(this.a).normalize()
+        return this.b.sub(this.a).normalizeSelf()
 
     }
 

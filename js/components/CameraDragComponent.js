@@ -32,14 +32,14 @@ export class CameraDragComponent extends GameComponent {
         if (button) {
             if (!this.#target)
                 this.#target = mouse.position.clone();
-            let delta = this.#target.clone().sub(mouse.position);
+            let delta = this.#target.sub(mouse.position);
             this.parent.transform.translation.add(delta);
         }
         else
             this.#target = null;
         if (this.scrollZoomEnabled && mouse.scroll) {
             let scale = 1.1 ** mouse.scroll;
-            let delta = mouse.position.clone().sub(this.parent.transform.translation);
+            let delta = mouse.position.sub(this.parent.transform.translation);
             this.parent.transform.translation.add(delta);
             this.parent.transform.scale.multS(scale);
             this.parent.transform.translation.sub(delta.multS(scale));

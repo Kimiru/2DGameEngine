@@ -285,7 +285,7 @@ export class GameObject {
             if (!currentObject.transform.scale.equalS(1, 1))
                 currentPosition.mult(currentObject.transform.scale);
             if (currentObject.transform.rotation)
-                currentPosition.rotate(currentObject.transform.rotation);
+                currentPosition.rotateSelf(currentObject.transform.rotation);
             if (!currentObject.transform.translation.nil())
                 currentPosition.add(currentObject.transform.translation);
             currentObject = currentObject.parent;

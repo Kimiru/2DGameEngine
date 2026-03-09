@@ -134,20 +134,20 @@ export var SoftBody;
             let percent = AP.dot(AB) / AB.normSquared();
             let pA = quadBezier([.5], [.4], [0], percent)[0];
             let pB = quadBezier([0], [.4], [.5], percent)[0];
-            A.add(dir.clone().multS(pA));
-            B.add(dir.clone().multS(pB));
+            A.add(dir.multS(pA));
+            B.add(dir.multS(pB));
             P.copy(new Ray(P, dir.multS(-1)).intersect(new Segment(A, B)) ?? P);
         }
         resolveEdgeCollisionVelocity(P, [A, B], frixion, absorption) {
             let tangent = A.position.to(B.position);
             let normal = tangent.normal();
-            let edgeVelocity = A.velocity.clone().add(B.velocity).divS(2);
+            let edgeVelocity = A.velocity.add(B.velocity).divS(2);
             let edgeTangentVelocity = edgeVelocity.projectOn(tangent);
             let edgeNormalVelocity = edgeVelocity.projectOn(normal);
             let pointTangentVelocity = P.velocity.projectOn(tangent);
             let pointNormalVelocity = P.velocity.projectOn(normal);
-            let relativeNormalVelocity = edgeNormalVelocity.clone().sub(pointNormalVelocity).multS(absorption * .5);
-            let relativeTangentVelocity = edgeTangentVelocity.clone().sub(pointTangentVelocity).multS(frixion * .5);
+            let relativeNormalVelocity = edgeNormalVelocity.sub(pointNormalVelocity).multS(absorption * .5);
+            let relativeTangentVelocity = edgeTangentVelocity.sub(pointTangentVelocity).multS(frixion * .5);
             P.velocity.copy(edgeNormalVelocity.sub(relativeNormalVelocity))
                 .add(pointTangentVelocity.add(relativeTangentVelocity));
             A.velocity.copy(pointNormalVelocity.add(relativeNormalVelocity))
@@ -176,9 +176,9 @@ export var SoftBody;
         }
         integrate(dt) {
             this.position
-                .add(this.velocity.clone().multS(dt))
-                .add(this.acceleration.clone().multS(dt * dt * .5));
-            this.velocity.add(this.acceleration.clone().multS(dt));
+                .add(this.velocity.multS(dt))
+                .add(this.acceleration.multS(dt * dt * .5));
+            this.velocity.add(this.acceleration.multS(dt));
             this.acceleration.set(0, 0);
         }
     }
@@ -279,14 +279,14 @@ export var SoftBody;
                 return;
             if (this.point_0.position.distanceTo(this.point_1.position) === 0)
                 return;
-            let dir = this.point_0.position.to(this.point_1.position).normalize();
+            let dir = this.point_0.position.to(this.point_1.position).normalizeSelf();
             let currentLength = this.point_0.position.distanceTo(this.point_1.position);
             let deltaLength = currentLength - this.restLength;
             let force = this.stiffness * deltaLength;
             let p01 = this.point_0.velocity.to(this.point_1.velocity);
             let damping = p01.projectOn(dir).multS(this.damping);
             let angularDamping = p01.projectOn(dir.normal()).multS(this.angularDamping);
-            let forceVector = dir.clone().multS(force).add(damping).add(angularDamping);
+            let forceVector = dir.multS(force).add(damping).add(angularDamping);
             if (!this.point_0.freeze && !this.point_1.freeze) {
                 forceVector.divS(2);
                 this.point_0.acceleration.add(forceVector);
@@ -332,12 +332,12 @@ export var SoftBody;
                 let angle = 0;
                 for (let [index, point] of this.points.entries()) {
                     let structPoint = this.structure[index];
-                    let pointAngle = pointsCenter.to(point.position).rotate(-pointsCenter.to(structPoint.position).angle()).angle();
+                    let pointAngle = pointsCenter.to(point.position).rotateSelf(-pointsCenter.to(structPoint.position).angle()).angle();
                     angle += pointAngle;
                 }
                 angle /= this.points.length;
                 for (let point of this.structure)
-                    point.position.rotateAround(pointsCenter, angle);
+                    point.position.rotateAroundSelf(pointsCenter, angle);
             }
             for (let spring of this.springs) {
                 if (!this.freeze)
@@ -352,7 +352,7 @@ export var SoftBody;
             if (this.freeze)
                 for (let [index, falsePoint] of this.falseStructure.entries()) {
                     let truePoint = this.structure[index];
-                    truePoint.position.copy(this.position.clone().add(falsePoint.position.clone().rotate(this.rotation)));
+                    truePoint.position.copy(this.position.add(falsePoint.position.rotated(this.rotation)));
                 }
             super.integrate(dt);
         }

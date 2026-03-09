@@ -79,7 +79,7 @@ export class GameEngine {
         this.ctx = this.canvas.getContext('2d');
         this.input.bindMouse(this.canvas, (vector) => {
             let sc = this.usableScale;
-            let half = this.usableScale.clone().divS(2);
+            let half = this.usableScale.divS(2);
             vector.mult(sc).sub(half);
             vector.y *= -1;
             if (this.#currentScene && this.#currentScene.camera) {

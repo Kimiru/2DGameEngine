@@ -39,7 +39,7 @@ export class HexVector {
     set(hexVector) {
         return this.setS(hexVector.q, hexVector.r, hexVector.s);
     }
-    addS(q, r, s) {
+    addSSelf(q, r, s) {
         let sum = this.#q + q + this.#r + r + this.#s + s;
         if (sum !== 0)
             throw `Check sum for hex positioning should be equal to zero q(${this.#q + q}) + r(${this.#r + r}) + s(${this.#s + s}) === ${sum}`;
@@ -49,8 +49,33 @@ export class HexVector {
         this.updateVector();
         return this;
     }
+    addS(q, r, s) {
+        return this.clone().addSSelf(q, r, s);
+    }
+    addSelf(hexVector) {
+        return this.addSSelf(hexVector.q, hexVector.r, hexVector.s);
+    }
     add(hexVector) {
-        return this.addS(hexVector.q, hexVector.r, hexVector.s);
+        return this.clone().addSelf(hexVector);
+    }
+    subSSelf(q, r, s) {
+        let sum = this.#q - q + this.#r - r + this.#s - s;
+        if (sum !== 0)
+            throw `Check sum for hex positioning should be equal to zero q(${this.#q - q}) + r(${this.#r - r}) + s(${this.#s - s}) === ${sum}`;
+        this.#q -= q;
+        this.#r -= r;
+        this.#s -= s;
+        this.updateVector();
+        return this;
+    }
+    subS(q, r, s) {
+        return this.clone().subSSelf(q, r, s);
+    }
+    subSelf(hexVector) {
+        return this.subSSelf(hexVector.q, hexVector.r, hexVector.s);
+    }
+    sub(hexVector) {
+        return this.clone().subSelf(hexVector);
     }
     updateVector() {
         let sqrt3 = Math.sqrt(3);
@@ -93,7 +118,7 @@ export class HexVector {
     equalS(q, r, s) { return this.#q === q && this.#r === r && this.#s === s; }
     clone() { return new HexVector(this.orientation, this.unit, this.#q, this.#r, this.#s); }
     neighbors() {
-        return this.units().map((hexVector) => hexVector.add(this));
+        return this.units().map((hexVector) => hexVector.addSelf(this));
     }
     units() { return HexVector.units(this.orientation, this.unit); }
     static units(orientation, unit) {

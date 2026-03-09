@@ -22,7 +22,7 @@ export class RayCastView {
         }
         let points = [];
         for (let unique of uniques) {
-            let angle = unique.clone().sub(position).angle();
+            let angle = unique.sub(position).angle();
             let delta = 0.00001;
             let angle1 = angle + delta;
             let angle2 = angle - delta;
@@ -32,9 +32,9 @@ export class RayCastView {
             let pt = ray.cast(segments);
             let pt1 = ray1.cast(segments);
             let pt2 = ray2.cast(segments);
-            points.push([angle, pt ?? position.clone().add(ray.direction.multS(infinity)), pt?.clone().sub(position) ?? ray.direction]);
-            points.push([angle1, pt1 ?? position.clone().add(ray1.direction.multS(infinity)), pt1?.clone().sub(position) ?? ray1.direction]);
-            points.push([angle2, pt2 ?? position.clone().add(ray2.direction.multS(infinity)), pt2?.clone().sub(position) ?? ray2.direction]);
+            points.push([angle, pt ?? position.add(ray.direction.multS(infinity)), pt?.sub(position) ?? ray.direction]);
+            points.push([angle1, pt1 ?? position.add(ray1.direction.multS(infinity)), pt1?.sub(position) ?? ray1.direction]);
+            points.push([angle2, pt2 ?? position.add(ray2.direction.multS(infinity)), pt2?.sub(position) ?? ray2.direction]);
         }
         points.sort((a, b) => b[0] - a[0]);
         let polygon = new Polygon(points.map(e => e[2].add(position)));

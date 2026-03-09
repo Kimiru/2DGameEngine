@@ -1,4 +1,4 @@
-import { GameComponent, Polygon, Vector } from "../2DGameEngine.js";
+import { GameComponent, Polygon, Vector } from "../2DGameEngine.js"
 
 export class RigitBodyComponent extends GameComponent {
 
@@ -38,7 +38,7 @@ export class RigitBodyComponent extends GameComponent {
 
         centerOfMass.divS(polygon.outer.length)
 
-        this.polygon = new Polygon(polygon.outer.map(point => point.clone().sub(centerOfMass)))
+        this.polygon = new Polygon(polygon.outer.map(point => point.sub(centerOfMass)))
 
         this.momentsOfInertia = this.polygon.outer.map(({ x, y }) => this.mass / this.polygon.outer.length * (x * x + y * y))
         this.momentOfInertia = this.momentsOfInertia.reduce((a, b) => a + b)
@@ -49,9 +49,9 @@ export class RigitBodyComponent extends GameComponent {
 
         let dt2 = dt * dt
 
-        let delta = this.velocity.clone().multS(dt)
-            .add(this.acceleration.clone().multS(dt2 * .5))
-        this.velocity.add(this.acceleration.clone().multS(dt))
+        let delta = this.velocity.multS(dt)
+            .add(this.acceleration.multS(dt2 * .5))
+        this.velocity.add(this.acceleration.multS(dt))
 
         this.acceleration.set(0, 0)
 
@@ -68,7 +68,7 @@ export class RigitBodyComponent extends GameComponent {
 
     applyForce(position: Vector, force: Vector) {
 
-        this.acceleration.add(force.clone().divS(this.mass))
+        this.acceleration.add(force.divS(this.mass))
 
         this.angularAcceleration += (position.x * force.y - position.y * force.x) / this.momentOfInertia
 

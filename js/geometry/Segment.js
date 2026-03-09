@@ -35,7 +35,7 @@ export class Segment extends GameObject {
         return new Vector(x1 + t * (x2 - x1), y1 + t * (y2 - y1));
     }
     directionVector() {
-        return this.b.clone().sub(this.a).normalize();
+        return this.b.sub(this.a).normalizeSelf();
     }
     project(point) {
         return point.projectOn(this.directionVector());

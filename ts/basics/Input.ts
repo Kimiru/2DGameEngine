@@ -332,12 +332,10 @@ export class Input {
     #to01(): void {
 
         this.#trueMousePosition = this.positionAdapter(this.#mousePosition
-            .clone()
             .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1))
         )
 
         this.#trueDelta = this.#delta
-            .clone()
             .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight, 1))
         this.#delta.set(0, 0)
 

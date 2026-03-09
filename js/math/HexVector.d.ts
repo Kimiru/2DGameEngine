@@ -15,8 +15,14 @@ export declare class HexVector {
     get s(): number;
     setS(q: number, r: number, s: number): this;
     set(hexVector: HexVector): this;
-    addS(q: number, r: number, s: number): this;
-    add(hexVector: HexVector): this;
+    addSSelf(q: number, r: number, s: number): this;
+    addS(q: number, r: number, s: number): HexVector;
+    addSelf(hexVector: HexVector): this;
+    add(hexVector: HexVector): HexVector;
+    subSSelf(q: number, r: number, s: number): this;
+    subS(q: number, r: number, s: number): HexVector;
+    subSelf(hexVector: HexVector): this;
+    sub(hexVector: HexVector): HexVector;
     updateVector(): void;
     updateFromVector(): void;
     distanceTo(hexVector: HexVector): number;

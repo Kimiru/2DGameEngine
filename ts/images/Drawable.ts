@@ -28,7 +28,7 @@ export class Drawable extends GameObject {
         imageManipulator.ctx.imageSmoothingEnabled = smoothing
 
         imageManipulator.setCtxToCenter()
-        imageManipulator.ctx.scale(...resolution.clone().div(resolution.clone().addS(margin, margin)).arrayXY())
+        imageManipulator.ctx.scale(...resolution.div(resolution.addS(margin, margin)).arrayXY())
 
         this.executeDraw(imageManipulator.ctx)
 

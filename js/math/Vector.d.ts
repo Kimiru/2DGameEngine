@@ -24,65 +24,65 @@ export declare class Vector {
     */
     set(x?: number, y?: number, z?: number): this;
     /**
-     * Add the given vector to this vector
+     * Return a new Vector, Sum of this vector and the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
-    add(vector?: Vector): this;
+    add(vector: Vector): Vector;
     /**
-     * Add the given numbers to this vector
+     * Return a new Vector, Sum of this vector and the given numbers
      *
      * @param {number} x
      * @param {number} y
      * @param {number} z
-     * @returns {this}
+     * @returns {Vector}
      */
-    addS(x?: number, y?: number, z?: number): this;
+    addS(x?: number, y?: number, z?: number): Vector;
     /**
-     * Sub the given vector to this vector
+     * Return a new Vector, Sub of this vector by the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
-    sub(vector?: Vector): this;
+    sub(vector: Vector): Vector;
     /**
-    * Sub the given numbers to this vector
+    * Return a new Vector, Sub of this vector by the given numbers
     *
     * @param {number} x
     * @param {number} y
     * @param {number} z
-    * @returns {this}
+    * @returns {Vector}
     */
-    subS(x?: number, y?: number, z?: number): this;
+    subS(x?: number, y?: number, z?: number): Vector;
     /**
-     * Multiply each of this vector value by each of the given vector value
+     * Return a new Vector, Mult of this vector by each member of the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
-    mult(vector: Vector): this;
+    mult(vector: Vector): Vector;
     /**
-     * Multiply this vector by a given value
+     * Return a new Vector, Mult of this vector by a given number
      *
      * @param {number} n
-     * @returns {this}
+     * @returns {Vector}
      */
-    multS(n: number): this;
+    multS(n: number): Vector;
     /**
-    * Divide each of this vector value by each of the given vector value
+    * Return a new Vector, Div of this vector by each member of the given vector
     *
     * @param {Vector} vector
-    * @returns {this}
+    * @returns {Vector}
     */
-    div(vector: Vector): this;
+    div(vector: Vector): Vector;
     /**
-     * Divide this vector by a given value
+     * Return a new Vector, Div of this vector by a given number
      *
      * @param {number} n
-     * @returns {this}
+     * @returns {Vector}
      */
-    divS(n: number): this;
+    divS(n: number): Vector;
     /**
      * Returns the result of the dot product between this vector and the given vector
      *
@@ -108,14 +108,26 @@ export declare class Vector {
      *
      * @returns {this}
      */
-    normalize(): this;
+    normalizeSelf(): this;
+    /**
+     * Return a new vector, Normalization of this vector
+     *
+     * @returns {Vector}
+     */
+    normalised(): Vector;
     /**
      * Rotates the current vector of a given angle on the x and y values
      *
      * @param {number} angle
      * @returns {this}
      */
-    rotate(angle: number): this;
+    rotateSelf(angle: number): this;
+    /**
+     * Return a new vector, rotation of this vector
+     *
+     * @param angle
+     */
+    rotated(angle: number): Vector;
     /**
      * Rotate the current vector of a given angle arround a given position on the x and y values
      *
@@ -123,7 +135,15 @@ export declare class Vector {
      * @param {number} angle
      * @returns {this}
      */
-    rotateAround(position: Vector, angle: number): this;
+    rotateAroundSelf(position: Vector, angle: number): this;
+    /**
+     * Return a vector, rotation of this vector around a given position
+     *
+     * @param {Vector} position
+     * @param {number} angle
+     * @returns {Vector}
+     */
+    rotateAround(position: Vector, angle: number): Vector;
     /**
      * Returns the angle between this vector and the given vector
      *
@@ -187,10 +207,14 @@ export declare class Vector {
     static fromAngle(angle: number): Vector;
     static distanceBetween(a: Vector, b: Vector): number;
     exec(func: (vec: Vector) => void): this;
-    round(n?: number): this;
-    floor(n?: number): this;
-    ceil(n?: number): this;
-    abs(): this;
+    roundSelf(n?: number): this;
+    round(n?: number): Vector;
+    floorSelf(n?: number): this;
+    floor(n?: number): Vector;
+    ceilSelf(n?: number): this;
+    ceil(n: number): Vector;
+    absSelf(): this;
+    abs(): Vector;
     projectOn(vector: Vector): Vector;
     normal(): Vector;
     to(vector: Vector): Vector;

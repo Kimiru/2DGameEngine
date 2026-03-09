@@ -11,7 +11,7 @@ export class Ray extends GameObject {
         let sega = segment.getWorldPosition(segment.a.clone());
         let segb = segment.getWorldPosition(segment.b.clone());
         let wp = this.getWorldPosition();
-        let wpdir = this.getWorldPosition(this.direction.clone().normalize());
+        let wpdir = this.getWorldPosition(this.direction.normalised());
         let x1 = sega.x;
         let y1 = sega.y;
         let x2 = segb.x;

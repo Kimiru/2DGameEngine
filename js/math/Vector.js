@@ -34,104 +34,80 @@ export class Vector {
         return this;
     }
     /**
-     * Add the given vector to this vector
+     * Return a new Vector, Sum of this vector and the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
-    add(vector = new Vector()) {
-        this.x += vector.x;
-        this.y += vector.y;
-        this.z += vector.z;
-        return this;
+    add(vector) {
+        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
     }
     /**
-     * Add the given numbers to this vector
+     * Return a new Vector, Sum of this vector and the given numbers
      *
      * @param {number} x
      * @param {number} y
      * @param {number} z
-     * @returns {this}
+     * @returns {Vector}
      */
     addS(x = 0, y = 0, z = 0) {
-        this.x += x;
-        this.y += y;
-        this.z += z;
-        return this;
+        return new Vector(this.x + x, this.y + y, this.z + z);
     }
     /**
-     * Sub the given vector to this vector
+     * Return a new Vector, Sub of this vector by the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
-    sub(vector = new Vector()) {
-        this.x -= vector.x;
-        this.y -= vector.y;
-        this.z -= vector.z;
-        return this;
+    sub(vector) {
+        return new Vector(this.x - vector.x, this.y - vector.y, this.z - vector.z);
     }
     /**
-    * Sub the given numbers to this vector
+    * Return a new Vector, Sub of this vector by the given numbers
     *
     * @param {number} x
     * @param {number} y
     * @param {number} z
-    * @returns {this}
+    * @returns {Vector}
     */
     subS(x = 0, y = 0, z = 0) {
-        this.x -= x;
-        this.y -= y;
-        this.z -= z;
-        return this;
+        return new Vector(this.x - x, this.y - y, this.z - z);
     }
     /**
-     * Multiply each of this vector value by each of the given vector value
+     * Return a new Vector, Mult of this vector by each member of the given vector
      *
      * @param {Vector} vector
-     * @returns {this}
+     * @returns {Vector}
      */
     mult(vector) {
-        this.x *= vector.x;
-        this.y *= vector.y;
-        this.z *= vector.z;
-        return this;
+        return new Vector(this.x + vector.x, this.y + vector.y, this.z + vector.z);
     }
     /**
-     * Multiply this vector by a given value
+     * Return a new Vector, Mult of this vector by a given number
      *
      * @param {number} n
-     * @returns {this}
+     * @returns {Vector}
      */
     multS(n) {
-        this.x *= n;
-        this.y *= n;
-        this.z *= n;
-        return this;
+        return new Vector(this.x * n, this.y * n, this.z * n);
     }
     /**
-    * Divide each of this vector value by each of the given vector value
+    * Return a new Vector, Div of this vector by each member of the given vector
     *
     * @param {Vector} vector
-    * @returns {this}
+    * @returns {Vector}
     */
     div(vector) {
-        this.x /= vector.x;
-        this.y /= vector.y;
-        this.z /= vector.z;
-        return this;
+        return new Vector(this.x / vector.x, this.y / vector.y, this.z / vector.z);
     }
     /**
-     * Divide this vector by a given value
+     * Return a new Vector, Div of this vector by a given number
      *
      * @param {number} n
-     * @returns {this}
+     * @returns {Vector}
      */
     divS(n) {
-        this.x /= n;
-        this.y /= n;
-        this.z /= n;
-        return this;
+        return new Vector(this.x / n, this.y / n, this.z / n);
     }
     /**
      * Returns the result of the dot product between this vector and the given vector
@@ -158,10 +134,18 @@ export class Vector {
      *
      * @returns {this}
      */
-    normalize() {
+    normalizeSelf() {
         if (!this.nil())
             this.divS(this.length());
         return this;
+    }
+    /**
+     * Return a new vector, Normalization of this vector
+     *
+     * @returns {Vector}
+     */
+    normalised() {
+        return this.clone().normalizeSelf();
     }
     /**
      * Rotates the current vector of a given angle on the x and y values
@@ -169,7 +153,7 @@ export class Vector {
      * @param {number} angle
      * @returns {this}
      */
-    rotate(angle) {
+    rotateSelf(angle) {
         let cos = Math.cos(angle);
         let sin = Math.sin(angle);
         let x = cos * this.x - sin * this.y;
@@ -179,17 +163,35 @@ export class Vector {
         return this;
     }
     /**
+     * Return a new vector, rotation of this vector
+     *
+     * @param angle
+     */
+    rotated(angle) {
+        return this.clone().rotateSelf(angle);
+    }
+    /**
      * Rotate the current vector of a given angle arround a given position on the x and y values
      *
      * @param {Vector} position
      * @param {number} angle
      * @returns {this}
      */
-    rotateAround(position, angle) {
+    rotateAroundSelf(position, angle) {
         this.sub(position);
-        this.rotate(angle);
+        this.rotateSelf(angle);
         this.add(position);
         return this;
+    }
+    /**
+     * Return a vector, rotation of this vector around a given position
+     *
+     * @param {Vector} position
+     * @param {number} angle
+     * @returns {Vector}
+     */
+    rotateAround(position, angle) {
+        return this.clone().rotateAroundSelf(position, angle);
     }
     /**
      * Returns the angle between this vector and the given vector
@@ -204,7 +206,7 @@ export class Vector {
      * @returns {number}
      */
     angle() {
-        let vec = this.clone().normalize();
+        let vec = this.clone().normalizeSelf();
         return Math.acos(vec.x) * (Math.sign(vec.y) || 1);
     }
     /**
@@ -265,41 +267,53 @@ export class Vector {
         func(this);
         return this;
     }
-    round(n = 1) {
+    roundSelf(n = 1) {
         this.x = Math.round(this.x / n) * n;
         this.y = Math.round(this.y / n) * n;
         this.z = Math.round(this.z / n) * n;
         return this;
     }
-    floor(n = 1) {
+    round(n = 1) {
+        return this.clone().roundSelf();
+    }
+    floorSelf(n = 1) {
         this.x = Math.floor(this.x / n) * n;
         this.y = Math.floor(this.y / n) * n;
         this.z = Math.floor(this.z / n) * n;
         return this;
     }
-    ceil(n = 1) {
+    floor(n = 1) {
+        return this.clone().floorSelf(n);
+    }
+    ceilSelf(n = 1) {
         this.x = Math.ceil(this.x / n) * n;
         this.y = Math.ceil(this.y / n) * n;
         this.z = Math.ceil(this.z / n) * n;
         return this;
     }
-    abs() {
+    ceil(n) {
+        return this.clone().ceilSelf(n);
+    }
+    absSelf() {
         this.x = Math.abs(this.x);
         this.y = Math.abs(this.y);
         this.z = Math.abs(this.z);
         return this;
     }
+    abs() {
+        return this.clone().absSelf();
+    }
     projectOn(vector) {
         let dot = this.dot(vector);
         let normSquared = vector.x * vector.x + vector.y * vector.y + vector.z * vector.z;
         let scalar = dot / normSquared;
-        return vector.clone().multS(scalar);
+        return vector.multS(scalar);
     }
     normal() {
         return new Vector(-this.y, this.x);
     }
     to(vector) {
-        return vector.clone().sub(this);
+        return vector.sub(this);
     }
     arrayXY() { return [this.x, this.y]; }
     arrayXYZ() { return [this.x, this.y, this.z]; }
