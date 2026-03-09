@@ -80,7 +80,7 @@ export class GameEngine {
         this.input.bindMouse(this.canvas, (vector) => {
             let sc = this.usableScale;
             let half = this.usableScale.divS(2);
-            vector.mult(sc).sub(half);
+            vector = vector.mult(sc).sub(half);
             vector.y *= -1;
             if (this.#currentScene && this.#currentScene.camera) {
                 let matrix = this.#currentScene.camera.getWorldTransformMatrix();

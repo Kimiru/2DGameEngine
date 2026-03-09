@@ -237,10 +237,8 @@ export class Input {
      * @returns
      */
     #to01() {
-        this.#trueMousePosition = this.positionAdapter(this.#mousePosition
-            .div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1)));
-        this.#trueDelta = this.#delta
-            .div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight, 1));
+        this.#trueMousePosition = this.positionAdapter(this.#mousePosition.div(new Vector(this.#bindedElement.offsetWidth, this.#bindedElement.offsetHeight, 1)));
+        this.#trueDelta = this.#delta.div(new Vector(this.#bindedElement.offsetWidth, -this.#bindedElement.offsetHeight, 1));
         this.#delta.set(0, 0);
     }
     // Gamepad
