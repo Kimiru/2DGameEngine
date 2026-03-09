@@ -131,4 +131,7 @@ export class HexVector {
             new HexVector(orientation, unit, -1, 0, 1),
         ];
     }
+    toString() {
+        return `HexVector(${this.#q}, ${this.#r}, ${this.#s})`;
+    }
 }

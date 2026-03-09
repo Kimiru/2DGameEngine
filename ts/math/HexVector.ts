@@ -201,4 +201,8 @@ export class HexVector {
 
     }
 
+    toString(): string {
+        return `HexVector(${this.#q}, ${this.#r}, ${this.#s})`
+    }
+
 }

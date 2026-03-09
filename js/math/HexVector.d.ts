@@ -32,4 +32,5 @@ export declare class HexVector {
     neighbors(): HexVector[];
     units(): HexVector[];
     static units(orientation: HexOrientation, unit: number): HexVector[];
+    toString(): string;
 }
